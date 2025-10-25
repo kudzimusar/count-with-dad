@@ -1,15 +1,14 @@
 import { useState, useEffect } from 'react';
-import { AppState, CountingMode, Screen } from '@/types';
+import { AppState, CountingMode, Screen, VoiceSettings } from '@/types';
 import { useLocalStorage } from '@/hooks/useLocalStorage';
 import { useSound } from '@/hooks/useSound';
 import { useSpeech } from '@/hooks/useSpeech';
 import { createSticker, createConfetti } from '@/utils/animations';
 import { Header } from '@/components/layout/Header';
-import { ModeSelector } from '@/components/layout/ModeSelector';
-import { Navigation } from '@/components/layout/Navigation';
+import { MenuPanel } from '@/components/layout/MenuPanel';
 import { ParentGate } from '@/components/modals/ParentGate';
 import { CelebrationModal } from '@/components/modals/CelebrationModal';
-import { SuccessModal } from '@/components/modals/SuccessModal';
+import { LevelUnlockModal } from '@/components/modals/LevelUnlockModal';
 import { CountingGrid } from '@/components/counting/CountingGrid';
 import { ProgressBar } from '@/components/counting/ProgressBar';
 import { ChallengeDisplay } from '@/components/counting/ChallengeDisplay';
@@ -35,15 +34,32 @@ const initialState: AppState = {
   selectedPuzzleNumber: null,
   puzzleSequence: [],
   uiVisible: true,
+  menuOpen: false,
+  childName: 'NONO',
+  childAge: 3,
+  childAvatar: '👦',
+  dailyGoal: 20,
+  sessionHistory: [],
+  voiceSettings: {
+    rate: 0.9,
+    pitch: 1.2,
+    voiceType: 'default',
+  },
+  timeLimit: 0,
+  unlockedPuzzleLevels: 1,
+  unlockedMathLevels: 1,
+  completedNumbers: [],
 };
 
 const Index = () => {
   const [state, setState] = useLocalStorage<AppState>('countingAppState', initialState);
   const [parentGateOpen, setParentGateOpen] = useState(false);
   const [celebrationOpen, setCelebrationOpen] = useState(false);
+  const [levelUnlockOpen, setLevelUnlockOpen] = useState(false);
+  const [unlockedLevel, setUnlockedLevel] = useState({ level: 1, type: 'puzzle' as 'puzzle' | 'math' });
   
   const { playSound } = useSound();
-  const { speak } = useSpeech();
+  const { speak } = useSpeech(state.voiceSettings);
 
   // Generate challenge number
   const generateChallenge = () => {
@@ -90,6 +106,12 @@ const Index = () => {
         const newNumber = state.currentNumber + 1;
         const newHighest = newNumber > state.highestCount ? newNumber : state.highestCount;
         
+        // Add to completed numbers
+        setState(prev => ({ 
+          ...prev, 
+          completedNumbers: [...prev.completedNumbers, num]
+        }));
+        
         if (newNumber > 100) {
           setState(prev => ({ 
             ...prev, 
@@ -129,7 +151,11 @@ const Index = () => {
         
         createSticker(num);
         
-        setState(prev => ({ ...prev, stars: prev.stars + 1 }));
+        setState(prev => ({ 
+          ...prev, 
+          stars: prev.stars + 1,
+          completedNumbers: [...prev.completedNumbers, num]
+        }));
         
         setTimeout(() => {
           generateChallenge();
@@ -198,19 +224,31 @@ const Index = () => {
         onClose={() => setCelebrationOpen(false)}
       />
 
+      <LevelUnlockModal
+        isOpen={levelUnlockOpen}
+        level={unlockedLevel.level}
+        gameType={unlockedLevel.type}
+        onClose={() => setLevelUnlockOpen(false)}
+      />
+
       {state.currentScreen !== 'parent' && (
         <>
-          <Header stars={state.stars} onMenuClick={() => setParentGateOpen(true)} />
-          {state.currentScreen === 'counting' && (
-            <ModeSelector
+          <Header 
+            stars={state.stars} 
+            menuOpen={state.menuOpen}
+            onMenuToggle={() => setState(prev => ({ ...prev, menuOpen: !prev.menuOpen }))}
+          />
+          
+          {state.menuOpen && (
+            <MenuPanel
+              currentScreen={state.currentScreen}
               currentMode={state.countingMode}
+              unlockedPuzzleLevels={state.unlockedPuzzleLevels}
+              unlockedMathLevels={state.unlockedMathLevels}
+              onScreenChange={handleScreenChange}
               onModeChange={handleModeChange}
             />
           )}
-          <Navigation
-            currentScreen={state.currentScreen}
-            onScreenChange={handleScreenChange}
-          />
         </>
       )}
 
@@ -263,6 +301,7 @@ const Index = () => {
             currentNumber={state.currentNumber}
             countingMode={state.countingMode}
             challengeNumber={state.challengeNumber}
+            completedNumbers={state.completedNumbers}
             onNumberClick={handleNumberClick}
           />
         </section>
@@ -273,16 +312,26 @@ const Index = () => {
           level={state.puzzleLevel}
           soundEnabled={state.soundEnabled}
           voiceEnabled={state.voiceEnabled}
+          maxLevel={state.unlockedPuzzleLevels}
           onLevelChange={(delta) => {
-            const newLevel = Math.max(1, Math.min(10, state.puzzleLevel + delta));
+            const newLevel = Math.max(1, Math.min(state.unlockedPuzzleLevels, state.puzzleLevel + delta));
             setState(prev => ({ ...prev, puzzleLevel: newLevel }));
           }}
           onPuzzleSolved={() => {
+            const newSolved = state.puzzlesSolved + 1;
+            const shouldUnlock = newSolved % 3 === 0 && state.unlockedPuzzleLevels < 10;
+            
             setState(prev => ({ 
               ...prev, 
-              puzzlesSolved: prev.puzzlesSolved + 1,
-              stars: prev.stars + 1
+              puzzlesSolved: newSolved,
+              stars: prev.stars + 1,
+              unlockedPuzzleLevels: shouldUnlock ? prev.unlockedPuzzleLevels + 1 : prev.unlockedPuzzleLevels
             }));
+
+            if (shouldUnlock) {
+              setUnlockedLevel({ level: state.unlockedPuzzleLevels + 1, type: 'puzzle' });
+              setLevelUnlockOpen(true);
+            }
           }}
         />
       )}
@@ -292,16 +341,28 @@ const Index = () => {
           level={state.mathLevel}
           soundEnabled={state.soundEnabled}
           voiceEnabled={state.voiceEnabled}
+          childName={state.childName}
+          voiceSettings={state.voiceSettings}
+          maxLevel={state.unlockedMathLevels}
           onLevelChange={(delta) => {
-            const newLevel = Math.max(1, Math.min(10, state.mathLevel + delta));
+            const newLevel = Math.max(1, Math.min(state.unlockedMathLevels, state.mathLevel + delta));
             setState(prev => ({ ...prev, mathLevel: newLevel }));
           }}
           onMathSolved={() => {
+            const newSolved = state.mathSolved + 1;
+            const shouldUnlock = newSolved % 5 === 0 && state.unlockedMathLevels < 10;
+            
             setState(prev => ({ 
               ...prev, 
-              mathSolved: prev.mathSolved + 1,
-              stars: prev.stars + 1
+              mathSolved: newSolved,
+              stars: prev.stars + 1,
+              unlockedMathLevels: shouldUnlock ? prev.unlockedMathLevels + 1 : prev.unlockedMathLevels
             }));
+
+            if (shouldUnlock) {
+              setUnlockedLevel({ level: state.unlockedMathLevels + 1, type: 'math' });
+              setLevelUnlockOpen(true);
+            }
           }}
         />
       )}
@@ -313,6 +374,12 @@ const Index = () => {
           onVoiceToggle={(enabled) => setState(prev => ({ ...prev, voiceEnabled: enabled }))}
           onResetProgress={handleResetProgress}
           onClose={() => setState(prev => ({ ...prev, currentScreen: 'counting' }))}
+          onUpdateChildProfile={(name, age, avatar) => 
+            setState(prev => ({ ...prev, childName: name, childAge: age, childAvatar: avatar }))
+          }
+          onUpdateDailyGoal={(goal) => setState(prev => ({ ...prev, dailyGoal: goal }))}
+          onUpdateVoiceSettings={(settings) => setState(prev => ({ ...prev, voiceSettings: settings }))}
+          onUpdateTimeLimit={(limit) => setState(prev => ({ ...prev, timeLimit: limit }))}
         />
       )}
     </div>

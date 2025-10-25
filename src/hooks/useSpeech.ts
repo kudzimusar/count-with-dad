@@ -1,13 +1,14 @@
 import { useCallback } from 'react';
+import { VoiceSettings } from '@/types';
 
-export function useSpeech() {
+export function useSpeech(settings?: VoiceSettings) {
   const speak = useCallback((text: string) => {
     if ('speechSynthesis' in window) {
       speechSynthesis.cancel();
       
       const utterance = new SpeechSynthesisUtterance(text);
-      utterance.rate = 0.9;
-      utterance.pitch = 1.2;
+      utterance.rate = settings?.rate || 0.9;
+      utterance.pitch = settings?.pitch || 1.2;
       utterance.volume = 1.0;
       
       const voices = speechSynthesis.getVoices();
@@ -23,7 +24,7 @@ export function useSpeech() {
       
       speechSynthesis.speak(utterance);
     }
-  }, []);
+  }, [settings]);
 
   return { speak };
 }

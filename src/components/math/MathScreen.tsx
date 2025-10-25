@@ -2,11 +2,16 @@ import { useState, useEffect } from 'react';
 import { useSound } from '@/hooks/useSound';
 import { useSpeech } from '@/hooks/useSpeech';
 import { SuccessModal } from '@/components/modals/SuccessModal';
+import { VoiceSettings } from '@/types';
+import { Lock } from 'lucide-react';
 
 interface MathScreenProps {
   level: number;
   soundEnabled: boolean;
   voiceEnabled: boolean;
+  childName: string;
+  voiceSettings: VoiceSettings;
+  maxLevel: number;
   onLevelChange: (delta: number) => void;
   onMathSolved: () => void;
 }
@@ -15,6 +20,9 @@ export function MathScreen({
   level, 
   soundEnabled, 
   voiceEnabled,
+  childName,
+  voiceSettings,
+  maxLevel,
   onLevelChange, 
   onMathSolved 
 }: MathScreenProps) {
@@ -26,7 +34,7 @@ export function MathScreen({
   const [successMessage, setSuccessMessage] = useState('');
   
   const { playSound } = useSound();
-  const { speak } = useSpeech();
+  const { speak } = useSpeech(voiceSettings);
 
   useEffect(() => {
     generateProblem();
@@ -77,12 +85,12 @@ export function MathScreen({
       if (soundEnabled) playSound('correct');
       onMathSolved();
       
-      const message = `Correct! ${a} + ${b} = ${answer}`;
+      const message = `Correct! ${a} + ${b} = ${answer}. Good job ${childName}!`;
       setSuccessMessage(message);
       setSuccessOpen(true);
 
       if (voiceEnabled) {
-        speak(`Correct! ${a} plus ${b} equals ${answer}`);
+        speak(`Correct! ${a} plus ${b} equals ${answer}. Good job ${childName}!`);
       }
     } else {
       // Wrong
@@ -132,12 +140,15 @@ export function MathScreen({
               <span className="font-bold text-xl w-8 text-center">{level}</span>
               <button
                 onClick={() => onLevelChange(1)}
-                disabled={level >= 10}
-                className="w-8 h-8 bg-blue-100 text-blue-600 rounded-lg font-bold hover:bg-blue-200 disabled:opacity-50 transition-colors"
+                disabled={level >= maxLevel}
+                className="w-8 h-8 bg-blue-100 text-blue-600 rounded-lg font-bold hover:bg-blue-200 disabled:opacity-50 transition-colors flex items-center justify-center"
               >
-                +
+                {level >= maxLevel ? <Lock className="h-4 w-4" /> : '+'}
               </button>
             </div>
+          </div>
+          <div className="text-sm text-gray-500">
+            {maxLevel < 10 ? `Solve 5 more to unlock Level ${maxLevel + 1}!` : 'All levels unlocked!'}
           </div>
         </div>
         <p className="text-lg text-gray-600">Solve the addition problems!</p>

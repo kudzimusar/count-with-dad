@@ -1,11 +1,12 @@
-import { Menu } from 'lucide-react';
+import { Menu, X } from 'lucide-react';
 
 interface HeaderProps {
   stars: number;
-  onMenuClick: () => void;
+  menuOpen: boolean;
+  onMenuToggle: () => void;
 }
 
-export function Header({ stars, onMenuClick }: HeaderProps) {
+export function Header({ stars, menuOpen, onMenuToggle }: HeaderProps) {
   return (
     <header className="bg-white shadow-md py-4 px-6 flex justify-between items-center">
       <div className="flex items-center gap-4">
@@ -16,10 +17,14 @@ export function Header({ stars, onMenuClick }: HeaderProps) {
         </div>
       </div>
       <button
-        onClick={onMenuClick}
+        onClick={onMenuToggle}
         className="w-10 h-10 rounded-full bg-purple-100 flex items-center justify-center hover:bg-purple-200 transition-colors"
       >
-        <Menu className="h-6 w-6 text-purple-600" />
+        {menuOpen ? (
+          <X className="h-6 w-6 text-purple-600" />
+        ) : (
+          <Menu className="h-6 w-6 text-purple-600" />
+        )}
       </button>
     </header>
   );

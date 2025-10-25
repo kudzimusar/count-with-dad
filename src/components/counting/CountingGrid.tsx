@@ -5,6 +5,7 @@ interface CountingGridProps {
   currentNumber: number;
   countingMode: CountingMode;
   challengeNumber: number | null;
+  completedNumbers: number[];
   onNumberClick: (num: number) => void;
 }
 
@@ -12,6 +13,7 @@ export function CountingGrid({
   currentNumber,
   countingMode,
   challengeNumber,
+  completedNumbers,
   onNumberClick,
 }: CountingGridProps) {
   const numbers = Array.from({ length: 100 }, (_, i) => i + 1);
@@ -22,13 +24,14 @@ export function CountingGrid({
         const colorIndex = Math.floor((num - 1) / 10);
         const isNext = num === currentNumber;
         const isCompleted = num < currentNumber;
+        const hasCheckmark = completedNumbers.includes(num);
         const isChallengeTarget = countingMode === 'challenge' && num === challengeNumber;
 
         return (
           <button
             key={num}
             onClick={() => onNumberClick(num)}
-            className={`number-bubble aspect-square flex items-center justify-center text-2xl md:text-3xl font-bold rounded-lg transition-all duration-300 ${
+            className={`number-bubble aspect-square flex items-center justify-center text-2xl md:text-3xl font-bold rounded-lg transition-all duration-300 relative ${
               isNext && countingMode === 'order'
                 ? 'ring-4 ring-green-400 shadow-lg scale-110'
                 : isChallengeTarget
@@ -40,6 +43,9 @@ export function CountingGrid({
             style={{ backgroundColor: COLORS[colorIndex] }}
           >
             {num}
+            {hasCheckmark && (
+              <span className="absolute top-0 right-0 text-green-600 text-xl">✓</span>
+            )}
           </button>
         );
       })}

@@ -4,11 +4,13 @@ import { useSound } from '@/hooks/useSound';
 import { useSpeech } from '@/hooks/useSpeech';
 import { SuccessModal } from '@/components/modals/SuccessModal';
 import { createConfetti } from '@/utils/animations';
+import { Lock } from 'lucide-react';
 
 interface PuzzleScreenProps {
   level: number;
   soundEnabled: boolean;
   voiceEnabled: boolean;
+  maxLevel: number;
   onLevelChange: (delta: number) => void;
   onPuzzleSolved: () => void;
 }
@@ -17,6 +19,7 @@ export function PuzzleScreen({
   level, 
   soundEnabled, 
   voiceEnabled,
+  maxLevel,
   onLevelChange, 
   onPuzzleSolved 
 }: PuzzleScreenProps) {
@@ -137,12 +140,15 @@ export function PuzzleScreen({
               <span className="font-bold text-xl w-8 text-center">{level}</span>
               <button
                 onClick={() => onLevelChange(1)}
-                disabled={level >= 10}
-                className="w-8 h-8 bg-purple-100 text-purple-600 rounded-lg font-bold hover:bg-purple-200 disabled:opacity-50 transition-colors"
+                disabled={level >= maxLevel}
+                className="w-8 h-8 bg-purple-100 text-purple-600 rounded-lg font-bold hover:bg-purple-200 disabled:opacity-50 transition-colors flex items-center justify-center"
               >
-                +
+                {level >= maxLevel ? <Lock className="h-4 w-4" /> : '+'}
               </button>
             </div>
+          </div>
+          <div className="text-sm text-gray-500">
+            {maxLevel < 10 ? `Solve 3 more to unlock Level ${maxLevel + 1}!` : 'All levels unlocked!'}
           </div>
         </div>
         <p className="text-lg text-gray-600">Tap a number below, then tap where it goes!</p>
