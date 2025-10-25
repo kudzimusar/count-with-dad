@@ -52,7 +52,35 @@ const initialState: AppState = {
 };
 
 const Index = () => {
-  const [state, setState] = useLocalStorage<AppState>('countingAppState', initialState);
+  const [rawState, setRawState] = useLocalStorage<AppState>('countingAppState', initialState);
+  
+  // Merge saved state with initial state to handle missing properties from updates
+  const state: AppState = {
+    ...initialState,
+    ...rawState,
+    voiceSettings: {
+      ...initialState.voiceSettings,
+      ...(rawState.voiceSettings || {}),
+    },
+    sessionHistory: rawState.sessionHistory || [],
+    completedNumbers: rawState.completedNumbers || [],
+    // Ensure numeric values are valid
+    puzzleLevel: Number(rawState.puzzleLevel) || 1,
+    mathLevel: Number(rawState.mathLevel) || 1,
+    challengeLevel: Number(rawState.challengeLevel) || 1,
+    unlockedPuzzleLevels: Number(rawState.unlockedPuzzleLevels) || 1,
+    unlockedMathLevels: Number(rawState.unlockedMathLevels) || 1,
+    currentNumber: Number(rawState.currentNumber) || 1,
+    childAge: Number(rawState.childAge) || 3,
+    dailyGoal: Number(rawState.dailyGoal) || 20,
+    timeLimit: Number(rawState.timeLimit) || 0,
+  };
+  
+  const setState = (value: AppState | ((prev: AppState) => AppState)) => {
+    const newState = typeof value === 'function' ? value(state) : value;
+    setRawState(newState);
+  };
+  
   const [parentGateOpen, setParentGateOpen] = useState(false);
   const [celebrationOpen, setCelebrationOpen] = useState(false);
   const [levelUnlockOpen, setLevelUnlockOpen] = useState(false);
@@ -206,7 +234,8 @@ const Index = () => {
   };
 
   const handleChallengeLevelChange = (delta: number) => {
-    const newLevel = Math.max(1, Math.min(10, state.challengeLevel + delta));
+    const currentLevel = Number(state.challengeLevel) || 1;
+    const newLevel = Math.max(1, Math.min(10, currentLevel + delta));
     setState(prev => ({ ...prev, challengeLevel: newLevel }));
     generateChallenge();
   };
@@ -314,22 +343,25 @@ const Index = () => {
           voiceEnabled={state.voiceEnabled}
           maxLevel={state.unlockedPuzzleLevels}
           onLevelChange={(delta) => {
-            const newLevel = Math.max(1, Math.min(state.unlockedPuzzleLevels, state.puzzleLevel + delta));
+            const currentLevel = Number(state.puzzleLevel) || 1;
+            const maxLevel = Number(state.unlockedPuzzleLevels) || 1;
+            const newLevel = Math.max(1, Math.min(maxLevel, currentLevel + delta));
             setState(prev => ({ ...prev, puzzleLevel: newLevel }));
           }}
           onPuzzleSolved={() => {
             const newSolved = state.puzzlesSolved + 1;
-            const shouldUnlock = newSolved % 3 === 0 && state.unlockedPuzzleLevels < 10;
+            const currentUnlocked = Number(state.unlockedPuzzleLevels) || 1;
+            const shouldUnlock = newSolved % 3 === 0 && currentUnlocked < 10;
             
             setState(prev => ({ 
               ...prev, 
               puzzlesSolved: newSolved,
               stars: prev.stars + 1,
-              unlockedPuzzleLevels: shouldUnlock ? prev.unlockedPuzzleLevels + 1 : prev.unlockedPuzzleLevels
+              unlockedPuzzleLevels: shouldUnlock ? currentUnlocked + 1 : currentUnlocked
             }));
 
             if (shouldUnlock) {
-              setUnlockedLevel({ level: state.unlockedPuzzleLevels + 1, type: 'puzzle' });
+              setUnlockedLevel({ level: currentUnlocked + 1, type: 'puzzle' });
               setLevelUnlockOpen(true);
             }
           }}
@@ -345,22 +377,25 @@ const Index = () => {
           voiceSettings={state.voiceSettings}
           maxLevel={state.unlockedMathLevels}
           onLevelChange={(delta) => {
-            const newLevel = Math.max(1, Math.min(state.unlockedMathLevels, state.mathLevel + delta));
+            const currentLevel = Number(state.mathLevel) || 1;
+            const maxLevel = Number(state.unlockedMathLevels) || 1;
+            const newLevel = Math.max(1, Math.min(maxLevel, currentLevel + delta));
             setState(prev => ({ ...prev, mathLevel: newLevel }));
           }}
           onMathSolved={() => {
             const newSolved = state.mathSolved + 1;
-            const shouldUnlock = newSolved % 5 === 0 && state.unlockedMathLevels < 10;
+            const currentUnlocked = Number(state.unlockedMathLevels) || 1;
+            const shouldUnlock = newSolved % 5 === 0 && currentUnlocked < 10;
             
             setState(prev => ({ 
               ...prev, 
               mathSolved: newSolved,
               stars: prev.stars + 1,
-              unlockedMathLevels: shouldUnlock ? prev.unlockedMathLevels + 1 : prev.unlockedMathLevels
+              unlockedMathLevels: shouldUnlock ? currentUnlocked + 1 : currentUnlocked
             }));
 
             if (shouldUnlock) {
-              setUnlockedLevel({ level: state.unlockedMathLevels + 1, type: 'math' });
+              setUnlockedLevel({ level: currentUnlocked + 1, type: 'math' });
               setLevelUnlockOpen(true);
             }
           }}
