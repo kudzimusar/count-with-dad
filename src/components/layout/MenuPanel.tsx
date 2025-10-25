@@ -1,11 +1,13 @@
 import { Screen, CountingMode } from '@/types';
 import { Lock } from 'lucide-react';
+import { ProgressTracker } from './ProgressTracker';
 
 interface MenuPanelProps {
   currentScreen: Screen;
   currentMode: CountingMode;
   unlockedPuzzleLevels: number;
   unlockedMathLevels: number;
+  correctAnswersCount: number;
   onScreenChange: (screen: Screen) => void;
   onModeChange: (mode: CountingMode) => void;
 }
@@ -15,6 +17,7 @@ export function MenuPanel({
   currentMode,
   unlockedPuzzleLevels,
   unlockedMathLevels,
+  correctAnswersCount,
   onScreenChange,
   onModeChange,
 }: MenuPanelProps) {
@@ -74,6 +77,16 @@ export function MenuPanel({
           </div>
         </div>
       )}
+
+      {/* Progress Tracker */}
+      <div>
+        <h3 className="text-lg font-bold mb-3 text-purple-600">Level Progress</h3>
+        <ProgressTracker 
+          current={correctAnswersCount % 10} 
+          target={10} 
+          label="Next Level Unlock"
+        />
+      </div>
 
       {/* Level Unlocks Info */}
       <div className="bg-purple-50 p-4 rounded-xl">

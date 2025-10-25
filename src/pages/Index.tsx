@@ -49,6 +49,7 @@ const initialState: AppState = {
   unlockedPuzzleLevels: 1,
   unlockedMathLevels: 1,
   completedNumbers: [],
+  correctAnswersCount: 0,
 };
 
 const Index = () => {
@@ -64,6 +65,7 @@ const Index = () => {
     },
     sessionHistory: rawState.sessionHistory || [],
     completedNumbers: rawState.completedNumbers || [],
+    correctAnswersCount: Number(rawState.correctAnswersCount) || 0,
     // Ensure numeric values are valid
     puzzleLevel: Number(rawState.puzzleLevel) || 1,
     mathLevel: Number(rawState.mathLevel) || 1,
@@ -104,18 +106,10 @@ const Index = () => {
     }
   };
 
-  // Initialize challenge on mode change
-  useEffect(() => {
-    if (state.countingMode === 'challenge' && !state.challengeNumber) {
-      generateChallenge();
-    }
-  }, [state.countingMode]);
+  // Don't auto-generate challenge - let user start when ready
 
   const handleModeChange = (mode: CountingMode) => {
-    setState(prev => ({ ...prev, countingMode: mode }));
-    if (mode === 'challenge') {
-      generateChallenge();
-    }
+    setState(prev => ({ ...prev, countingMode: mode, challengeNumber: null }));
   };
 
   const handleScreenChange = (screen: Screen) => {
@@ -241,7 +235,7 @@ const Index = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-yellow-100 via-pink-100 to-purple-100">
+    <div className="min-h-screen bg-gradient-to-br from-yellow-100 via-pink-100 to-purple-100 overflow-y-auto pb-20">
       <ParentGate
         isOpen={parentGateOpen}
         onClose={() => setParentGateOpen(false)}
@@ -274,6 +268,7 @@ const Index = () => {
               currentMode={state.countingMode}
               unlockedPuzzleLevels={state.unlockedPuzzleLevels}
               unlockedMathLevels={state.unlockedMathLevels}
+              correctAnswersCount={state.correctAnswersCount}
               onScreenChange={handleScreenChange}
               onModeChange={handleModeChange}
             />
@@ -283,6 +278,41 @@ const Index = () => {
 
       {state.currentScreen === 'counting' && (
         <section className="p-4">
+          {state.countingMode === 'challenge' && !state.challengeNumber && (
+            <div className="max-w-4xl mx-auto bg-gradient-to-r from-blue-100 to-purple-100 p-8 rounded-2xl shadow-lg mb-6 text-center">
+              <h2 className="text-3xl font-bold text-purple-600 mb-4">Number Challenge Mode!</h2>
+              <p className="text-lg text-gray-700 mb-6">
+                Click the button below to start. We'll show you a number and you find it on the grid!
+              </p>
+              <button
+                onClick={generateChallenge}
+                className="bg-purple-600 text-white px-8 py-4 rounded-xl text-xl font-bold hover:bg-purple-700 transition-colors shadow-lg"
+              >
+                Start Challenge! 🎯
+              </button>
+              <div className="mt-4">
+                <span className="text-lg">Challenge Level: </span>
+                <div className="flex gap-1 justify-center items-center mt-2">
+                  <button
+                    onClick={() => handleChallengeLevelChange(-1)}
+                    disabled={state.challengeLevel <= 1}
+                    className="w-8 h-8 bg-blue-100 text-blue-600 rounded-lg font-bold hover:bg-blue-200 disabled:opacity-50 transition-colors"
+                  >
+                    -
+                  </button>
+                  <span className="font-bold text-xl w-8 text-center">{state.challengeLevel}</span>
+                  <button
+                    onClick={() => handleChallengeLevelChange(1)}
+                    disabled={state.challengeLevel >= 10}
+                    className="w-8 h-8 bg-blue-100 text-blue-600 rounded-lg font-bold hover:bg-blue-200 disabled:opacity-50 transition-colors"
+                  >
+                    +
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+          
           {state.countingMode === 'challenge' && state.challengeNumber && (
             <ChallengeDisplay
               challengeNumber={state.challengeNumber}
@@ -349,19 +379,19 @@ const Index = () => {
             setState(prev => ({ ...prev, puzzleLevel: newLevel }));
           }}
           onPuzzleSolved={() => {
-            const newSolved = state.puzzlesSolved + 1;
-            const currentUnlocked = Number(state.unlockedPuzzleLevels) || 1;
-            const shouldUnlock = newSolved % 3 === 0 && currentUnlocked < 10;
-            
+            const newCount = (state.puzzlesSolved || 0) + 1;
+            const correctCount = (state.correctAnswersCount || 0) + 1;
             setState(prev => ({ 
               ...prev, 
-              puzzlesSolved: newSolved,
-              stars: prev.stars + 1,
-              unlockedPuzzleLevels: shouldUnlock ? currentUnlocked + 1 : currentUnlocked
+              puzzlesSolved: newCount,
+              correctAnswersCount: correctCount,
             }));
 
-            if (shouldUnlock) {
-              setUnlockedLevel({ level: currentUnlocked + 1, type: 'puzzle' });
+            // Unlock next level every 10 correct answers
+            if (correctCount % 10 === 0 && state.unlockedPuzzleLevels < 10) {
+              const newMaxLevel = Math.min(10, state.unlockedPuzzleLevels + 1);
+              setState(prev => ({ ...prev, unlockedPuzzleLevels: newMaxLevel }));
+              setUnlockedLevel({ level: newMaxLevel, type: 'puzzle' });
               setLevelUnlockOpen(true);
             }
           }}
@@ -383,19 +413,19 @@ const Index = () => {
             setState(prev => ({ ...prev, mathLevel: newLevel }));
           }}
           onMathSolved={() => {
-            const newSolved = state.mathSolved + 1;
-            const currentUnlocked = Number(state.unlockedMathLevels) || 1;
-            const shouldUnlock = newSolved % 5 === 0 && currentUnlocked < 10;
-            
+            const correctCount = (state.correctAnswersCount || 0) + 1;
             setState(prev => ({ 
               ...prev, 
-              mathSolved: newSolved,
+              mathSolved: prev.mathSolved + 1,
               stars: prev.stars + 1,
-              unlockedMathLevels: shouldUnlock ? currentUnlocked + 1 : currentUnlocked
+              correctAnswersCount: correctCount,
             }));
 
-            if (shouldUnlock) {
-              setUnlockedLevel({ level: currentUnlocked + 1, type: 'math' });
+            // Unlock next level every 10 correct answers
+            if (correctCount % 10 === 0 && state.unlockedMathLevels < 10) {
+              const newMaxLevel = Math.min(10, state.unlockedMathLevels + 1);
+              setState(prev => ({ ...prev, unlockedMathLevels: newMaxLevel }));
+              setUnlockedLevel({ level: newMaxLevel, type: 'math' });
               setLevelUnlockOpen(true);
             }
           }}

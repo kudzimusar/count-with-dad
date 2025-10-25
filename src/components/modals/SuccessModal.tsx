@@ -18,7 +18,7 @@ export function SuccessModal({ isOpen, onClose, title, message, icon, color }: S
         <p className="text-xl mb-6">{message}</p>
         <button
           onClick={onClose}
-          className={`${color.replace('text', 'bg')} text-white px-6 py-3 rounded-xl font-bold text-lg hover:opacity-90 transition-opacity`}
+          className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-xl font-bold text-lg transition-colors shadow-lg"
         >
           Continue
         </button>

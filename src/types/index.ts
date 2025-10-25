@@ -44,4 +44,5 @@ export interface AppState {
   unlockedPuzzleLevels: number;
   unlockedMathLevels: number;
   completedNumbers: number[];
+  correctAnswersCount: number;
 }
