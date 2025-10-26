@@ -36,32 +36,36 @@ const PrivacyPolicy = () => {
               <strong>We collect minimal information necessary to provide a personalized learning experience.</strong>
             </p>
             <p className="leading-relaxed mt-2">
-              The App stores the following data locally on your device:
+              The App stores the following data securely in the cloud:
             </p>
             <ul className="list-disc list-inside ml-4 mt-2 space-y-1">
+              <li><strong>Account Information:</strong> Email and password (encrypted) for parent/guardian authentication</li>
               <li><strong>Child Profile:</strong> Nickname (required), age (required), avatar selection, and gender (optional)</li>
-              <li><strong>Parent Information:</strong> Parent/guardian email (optional) and relationship to child (optional)</li>
+              <li><strong>Parent Information:</strong> Parent/guardian email and relationship to child (optional)</li>
               <li><strong>Progress Data:</strong> Counting progress, levels completed, stars earned, puzzle and math game scores</li>
               <li><strong>App Settings:</strong> Sound preferences, voice settings, daily goals, and time limits</li>
               <li><strong>Analytics:</strong> Session duration, activity patterns, error patterns (for improving the app)</li>
               <li><strong>Feedback:</strong> User-submitted feedback and suggestions</li>
             </ul>
             <p className="leading-relaxed mt-2">
-              <strong>Important:</strong> All data is stored locally on your device using browser local storage. 
-              No personal information is transmitted to external servers or shared with third parties.
+              <strong>Important:</strong> All data is stored securely in your own Supabase database that you control. 
+              Your child's data is encrypted in transit and at rest. We use industry-standard security practices 
+              to protect user information.
             </p>
           </div>
 
           <div>
             <h2 className="text-2xl font-semibold mb-3">How We Use Information</h2>
             <p className="leading-relaxed">
-              The locally stored information is used to:
+              The securely stored information is used to:
             </p>
             <ul className="list-disc list-inside ml-4 mt-2 space-y-1">
+              <li>Authenticate parents/guardians and provide secure access to the app</li>
               <li>Personalize the learning experience for each child</li>
-              <li>Track progress and provide appropriate difficulty levels</li>
+              <li>Track progress across multiple devices</li>
+              <li>Provide appropriate difficulty levels based on performance</li>
               <li>Send optional progress updates via parent email (if provided)</li>
-              <li>Understand usage patterns to improve the app (analytics stored locally)</li>
+              <li>Understand usage patterns to improve the app</li>
               <li>Address user feedback and suggestions</li>
             </ul>
           </div>
@@ -69,16 +73,32 @@ const PrivacyPolicy = () => {
           <div>
             <h2 className="text-2xl font-semibold mb-3">Data Security</h2>
             <p className="leading-relaxed">
-              Since all data is stored locally on your device and never transmitted over the internet, 
-              your child's information remains completely private and secure on your device.
+              We take data security seriously and implement industry-standard security measures:
+            </p>
+            <ul className="list-disc list-inside ml-4 mt-2 space-y-1">
+              <li>All data is encrypted in transit using HTTPS/TLS</li>
+              <li>Passwords are securely hashed and never stored in plain text</li>
+              <li>Database access is protected with Row Level Security (RLS) policies</li>
+              <li>Each user can only access their own data</li>
+              <li>Regular security audits and updates</li>
+            </ul>
+            <p className="leading-relaxed mt-2">
+              Your data is stored in your own Supabase database infrastructure with enterprise-grade security and compliance.
             </p>
           </div>
 
           <div>
             <h2 className="text-2xl font-semibold mb-3">Third-Party Services</h2>
             <p className="leading-relaxed">
-              The App does not integrate with any third-party services, analytics tools, or advertising networks. 
-              No data is shared with third parties.
+              The App uses Supabase for secure database and authentication services. Supabase is a trusted, 
+              open-source backend platform that complies with GDPR, CCPA, and other privacy regulations. 
+              No data is shared with advertising networks or other third parties.
+            </p>
+            <p className="leading-relaxed mt-2">
+              For more information about Supabase's privacy practices, please visit their privacy policy at 
+              <a href="https://supabase.com/privacy" className="text-primary hover:underline ml-1" target="_blank" rel="noopener noreferrer">
+                supabase.com/privacy
+              </a>
             </p>
           </div>
 
@@ -117,14 +137,16 @@ const PrivacyPolicy = () => {
           <div>
             <h2 className="text-2xl font-semibold mb-3">Data Deletion</h2>
             <p className="leading-relaxed">
-              Since no data is collected or stored by us, there is no data to delete from our servers. 
-              You can delete all locally stored app data by:
+              You have full control over your data and can request deletion at any time:
             </p>
             <ul className="list-disc list-inside ml-4 mt-2 space-y-1">
-              <li>Using the "Reset Progress" button in the Parent Dashboard</li>
-              <li>Clearing your browser's local storage</li>
-              <li>Uninstalling the App</li>
+              <li>Use the "Reset Progress" button in the Parent Dashboard to delete all app data</li>
+              <li>Delete your account entirely by contacting support</li>
+              <li>Upon account deletion, all associated data is permanently removed from our databases</li>
             </ul>
+            <p className="leading-relaxed mt-2">
+              Data deletion is permanent and cannot be undone.
+            </p>
           </div>
 
           <div>

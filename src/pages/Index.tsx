@@ -1,9 +1,12 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { AppState, CountingMode, Screen, VoiceSettings, FeedbackData } from '@/types';
 import { useLocalStorage } from '@/hooks/useLocalStorage';
 import { useSound } from '@/hooks/useSound';
 import { useSpeech } from '@/hooks/useSpeech';
 import { useAnalytics } from '@/hooks/useAnalytics';
+import { useSupabaseAuth } from '@/hooks/useSupabaseAuth';
+import { useSupabaseData } from '@/hooks/useSupabaseData';
 import { createSticker, createConfetti } from '@/utils/animations';
 import { Header } from '@/components/layout/Header';
 import { MenuPanel } from '@/components/layout/MenuPanel';
@@ -58,7 +61,10 @@ const initialState: AppState = {
 };
 
 const Index = () => {
+  const navigate = useNavigate();
+  const { user, loading: authLoading } = useSupabaseAuth();
   const [rawState, setRawState] = useLocalStorage<AppState>('countingAppState', initialState);
+  const [dataLoaded, setDataLoaded] = useState(false);
   
   // Merge saved state with initial state to handle missing properties from updates
   const state: AppState = {
@@ -87,6 +93,80 @@ const Index = () => {
     const newState = typeof value === 'function' ? value(state) : value;
     setRawState(newState);
   };
+
+  // Supabase data hooks
+  const {
+    saveProfile,
+    saveProgress,
+    saveFeedback,
+    trackEvent: trackSupabaseEvent,
+    loadProfile,
+    loadProgress,
+  } = useSupabaseData(user?.id);
+
+  // Redirect to auth if not logged in
+  useEffect(() => {
+    if (!authLoading && !user) {
+      navigate('/auth');
+    }
+  }, [authLoading, user, navigate]);
+
+  // Load data from Supabase when user logs in
+  useEffect(() => {
+    if (user && !dataLoaded) {
+      const loadData = async () => {
+        const [profileResult, progressResult] = await Promise.all([
+          loadProfile(),
+          loadProgress(),
+        ]);
+
+        if (profileResult.data) {
+          setState(prev => ({
+            ...prev,
+            childName: profileResult.data.child_name,
+            childAge: profileResult.data.child_age,
+            childAvatar: profileResult.data.child_avatar,
+            childGender: profileResult.data.child_gender as any,
+            parentEmail: profileResult.data.parent_email || undefined,
+            parentRelationship: profileResult.data.parent_relationship || undefined,
+            hasCompletedOnboarding: true,
+          }));
+        }
+
+        if (progressResult.data) {
+          setState(prev => ({
+            ...prev,
+            highestCount: progressResult.data.highest_count,
+            stars: progressResult.data.stars,
+            puzzleLevel: progressResult.data.puzzle_level,
+            mathLevel: progressResult.data.math_level,
+            challengeLevel: progressResult.data.challenge_level,
+            puzzlesSolved: progressResult.data.puzzles_solved,
+            mathSolved: progressResult.data.math_solved,
+            unlockedPuzzleLevels: progressResult.data.unlocked_puzzle_levels,
+            unlockedMathLevels: progressResult.data.unlocked_math_levels,
+            completedNumbers: progressResult.data.completed_numbers,
+            correctAnswersCount: progressResult.data.correct_answers_count,
+          }));
+        }
+
+        setDataLoaded(true);
+      };
+
+      loadData();
+    }
+  }, [user, dataLoaded]);
+
+  // Auto-save progress to Supabase
+  useEffect(() => {
+    if (user && dataLoaded) {
+      const saveTimer = setTimeout(() => {
+        saveProgress(state);
+      }, 2000); // Debounce saves
+
+      return () => clearTimeout(saveTimer);
+    }
+  }, [user, dataLoaded, state.highestCount, state.stars, state.puzzleLevel, state.mathLevel, state.challengeLevel, state.puzzlesSolved, state.mathSolved, state.completedNumbers, state.correctAnswersCount]);
   
   const [parentGateOpen, setParentGateOpen] = useState(false);
   const [celebrationOpen, setCelebrationOpen] = useState(false);
@@ -262,7 +342,7 @@ const Index = () => {
     }, 0);
   };
 
-  const handleRegistrationComplete = (data: {
+  const handleRegistrationComplete = async (data: {
     childName: string;
     childAge: number;
     childAvatar: string;
@@ -282,22 +362,56 @@ const Index = () => {
       registeredAt: new Date().toISOString(),
     }));
 
+    // Save to Supabase
+    if (user) {
+      await saveProfile(data);
+      await trackSupabaseEvent('registration_complete', {
+        childAge: data.childAge,
+        hasParentEmail: !!data.parentEmail,
+      });
+    }
+
     trackEvent('registration_complete', {
       childAge: data.childAge,
       hasParentEmail: !!data.parentEmail,
     });
   };
 
-  const handleFeedbackSubmit = (feedback: FeedbackData) => {
+  const handleFeedbackSubmit = async (feedback: FeedbackData) => {
     setState(prev => ({
       ...prev,
       feedbackHistory: [...prev.feedbackHistory, feedback],
     }));
 
+    // Save to Supabase
+    if (user) {
+      await saveFeedback(feedback);
+      await trackSupabaseEvent('feedback_submitted', {
+        type: feedback.type,
+      });
+    }
+
     trackEvent('feedback_submitted', {
       type: feedback.type,
     });
   };
+
+  // Show loading while checking auth
+  if (authLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-yellow-100 via-pink-100 to-purple-100">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-primary mx-auto mb-4"></div>
+          <p className="text-lg text-muted-foreground">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Don't render if not authenticated (will redirect)
+  if (!user) {
+    return null;
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-yellow-100 via-pink-100 to-purple-100 overflow-y-auto pb-20">
