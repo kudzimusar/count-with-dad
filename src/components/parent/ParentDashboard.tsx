@@ -408,13 +408,13 @@ export function ParentDashboard({
 
                 <button
                   onClick={onOpenFeedback}
-                  className="w-full bg-purple-500 text-white p-4 rounded-lg shadow hover:shadow-lg transition-shadow flex items-center justify-between group"
+                  className="w-full bg-primary text-primary-foreground p-4 rounded-lg shadow hover:shadow-lg transition-shadow flex items-center justify-between group"
                 >
                   <div className="text-left">
                     <div className="font-bold text-lg">💬 Share Feedback</div>
-                    <div className="text-sm text-purple-100">Help us improve the app</div>
+                    <div className="text-sm text-primary-foreground/80">Help us improve the app</div>
                   </div>
-                  <div className="text-white group-hover:translate-x-1 transition-transform">→</div>
+                  <div className="text-primary-foreground group-hover:translate-x-1 transition-transform">→</div>
                 </button>
               </div>
             </div>
