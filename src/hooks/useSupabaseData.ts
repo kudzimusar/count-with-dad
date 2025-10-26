@@ -23,6 +23,7 @@ export function useSupabaseData(userId: string | undefined) {
         child_gender: data.childGender || null,
         parent_email: data.parentEmail || null,
         parent_relationship: data.parentRelationship || null,
+        registered_at: new Date().toISOString(),
       });
 
     return { error };
