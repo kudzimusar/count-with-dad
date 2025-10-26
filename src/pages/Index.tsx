@@ -129,6 +129,7 @@ const Index = () => {
             childGender: profileResult.data.child_gender as any,
             parentEmail: profileResult.data.parent_email || undefined,
             parentRelationship: profileResult.data.parent_relationship || undefined,
+            registeredAt: profileResult.data.registered_at || undefined,
             hasCompletedOnboarding: true,
           }));
         }
