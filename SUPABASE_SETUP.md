@@ -34,8 +34,8 @@ Follow these steps to connect your own Supabase account to this app:
 2. Add these lines (replace with your actual values):
 
 ```env
-VITE_SUPABASE_URL=https://your-project.supabase.co
-VITE_SUPABASE_ANON_KEY=your-anon-key-here
+VITE_SUPABASE_URL=https://supabase.com/dashboard/project/xtaeinfspztjzhplzcsw
+VITE_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh0YWVpbmZzcHp0anpocGx6Y3N3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjE0Nzc0ODYsImV4cCI6MjA3NzA1MzQ4Nn0.SF30wRrZDjhDchANzUz5-Ar92fpOouAbTOiedZUb5iI
 ```
 
 3. Save the file
