@@ -1,6 +1,7 @@
 import { AppState, VoiceSettings } from '@/types';
 import { useState } from 'react';
-import { Download, User, Target, Clock, Settings, BarChart3 } from 'lucide-react';
+import { Download, User, Target, Clock, Settings, BarChart3, FileText } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 interface ParentDashboardProps {
   state: AppState;
@@ -25,7 +26,8 @@ export function ParentDashboard({
   onUpdateVoiceSettings,
   onUpdateTimeLimit,
 }: ParentDashboardProps) {
-  const [activeTab, setActiveTab] = useState<'profile' | 'stats' | 'settings' | 'history'>('profile');
+  const [activeTab, setActiveTab] = useState<'profile' | 'stats' | 'settings' | 'history' | 'resources'>('profile');
+  const navigate = useNavigate();
   const [editName, setEditName] = useState(state.childName);
   const [editAge, setEditAge] = useState(state.childAge);
   const [editAvatar, setEditAvatar] = useState(state.childAvatar);
@@ -79,12 +81,13 @@ export function ParentDashboard({
         </h2>
 
         {/* Tabs */}
-        <div className="flex gap-2 mb-6 border-b">
+        <div className="flex gap-2 mb-6 border-b overflow-x-auto">
           {[
             { id: 'profile', label: 'Profile', icon: User },
             { id: 'stats', label: 'Analytics', icon: BarChart3 },
             { id: 'settings', label: 'Settings', icon: Settings },
             { id: 'history', label: 'History', icon: Clock },
+            { id: 'resources', label: 'Resources', icon: FileText },
           ].map(({ id, label, icon: Icon }) => (
             <button
               key={id}
@@ -341,6 +344,66 @@ export function ParentDashboard({
                   ))}
                 </div>
               )}
+            </div>
+          </div>
+        )}
+
+        {/* Resources Tab */}
+        {activeTab === 'resources' && (
+          <div className="space-y-4">
+            <div className="bg-gray-50 p-6 rounded-xl">
+              <h3 className="text-xl font-bold mb-4 flex items-center gap-2">
+                <FileText className="h-5 w-5" />
+                App Information & Policies
+              </h3>
+              <p className="text-gray-600 mb-4">
+                Access important information about the app, privacy policies, and support.
+              </p>
+              <div className="space-y-3">
+                <button
+                  onClick={() => navigate('/about')}
+                  className="w-full bg-white p-4 rounded-lg shadow hover:shadow-lg transition-shadow flex items-center justify-between group"
+                >
+                  <div className="text-left">
+                    <div className="font-bold text-lg">About</div>
+                    <div className="text-sm text-gray-500">Learn about Count to 100</div>
+                  </div>
+                  <div className="text-purple-600 group-hover:translate-x-1 transition-transform">→</div>
+                </button>
+
+                <button
+                  onClick={() => navigate('/privacy-policy')}
+                  className="w-full bg-white p-4 rounded-lg shadow hover:shadow-lg transition-shadow flex items-center justify-between group"
+                >
+                  <div className="text-left">
+                    <div className="font-bold text-lg">Privacy Policy</div>
+                    <div className="text-sm text-gray-500">How we protect your privacy</div>
+                  </div>
+                  <div className="text-purple-600 group-hover:translate-x-1 transition-transform">→</div>
+                </button>
+
+                <button
+                  onClick={() => navigate('/terms-of-service')}
+                  className="w-full bg-white p-4 rounded-lg shadow hover:shadow-lg transition-shadow flex items-center justify-between group"
+                >
+                  <div className="text-left">
+                    <div className="font-bold text-lg">Terms of Service</div>
+                    <div className="text-sm text-gray-500">Terms and conditions of use</div>
+                  </div>
+                  <div className="text-purple-600 group-hover:translate-x-1 transition-transform">→</div>
+                </button>
+
+                <button
+                  onClick={() => navigate('/support')}
+                  className="w-full bg-white p-4 rounded-lg shadow hover:shadow-lg transition-shadow flex items-center justify-between group"
+                >
+                  <div className="text-left">
+                    <div className="font-bold text-lg">Support & Help</div>
+                    <div className="text-sm text-gray-500">Get help and contact us</div>
+                  </div>
+                  <div className="text-purple-600 group-hover:translate-x-1 transition-transform">→</div>
+                </button>
+              </div>
             </div>
           </div>
         )}
