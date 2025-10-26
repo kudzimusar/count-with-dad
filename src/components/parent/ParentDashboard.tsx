@@ -13,6 +13,7 @@ interface ParentDashboardProps {
   onUpdateDailyGoal: (goal: number) => void;
   onUpdateVoiceSettings: (settings: VoiceSettings) => void;
   onUpdateTimeLimit: (limit: number) => void;
+  onOpenFeedback: () => void;
 }
 
 export function ParentDashboard({
@@ -25,6 +26,7 @@ export function ParentDashboard({
   onUpdateDailyGoal,
   onUpdateVoiceSettings,
   onUpdateTimeLimit,
+  onOpenFeedback,
 }: ParentDashboardProps) {
   const [activeTab, setActiveTab] = useState<'profile' | 'stats' | 'settings' | 'history' | 'resources'>('profile');
   const navigate = useNavigate();
@@ -402,6 +404,17 @@ export function ParentDashboard({
                     <div className="text-sm text-gray-500">Get help and contact us</div>
                   </div>
                   <div className="text-purple-600 group-hover:translate-x-1 transition-transform">→</div>
+                </button>
+
+                <button
+                  onClick={onOpenFeedback}
+                  className="w-full bg-purple-500 text-white p-4 rounded-lg shadow hover:shadow-lg transition-shadow flex items-center justify-between group"
+                >
+                  <div className="text-left">
+                    <div className="font-bold text-lg">💬 Share Feedback</div>
+                    <div className="text-sm text-purple-100">Help us improve the app</div>
+                  </div>
+                  <div className="text-white group-hover:translate-x-1 transition-transform">→</div>
                 </button>
               </div>
             </div>

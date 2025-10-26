@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
-import { AppState, CountingMode, Screen, VoiceSettings } from '@/types';
+import { AppState, CountingMode, Screen, VoiceSettings, FeedbackData } from '@/types';
 import { useLocalStorage } from '@/hooks/useLocalStorage';
 import { useSound } from '@/hooks/useSound';
 import { useSpeech } from '@/hooks/useSpeech';
+import { useAnalytics } from '@/hooks/useAnalytics';
 import { createSticker, createConfetti } from '@/utils/animations';
 import { Header } from '@/components/layout/Header';
 import { MenuPanel } from '@/components/layout/MenuPanel';
@@ -15,6 +16,8 @@ import { ChallengeDisplay } from '@/components/counting/ChallengeDisplay';
 import { ParentDashboard } from '@/components/parent/ParentDashboard';
 import { PuzzleScreen } from '@/components/puzzle/PuzzleScreen';
 import { MathScreen } from '@/components/math/MathScreen';
+import { RegistrationModal } from '@/components/onboarding/RegistrationModal';
+import { FeedbackModal } from '@/components/feedback/FeedbackModal';
 
 const initialState: AppState = {
   currentScreen: 'counting',
@@ -50,6 +53,8 @@ const initialState: AppState = {
   unlockedMathLevels: 1,
   completedNumbers: [],
   correctAnswersCount: 0,
+  feedbackHistory: [],
+  hasCompletedOnboarding: false,
 };
 
 const Index = () => {
@@ -87,9 +92,19 @@ const Index = () => {
   const [celebrationOpen, setCelebrationOpen] = useState(false);
   const [levelUnlockOpen, setLevelUnlockOpen] = useState(false);
   const [unlockedLevel, setUnlockedLevel] = useState({ level: 1, type: 'puzzle' as 'puzzle' | 'math' });
+  const [feedbackModalOpen, setFeedbackModalOpen] = useState(false);
   
   const { playSound } = useSound();
   const { speak } = useSpeech(state.voiceSettings);
+  const { trackEvent } = useAnalytics();
+
+  // Track session start
+  useEffect(() => {
+    trackEvent('session_start', {
+      screen: state.currentScreen,
+      childAge: state.childAge,
+    });
+  }, []);
 
   // Generate challenge number
   const generateChallenge = () => {
@@ -245,6 +260,43 @@ const Index = () => {
         speak(`Level ${newLevel}. Find the number ${newChallenge}`);
       }
     }, 0);
+  };
+
+  const handleRegistrationComplete = (data: {
+    childName: string;
+    childAge: number;
+    childAvatar: string;
+    childGender?: string;
+    parentEmail?: string;
+    parentRelationship?: string;
+  }) => {
+    setState(prev => ({
+      ...prev,
+      childName: data.childName,
+      childAge: data.childAge,
+      childAvatar: data.childAvatar,
+      childGender: data.childGender as any,
+      parentEmail: data.parentEmail,
+      parentRelationship: data.parentRelationship,
+      hasCompletedOnboarding: true,
+      registeredAt: new Date().toISOString(),
+    }));
+
+    trackEvent('registration_complete', {
+      childAge: data.childAge,
+      hasParentEmail: !!data.parentEmail,
+    });
+  };
+
+  const handleFeedbackSubmit = (feedback: FeedbackData) => {
+    setState(prev => ({
+      ...prev,
+      feedbackHistory: [...prev.feedbackHistory, feedback],
+    }));
+
+    trackEvent('feedback_submitted', {
+      type: feedback.type,
+    });
   };
 
   return (
@@ -458,8 +510,20 @@ const Index = () => {
           onUpdateDailyGoal={(goal) => setState(prev => ({ ...prev, dailyGoal: goal }))}
           onUpdateVoiceSettings={(settings) => setState(prev => ({ ...prev, voiceSettings: settings }))}
           onUpdateTimeLimit={(limit) => setState(prev => ({ ...prev, timeLimit: limit }))}
+          onOpenFeedback={() => setFeedbackModalOpen(true)}
         />
       )}
+
+      <RegistrationModal
+        isOpen={!state.hasCompletedOnboarding}
+        onComplete={handleRegistrationComplete}
+      />
+
+      <FeedbackModal
+        isOpen={feedbackModalOpen}
+        onClose={() => setFeedbackModalOpen(false)}
+        onSubmit={handleFeedbackSubmit}
+      />
     </div>
   );
 };

@@ -15,6 +15,13 @@ export interface SessionRecord {
   score: number;
 }
 
+export interface FeedbackData {
+  type: 'difficulty' | 'bug' | 'suggestion' | 'other';
+  message: string;
+  timestamp: string;
+  context?: string;
+}
+
 export interface AppState {
   currentScreen: Screen;
   countingMode: CountingMode;
@@ -37,6 +44,10 @@ export interface AppState {
   childName: string;
   childAge: number;
   childAvatar: string;
+  childGender?: 'boy' | 'girl' | 'other' | 'prefer-not-to-say';
+  parentEmail?: string;
+  parentRelationship?: string;
+  registeredAt?: string;
   dailyGoal: number;
   sessionHistory: SessionRecord[];
   voiceSettings: VoiceSettings;
@@ -45,4 +56,6 @@ export interface AppState {
   unlockedMathLevels: number;
   completedNumbers: number[];
   correctAnswersCount: number;
+  feedbackHistory: FeedbackData[];
+  hasCompletedOnboarding: boolean;
 }

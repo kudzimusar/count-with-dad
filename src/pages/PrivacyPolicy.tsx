@@ -25,29 +25,45 @@ const PrivacyPolicy = () => {
             <h2 className="text-2xl font-semibold mb-3">Introduction</h2>
             <p className="leading-relaxed">
               This privacy policy applies to the "Count to 100 - Kids Learning App" (hereby referred to as "the App"). 
-              We are committed to protecting the privacy of children and ensuring a safe learning environment.
+              We are committed to protecting the privacy of children and ensuring a safe learning environment. 
+              This policy explains how we handle user information in a privacy-first, transparent manner.
             </p>
           </div>
 
           <div>
             <h2 className="text-2xl font-semibold mb-3">Information We Collect</h2>
             <p className="leading-relaxed">
-              <strong>We do not collect, store, or share any personal information.</strong>
+              <strong>We collect minimal information necessary to provide a personalized learning experience.</strong>
             </p>
             <p className="leading-relaxed mt-2">
-              The App uses local storage on your device to save game progress, including:
+              The App stores the following data locally on your device:
             </p>
             <ul className="list-disc list-inside ml-4 mt-2 space-y-1">
-              <li>Current counting progress and highest count achieved</li>
-              <li>Stars and scores earned</li>
-              <li>Puzzle and math game levels completed</li>
-              <li>Child's name and age (stored only on your device)</li>
-              <li>App settings (sound, voice preferences)</li>
+              <li><strong>Child Profile:</strong> Nickname (required), age (required), avatar selection, and gender (optional)</li>
+              <li><strong>Parent Information:</strong> Parent/guardian email (optional) and relationship to child (optional)</li>
+              <li><strong>Progress Data:</strong> Counting progress, levels completed, stars earned, puzzle and math game scores</li>
+              <li><strong>App Settings:</strong> Sound preferences, voice settings, daily goals, and time limits</li>
+              <li><strong>Analytics:</strong> Session duration, activity patterns, error patterns (for improving the app)</li>
+              <li><strong>Feedback:</strong> User-submitted feedback and suggestions</li>
             </ul>
             <p className="leading-relaxed mt-2">
-              <strong>Important:</strong> All this data is saved locally on the user's device only and is never transmitted, 
-              uploaded, or accessed by the developers or any third parties.
+              <strong>Important:</strong> All data is stored locally on your device using browser local storage. 
+              No personal information is transmitted to external servers or shared with third parties.
             </p>
+          </div>
+
+          <div>
+            <h2 className="text-2xl font-semibold mb-3">How We Use Information</h2>
+            <p className="leading-relaxed">
+              The locally stored information is used to:
+            </p>
+            <ul className="list-disc list-inside ml-4 mt-2 space-y-1">
+              <li>Personalize the learning experience for each child</li>
+              <li>Track progress and provide appropriate difficulty levels</li>
+              <li>Send optional progress updates via parent email (if provided)</li>
+              <li>Understand usage patterns to improve the app (analytics stored locally)</li>
+              <li>Address user feedback and suggestions</li>
+            </ul>
           </div>
 
           <div>
@@ -69,10 +85,33 @@ const PrivacyPolicy = () => {
           <div>
             <h2 className="text-2xl font-semibold mb-3">Children's Privacy</h2>
             <p className="leading-relaxed">
-              This App is designed for children ages 5-8. We do not knowingly collect any personal information from children. 
-              The App includes a Parent Gate to restrict access to parent-only features, ensuring children cannot accidentally 
-              access settings or reset progress.
+              This App is designed for children ages 3-8. We take children's privacy seriously:
             </p>
+            <ul className="list-disc list-inside ml-4 mt-2 space-y-1">
+              <li>We only collect the minimum information needed (nickname and age)</li>
+              <li>No personally identifiable information is required to use the app</li>
+              <li>All data remains on the device and is never shared</li>
+              <li>Parent Gate protects access to settings and feedback features</li>
+              <li>Parent/guardian email is optional and only used for progress updates if provided</li>
+            </ul>
+            <p className="leading-relaxed mt-2">
+              We comply with COPPA (Children's Online Privacy Protection Act) and similar international regulations 
+              for protecting children's privacy online.
+            </p>
+          </div>
+
+          <div>
+            <h2 className="text-2xl font-semibold mb-3">Parent Control</h2>
+            <p className="leading-relaxed">
+              Parents and guardians have full control over their child's data:
+            </p>
+            <ul className="list-disc list-inside ml-4 mt-2 space-y-1">
+              <li>Access the Parent Dashboard to view all collected information</li>
+              <li>Edit or update child profile information at any time</li>
+              <li>View analytics and session history</li>
+              <li>Review and manage submitted feedback</li>
+              <li>Delete all data using the "Reset Progress" feature</li>
+            </ul>
           </div>
 
           <div>

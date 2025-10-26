@@ -58,16 +58,38 @@ const TermsOfService = () => {
           <div>
             <h2 className="text-2xl font-semibold mb-3">Parental Supervision</h2>
             <p className="leading-relaxed">
-              This App is intended for children ages 5-8. We recommend parental supervision during use. 
-              The App includes a Parent Gate feature to restrict access to certain settings and features.
+              This App is intended for children ages 3-8. We recommend parental supervision during use. 
+              The App includes a Parent Gate feature to restrict access to certain settings and features, 
+              ensuring children cannot accidentally modify settings or access parent-only areas.
+            </p>
+          </div>
+
+          <div>
+            <h2 className="text-2xl font-semibold mb-3">User Registration</h2>
+            <p className="leading-relaxed">
+              To use the App, you will be prompted to create a child profile with a nickname and age. 
+              This information is stored locally on your device only. Optionally, parents may provide 
+              an email address for progress updates, which is also stored locally and never transmitted 
+              to external servers.
             </p>
           </div>
 
           <div>
             <h2 className="text-2xl font-semibold mb-3">User Data and Privacy</h2>
             <p className="leading-relaxed">
-              All user data is stored locally on your device. We do not collect, transmit, or store any 
-              personal information on our servers. Please refer to our Privacy Policy for more details.
+              All user data, including child profile information, progress data, analytics, and feedback, 
+              is stored locally on your device. We do not collect, transmit, or store any personal information 
+              on our servers. Please refer to our Privacy Policy for comprehensive details on data handling.
+            </p>
+          </div>
+
+          <div>
+            <h2 className="text-2xl font-semibold mb-3">Feedback and Analytics</h2>
+            <p className="leading-relaxed">
+              The App includes features for collecting user feedback and tracking usage analytics to improve 
+              the learning experience. All feedback and analytics data is stored locally on your device. 
+              By using the feedback feature, you grant us permission to use your suggestions to improve the App, 
+              though no personally identifiable information is transmitted or stored externally.
             </p>
           </div>
 
