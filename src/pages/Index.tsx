@@ -231,7 +231,20 @@ const Index = () => {
     const currentLevel = Number(state.challengeLevel) || 1;
     const newLevel = Math.max(1, Math.min(10, currentLevel + delta));
     setState(prev => ({ ...prev, challengeLevel: newLevel }));
-    generateChallenge();
+    
+    // Generate challenge with the new level
+    const levelMap: Record<number, number> = {
+      1: 20, 2: 30, 3: 40, 4: 50, 5: 60, 6: 70, 7: 80, 8: 90, 9: 100, 10: 100
+    };
+    const maxNumber = levelMap[newLevel] || 20;
+    const newChallenge = Math.floor(Math.random() * maxNumber) + 1;
+    
+    setTimeout(() => {
+      setState(prev => ({ ...prev, challengeNumber: newChallenge }));
+      if (state.voiceEnabled) {
+        speak(`Level ${newLevel}. Find the number ${newChallenge}`);
+      }
+    }, 0);
   };
 
   return (
