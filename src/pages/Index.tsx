@@ -420,11 +420,6 @@ const Index = () => {
   // No longer block app while checking auth - let kids play immediately!
   // Auth is now optional for cloud sync only
 
-  // Don't render if not authenticated (will redirect)
-  if (!user) {
-    return null;
-  }
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-yellow-100 via-pink-100 to-purple-100 overflow-y-auto pb-20">
       <ParentGate
