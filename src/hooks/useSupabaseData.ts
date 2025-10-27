@@ -135,6 +135,34 @@ export function useSupabaseData(userId: string | undefined) {
     return { data, error };
   }, [userId]);
 
+  const updateSubscription = useCallback(async (status: 'free' | 'trial' | 'premium', expiresAt?: string) => {
+    if (!userId) return { error: 'No user ID' };
+
+    const { error } = await supabase
+      .from('progress')
+      .upsert({
+        user_id: userId,
+        subscription_status: status,
+        subscription_started_at: new Date().toISOString(),
+        subscription_expires_at: expiresAt || null,
+        subscription_type: 'mock',
+      });
+
+    return { error };
+  }, [userId]);
+
+  const loadSubscription = useCallback(async () => {
+    if (!userId) return { data: null, error: 'No user ID' };
+
+    const { data, error } = await supabase
+      .from('progress')
+      .select('subscription_status, subscription_expires_at, subscription_started_at, subscription_type')
+      .eq('user_id', userId)
+      .maybeSingle();
+
+    return { data, error };
+  }, [userId]);
+
   return {
     saveProfile,
     saveProgress,
@@ -144,5 +172,7 @@ export function useSupabaseData(userId: string | undefined) {
     loadProfile,
     loadProgress,
     loadSessionHistory,
+    updateSubscription,
+    loadSubscription,
   };
 }

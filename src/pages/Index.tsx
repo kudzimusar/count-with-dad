@@ -23,6 +23,7 @@ import { MathScreen } from '@/components/math/MathScreen';
 import { RegistrationModal } from '@/components/onboarding/RegistrationModal';
 import { FeedbackModal } from '@/components/feedback/FeedbackModal';
 import { PremiumGate } from '@/components/modals/PremiumGate';
+import { MockPaymentModal } from '@/components/modals/MockPaymentModal';
 import { toast } from 'sonner';
 
 const initialState: AppState = {
@@ -106,6 +107,8 @@ const Index = () => {
     trackEvent: trackSupabaseEvent,
     loadProfile,
     loadProgress,
+    updateSubscription,
+    loadSubscription,
   } = useSupabaseData(user?.id);
 
   // Load data from Supabase when user logs in (optional, only if logged in)
@@ -145,7 +148,29 @@ const Index = () => {
             unlockedMathLevels: progressResult.data.unlocked_math_levels,
             completedNumbers: progressResult.data.completed_numbers,
             correctAnswersCount: progressResult.data.correct_answers_count,
+            subscriptionStatus: progressResult.data.subscription_status || 'free',
+            trialStartedAt: progressResult.data.subscription_started_at || undefined,
           }));
+        }
+
+        // Load subscription data separately
+        const subscriptionResult = await loadSubscription();
+        if (subscriptionResult.data) {
+          // Check if subscription expired
+          const now = new Date();
+          const expiresAt = subscriptionResult.data.subscription_expires_at 
+            ? new Date(subscriptionResult.data.subscription_expires_at) 
+            : null;
+          
+          if (expiresAt && expiresAt < now && subscriptionResult.data.subscription_status !== 'free') {
+            // Subscription expired, downgrade to free
+            await updateSubscription('free');
+            setState(prev => ({
+              ...prev,
+              subscriptionStatus: 'free',
+              trialStartedAt: undefined,
+            }));
+          }
         }
 
         setDataLoaded(true);
@@ -173,6 +198,7 @@ const Index = () => {
   const [feedbackModalOpen, setFeedbackModalOpen] = useState(false);
   const [premiumGateOpen, setPremiumGateOpen] = useState(false);
   const [premiumFeature, setPremiumFeature] = useState('');
+  const [mockPaymentModalOpen, setMockPaymentModalOpen] = useState(false);
   const [showScrollIndicator, setShowScrollIndicator] = useState(true);
   const [maxVisibleNumber, setMaxVisibleNumber] = useState(
     state.childAge <= 4 ? 20 : 100
@@ -427,19 +453,64 @@ const Index = () => {
   };
 
   const handleUpgradeSubscription = () => {
-    // Close premium gate
+    // Close premium gate if open
     setPremiumGateOpen(false);
     
     // Check if user is authenticated
     if (!user) {
       setState(prev => ({ ...prev, currentScreen: 'parent' }));
-      // Parent should go to Account tab to sign in first
       return;
     }
     
-    // Open parent dashboard to subscription tab
-    setState(prev => ({ ...prev, currentScreen: 'parent' }));
-    // TODO: Integrate with Google Play Billing / App Store
+    // Open mock payment modal
+    setMockPaymentModalOpen(true);
+  };
+
+  const handleMockPaymentSuccess = async () => {
+    setMockPaymentModalOpen(false);
+    
+    // Calculate expiration date (30 days from now)
+    const expiresAt = new Date();
+    expiresAt.setDate(expiresAt.getDate() + 30);
+    
+    // Update local state
+    setState(prev => ({
+      ...prev,
+      subscriptionStatus: 'premium',
+      trialStartedAt: new Date().toISOString(),
+    }));
+    
+    // Save to Supabase
+    if (user) {
+      await updateSubscription('premium', expiresAt.toISOString());
+      await trackSupabaseEvent('subscription_upgraded', {
+        type: 'mock',
+        expiresAt: expiresAt.toISOString(),
+      });
+    }
+    
+    // Show success toast
+    trackEvent('subscription_upgraded', { type: 'mock' });
+    
+    // Create confetti
+    createConfetti();
+  };
+
+  const handleDowngradeSubscription = async () => {
+    if (!user) return;
+    
+    // Update local state
+    setState(prev => ({
+      ...prev,
+      subscriptionStatus: 'free',
+      trialStartedAt: undefined,
+    }));
+    
+    // Save to Supabase
+    await updateSubscription('free');
+    await trackSupabaseEvent('subscription_downgraded', { reason: 'testing' });
+    
+    trackEvent('subscription_downgraded', { reason: 'testing' });
   };
 
 
@@ -684,6 +755,7 @@ const Index = () => {
           onUpdateTimeLimit={(limit) => setState(prev => ({ ...prev, timeLimit: limit }))}
           onOpenFeedback={() => setFeedbackModalOpen(true)}
           onUpgradeSubscription={handleUpgradeSubscription}
+          onDowngradeSubscription={handleDowngradeSubscription}
         />
       )}
 
@@ -701,6 +773,12 @@ const Index = () => {
         isOpen={feedbackModalOpen}
         onClose={() => setFeedbackModalOpen(false)}
         onSubmit={handleFeedbackSubmit}
+      />
+
+      <MockPaymentModal
+        isOpen={mockPaymentModalOpen}
+        onClose={() => setMockPaymentModalOpen(false)}
+        onSuccess={handleMockPaymentSuccess}
       />
     </div>
   );

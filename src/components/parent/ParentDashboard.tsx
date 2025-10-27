@@ -20,6 +20,7 @@ interface ParentDashboardProps {
   onUpdateTimeLimit: (limit: number) => void;
   onOpenFeedback: () => void;
   onUpgradeSubscription: () => void;
+  onDowngradeSubscription?: () => void;
 }
 
 export function ParentDashboard({
@@ -34,6 +35,7 @@ export function ParentDashboard({
   onUpdateTimeLimit,
   onOpenFeedback,
   onUpgradeSubscription,
+  onDowngradeSubscription,
 }: ParentDashboardProps) {
   const [activeTab, setActiveTab] = useState<'profile' | 'progress' | 'settings' | 'subscription' | 'resources' | 'account'>('profile');
 
@@ -158,6 +160,7 @@ export function ParentDashboard({
               <SubscriptionTab
                 state={state}
                 onUpgrade={onUpgradeSubscription}
+                onDowngrade={onDowngradeSubscription}
               />
             )}
 
