@@ -176,7 +176,7 @@ export function SubscriptionTab({ state, onUpgrade, onDowngrade }: SubscriptionT
 
       {/* Support */}
       <div className="text-center text-sm text-muted-foreground">
-        <p>Need help? Contact us at <a href="mailto:support@example.com" className="text-primary hover:underline">support@example.com</a></p>
+        <p>Need help? Contact us at <a href="mailto:kudzimusar@gmail.com" className="text-primary hover:underline">kudzimusar@gmail.com</a></p>
       </div>
     </div>
   );
