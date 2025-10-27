@@ -1,12 +1,17 @@
 {
   "name": "Count to 100 - Kids Learning App",
   "short_name": "Count to 100",
-  "description": "Interactive counting app for kids to learn numbers 1-100",
+  "description": "Interactive counting app for kids to learn numbers 1-100 through fun activities, games, and challenges",
   "start_url": "/",
+  "id": "/",
+  "scope": "/",
   "display": "standalone",
+  "display_override": ["window-controls-overlay", "standalone"],
   "background_color": "#ffffff",
   "theme_color": "#9333ea",
   "orientation": "portrait",
+  "lang": "en",
+  "dir": "ltr",
   "icons": [
     {
       "src": "/favicon.ico",
@@ -20,7 +25,69 @@
       "purpose": "any maskable"
     }
   ],
-  "categories": ["education", "kids", "learning"],
-  "lang": "en",
-  "dir": "ltr"
+  "screenshots": [
+    {
+      "src": "/placeholder.svg",
+      "sizes": "1280x720",
+      "type": "image/svg+xml",
+      "form_factor": "wide",
+      "label": "Count to 100 main screen"
+    },
+    {
+      "src": "/placeholder.svg",
+      "sizes": "750x1334",
+      "type": "image/svg+xml",
+      "form_factor": "narrow",
+      "label": "Count to 100 mobile view"
+    }
+  ],
+  "categories": ["education", "kids", "learning", "games"],
+  "shortcuts": [
+    {
+      "name": "Start Counting",
+      "short_name": "Count",
+      "description": "Begin counting practice",
+      "url": "/",
+      "icons": [{ "src": "/placeholder.svg", "sizes": "192x192" }]
+    },
+    {
+      "name": "Parent Dashboard",
+      "short_name": "Dashboard",
+      "description": "View progress and settings",
+      "url": "/?menu=parent",
+      "icons": [{ "src": "/placeholder.svg", "sizes": "192x192" }]
+    }
+  ],
+  "share_target": {
+    "action": "/",
+    "method": "GET",
+    "enctype": "application/x-www-form-urlencoded",
+    "params": {
+      "title": "title",
+      "text": "text",
+      "url": "url"
+    }
+  },
+  "iarc_rating_id": "e84b072d-71b3-4d3e-86ae-31a8ce4e53b7",
+  "prefer_related_applications": false,
+  "related_applications": [
+    {
+      "platform": "play",
+      "url": "https://play.google.com/store/apps/details?id=com.countto100.app",
+      "id": "com.countto100.app"
+    }
+  ],
+  "file_handlers": [],
+  "protocol_handlers": [],
+  "launch_handler": {
+    "client_mode": ["navigate-existing", "auto"]
+  },
+  "note_taking": {
+    "new_note_url": "/"
+  },
+  "edge_side_panel": {
+    "preferred_width": 400
+  },
+  "widgets": [],
+  "scope_extensions": []
 }
