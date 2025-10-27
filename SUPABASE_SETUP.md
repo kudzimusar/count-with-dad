@@ -28,9 +28,9 @@ Follow these steps to connect your own Supabase account to this app:
    - **Project URL** (looks like: `https://xxxxx.supabase.co`)
    - **anon public** key (under "Project API keys")
 
-## Step 4: Add Credentials to Your Lovable App
+## Step 4: Add Credentials to Count to 100 App
 
-1. In Lovable, create a file named `.env` in your project root
+1. Create a file named `.env` in your project root
 2. Add these lines (replace with your actual values):
 
 ```env
@@ -60,7 +60,7 @@ VITE_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFz
 
 ## Step 7: Verify Setup
 
-1. Refresh your Lovable preview
+1. Restart your local development server
 2. The app should now connect to your Supabase database
 3. Try creating an account to test the connection
 
@@ -69,7 +69,7 @@ VITE_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFz
 ### "Missing Supabase environment variables" error
 - Make sure your `.env` file is in the project root
 - Verify the variable names start with `VITE_`
-- Restart the Lovable preview
+- Restart the development server
 
 ### Can't create account
 - Check that the SQL migration ran successfully

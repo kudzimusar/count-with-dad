@@ -14,29 +14,30 @@
   "dir": "ltr",
   "icons": [
     {
-      "src": "/favicon.ico",
-      "sizes": "64x64 32x32 24x24 16x16",
-      "type": "image/x-icon"
+      "src": "/favicon.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
     },
     {
-      "src": "/placeholder.svg",
+      "src": "/icon.svg",
       "sizes": "512x512",
-      "type": "image/svg+xml",
+      "type": "image/png",
       "purpose": "any maskable"
     }
   ],
   "screenshots": [
     {
-      "src": "/placeholder.svg",
+      "src": "/screenshot-wide.png",
       "sizes": "1280x720",
-      "type": "image/svg+xml",
+      "type": "image/png",
       "form_factor": "wide",
-      "label": "Count to 100 main screen"
+      "label": "Count to 100 main counting screen"
     },
     {
-      "src": "/placeholder.svg",
+      "src": "/screenshot-mobile.png",
       "sizes": "750x1334",
-      "type": "image/svg+xml",
+      "type": "image/png",
       "form_factor": "narrow",
       "label": "Count to 100 mobile view"
     }
@@ -48,14 +49,14 @@
       "short_name": "Count",
       "description": "Begin counting practice",
       "url": "https://kudzimusar.github.io/count-with-dad/",
-      "icons": [{ "src": "/placeholder.svg", "sizes": "192x192" }]
+      "icons": [{ "src": "/icon.svg", "sizes": "192x192" }]
     },
     {
       "name": "Parent Dashboard",
       "short_name": "Dashboard",
       "description": "View progress and settings",
       "url": "https://kudzimusar.github.io/count-with-dad/?menu=parent",
-      "icons": [{ "src": "/placeholder.svg", "sizes": "192x192" }]
+      "icons": [{ "src": "/icon.svg", "sizes": "192x192" }]
     }
   ],
   "share_target": {
