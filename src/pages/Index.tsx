@@ -22,6 +22,7 @@ import { MathScreen } from '@/components/math/MathScreen';
 import { RegistrationModal } from '@/components/onboarding/RegistrationModal';
 import { FeedbackModal } from '@/components/feedback/FeedbackModal';
 import { PremiumGate } from '@/components/modals/PremiumGate';
+import { toast } from 'sonner';
 
 const initialState: AppState = {
   currentScreen: 'counting',
@@ -360,7 +361,7 @@ const Index = () => {
       registeredAt: new Date().toISOString(),
     }));
 
-    // Save to Supabase
+    // Optional: Save to cloud if authenticated
     if (user) {
       await saveProfile(data);
       await trackSupabaseEvent('registration_complete', {
@@ -381,7 +382,7 @@ const Index = () => {
       feedbackHistory: [...prev.feedbackHistory, feedback],
     }));
 
-    // Save to Supabase
+    // Optional: Save to cloud if authenticated
     if (user) {
       await saveFeedback(feedback);
       await trackSupabaseEvent('feedback_submitted', {
@@ -400,25 +401,24 @@ const Index = () => {
   };
 
   const handleUpgradeSubscription = () => {
-    // Close premium gate and open parent dashboard to subscription tab
+    // Close premium gate
     setPremiumGateOpen(false);
+    
+    // Check if user is authenticated
+    if (!user) {
+      setState(prev => ({ ...prev, currentScreen: 'parent' }));
+      // Parent should go to Account tab to sign in first
+      return;
+    }
+    
+    // Open parent dashboard to subscription tab
     setState(prev => ({ ...prev, currentScreen: 'parent' }));
-    // In production, this would open the payment flow
-    // For now, user can manually update subscription status in database
+    // TODO: Integrate with Google Play Billing / App Store
   };
 
 
-  // Show loading while checking auth
-  if (authLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-yellow-100 via-pink-100 to-purple-100">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-primary mx-auto mb-4"></div>
-          <p className="text-lg text-muted-foreground">Loading...</p>
-        </div>
-      </div>
-    );
-  }
+  // No longer block app while checking auth - let kids play immediately!
+  // Auth is now optional for cloud sync only
 
   // Don't render if not authenticated (will redirect)
   if (!user) {

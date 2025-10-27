@@ -1,5 +1,6 @@
 import { AppState } from '@/types';
 import { Crown, Check, Lock, CreditCard } from 'lucide-react';
+import { useSupabaseAuth } from '@/hooks/useSupabaseAuth';
 
 interface SubscriptionTabProps {
   state: AppState;
@@ -7,6 +8,7 @@ interface SubscriptionTabProps {
 }
 
 export function SubscriptionTab({ state, onUpgrade }: SubscriptionTabProps) {
+  const { user } = useSupabaseAuth();
   const isPremium = state.subscriptionStatus === 'premium';
   const isTrial = state.subscriptionStatus === 'trial';
 
@@ -100,13 +102,27 @@ export function SubscriptionTab({ state, onUpgrade }: SubscriptionTabProps) {
 
       {/* Upgrade Button */}
       {!isPremium && (
-        <button
-          onClick={onUpgrade}
-          className="w-full bg-gradient-to-r from-purple-600 to-pink-600 text-white py-4 rounded-xl font-bold text-lg hover:from-purple-700 hover:to-pink-700 transition-all shadow-lg hover:shadow-xl flex items-center justify-center gap-2"
-        >
-          <CreditCard className="h-5 w-5" />
-          Upgrade to Premium
-        </button>
+        <>
+          {!user && (
+            <div className="bg-yellow-50 border-2 border-yellow-300 rounded-xl p-4 mb-4">
+              <p className="text-sm text-yellow-800">
+                ⚠️ <strong>Account Required:</strong> Please create an account in the "Account" tab before subscribing to premium features.
+              </p>
+            </div>
+          )}
+          <button
+            onClick={onUpgrade}
+            disabled={!user}
+            className={`w-full py-4 rounded-xl font-bold text-lg transition-all shadow-lg flex items-center justify-center gap-2 ${
+              user 
+                ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white hover:from-purple-700 hover:to-pink-700 hover:shadow-xl'
+                : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+            }`}
+          >
+            <CreditCard className="h-5 w-5" />
+            {user ? 'Upgrade to Premium' : 'Sign In to Upgrade'}
+          </button>
+        </>
       )}
 
       {/* Placeholder Information */}

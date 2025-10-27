@@ -6,6 +6,7 @@ import { ProgressTab } from './ProgressTab';
 import { SettingsTab } from './SettingsTab';
 import { ResourcesTab } from './ResourcesTab';
 import { SubscriptionTab } from './SubscriptionTab';
+import { AccountTab } from './AccountTab';
 
 interface ParentDashboardProps {
   state: AppState;
@@ -34,7 +35,7 @@ export function ParentDashboard({
   onOpenFeedback,
   onUpgradeSubscription,
 }: ParentDashboardProps) {
-  const [activeTab, setActiveTab] = useState<'profile' | 'progress' | 'settings' | 'subscription' | 'resources'>('profile');
+  const [activeTab, setActiveTab] = useState<'profile' | 'progress' | 'settings' | 'subscription' | 'resources' | 'account'>('profile');
 
   const handleReset = () => {
     if (confirm('Are you sure you want to reset all progress? This cannot be undone.')) {
@@ -95,8 +96,9 @@ export function ParentDashboard({
               {[
                 { id: 'profile', label: 'My Child', icon: User },
                 { id: 'progress', label: 'Progress', icon: TrendingUp },
-                { id: 'settings', label: 'Settings', icon: Settings },
+                { id: 'account', label: 'Account', icon: User },
                 { id: 'subscription', label: 'Subscription', icon: Crown },
+                { id: 'settings', label: 'Settings', icon: Settings },
                 { id: 'resources', label: 'Resources', icon: BookOpen },
               ].map(({ id, label, icon: Icon }) => (
                 <button
@@ -133,6 +135,11 @@ export function ParentDashboard({
                 state={state} 
                 onExportProgress={exportProgress}
               />
+            )}
+
+            {/* Account Tab */}
+            {activeTab === 'account' && (
+              <AccountTab />
             )}
 
             {/* Settings Tab */}
