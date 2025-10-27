@@ -16,6 +16,7 @@ import { LevelUnlockModal } from '@/components/modals/LevelUnlockModal';
 import { CountingGrid } from '@/components/counting/CountingGrid';
 import { ProgressBar } from '@/components/counting/ProgressBar';
 import { ChallengeDisplay } from '@/components/counting/ChallengeDisplay';
+import { ScrollIndicator } from '@/components/counting/ScrollIndicator';
 import { ParentDashboard } from '@/components/parent/ParentDashboard';
 import { PuzzleScreen } from '@/components/puzzle/PuzzleScreen';
 import { MathScreen } from '@/components/math/MathScreen';
@@ -172,6 +173,10 @@ const Index = () => {
   const [feedbackModalOpen, setFeedbackModalOpen] = useState(false);
   const [premiumGateOpen, setPremiumGateOpen] = useState(false);
   const [premiumFeature, setPremiumFeature] = useState('');
+  const [showScrollIndicator, setShowScrollIndicator] = useState(true);
+  const [maxVisibleNumber, setMaxVisibleNumber] = useState(
+    state.childAge <= 4 ? 20 : 100
+  );
   
   const { playSound } = useSound();
   const { speak } = useSpeech(state.voiceSettings);
@@ -184,6 +189,22 @@ const Index = () => {
       childAge: state.childAge,
     });
   }, []);
+
+  // Scroll detection for indicator
+  useEffect(() => {
+    const handleScroll = () => {
+      if (window.scrollY > 100) {
+        setShowScrollIndicator(false);
+      }
+    };
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  // Update max visible numbers based on child age
+  useEffect(() => {
+    setMaxVisibleNumber(state.childAge <= 4 ? 20 : 100);
+  }, [state.childAge]);
 
   // Generate challenge number
   const generateChallenge = () => {
@@ -211,6 +232,11 @@ const Index = () => {
   };
 
   const handleNumberClick = (num: number) => {
+    // Add haptic feedback for mobile devices
+    if ('vibrate' in navigator) {
+      navigator.vibrate(50);
+    }
+    
     if (state.countingMode === 'order') {
       if (num === state.currentNumber) {
         // Correct number
@@ -511,24 +537,29 @@ const Index = () => {
             />
           )}
 
-          <div className="max-w-4xl mx-auto bg-white p-6 rounded-2xl shadow-lg mb-6">
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="text-2xl font-bold text-green-600">
-                {state.countingMode === 'order' && 'Count to 100!'}
-                {state.countingMode === 'challenge' && 'Number Challenge!'}
-                {state.countingMode === 'free' && 'Free Play!'}
-              </h2>
+          <div className="sticky top-0 z-20 bg-background/95 backdrop-blur-sm pb-2 mb-4">
+            <div className="max-w-4xl mx-auto bg-white p-6 rounded-2xl shadow-lg">
+              <div className="flex justify-between items-center mb-4">
+                <h2 className="text-2xl font-bold text-green-600">
+                  {state.countingMode === 'order' && 'Count to 100!'}
+                  {state.countingMode === 'challenge' && 'Number Challenge!'}
+                  {state.countingMode === 'free' && 'Free Play!'}
+                </h2>
+                {state.countingMode === 'order' && (
+                  <div className="flex items-center gap-2">
+                    <span className="text-xl">🎯</span>
+                    <span className="text-2xl font-bold">{state.currentNumber}</span>
+                  </div>
+                )}
+              </div>
+              
               {state.countingMode === 'order' && (
-                <div className="flex items-center gap-2">
-                  <span className="text-xl">🎯</span>
-                  <span className="text-2xl font-bold">{state.currentNumber}</span>
-                </div>
+                <ProgressBar currentNumber={state.currentNumber} />
               )}
             </div>
-            
-            {state.countingMode === 'order' && (
-              <ProgressBar currentNumber={state.currentNumber} />
-            )}
+          </div>
+
+          <div className="max-w-4xl mx-auto bg-white p-6 rounded-2xl shadow-lg mb-6">
             
             <p className="text-lg text-center text-gray-600 mb-4">
               {state.countingMode === 'order' && 'Click the numbers in order from 1 to 100!'}
@@ -552,6 +583,22 @@ const Index = () => {
             challengeNumber={state.challengeNumber}
             completedNumbers={state.completedNumbers}
             onNumberClick={handleNumberClick}
+            maxVisibleNumber={maxVisibleNumber}
+          />
+
+          {maxVisibleNumber < 100 && state.currentNumber >= maxVisibleNumber - 5 && (
+            <div className="max-w-4xl mx-auto mt-6 text-center">
+              <button
+                onClick={() => setMaxVisibleNumber(100)}
+                className="bg-gradient-to-r from-purple-500 to-pink-500 text-white px-8 py-4 rounded-xl text-xl font-bold hover:from-purple-600 hover:to-pink-600 transition-all shadow-lg animate-bounce"
+              >
+                🎉 Unlock All Numbers! 🎉
+              </button>
+            </div>
+          )}
+
+          <ScrollIndicator 
+            visible={showScrollIndicator && state.currentNumber <= 20 && maxVisibleNumber > 10} 
           />
         </section>
       )}

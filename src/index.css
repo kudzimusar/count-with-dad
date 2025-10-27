@@ -115,10 +115,23 @@ All colors MUST be HSL.
   
   .number-bubble {
     transition: all 0.3s ease;
+    min-height: 60px;
+    min-width: 60px;
   }
   
   .number-bubble:hover {
     transform: scale(1.1);
+  }
+
+  .number-bubble:active {
+    transform: scale(0.95);
+  }
+
+  @media (min-width: 768px) {
+    .number-bubble {
+      min-height: 80px;
+      min-width: 80px;
+    }
   }
   
   .progress-bar {
