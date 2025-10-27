@@ -440,6 +440,7 @@ const Index = () => {
             stars={state.stars} 
             menuOpen={state.menuOpen}
             onMenuToggle={() => setState(prev => ({ ...prev, menuOpen: !prev.menuOpen }))}
+            onParentZoneClick={() => setParentGateOpen(true)}
           />
           
           {state.menuOpen && (
@@ -451,6 +452,7 @@ const Index = () => {
               correctAnswersCount={state.correctAnswersCount}
               onScreenChange={handleScreenChange}
               onModeChange={handleModeChange}
+              onAskParent={() => setParentGateOpen(true)}
             />
           )}
         </>

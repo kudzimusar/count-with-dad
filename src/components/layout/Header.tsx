@@ -1,12 +1,13 @@
-import { Menu, X } from 'lucide-react';
+import { Menu, X, Settings } from 'lucide-react';
 
 interface HeaderProps {
   stars: number;
   menuOpen: boolean;
   onMenuToggle: () => void;
+  onParentZoneClick: () => void;
 }
 
-export function Header({ stars, menuOpen, onMenuToggle }: HeaderProps) {
+export function Header({ stars, menuOpen, onMenuToggle, onParentZoneClick }: HeaderProps) {
   return (
     <header className="bg-white shadow-md py-4 px-6 flex justify-between items-center">
       <div className="flex items-center gap-4">
@@ -16,16 +17,25 @@ export function Header({ stars, menuOpen, onMenuToggle }: HeaderProps) {
           <span className="font-bold text-lg">{stars}</span>
         </div>
       </div>
-      <button
-        onClick={onMenuToggle}
-        className="w-10 h-10 rounded-full bg-purple-100 flex items-center justify-center hover:bg-purple-200 transition-colors"
-      >
-        {menuOpen ? (
-          <X className="h-6 w-6 text-purple-600" />
-        ) : (
-          <Menu className="h-6 w-6 text-purple-600" />
-        )}
-      </button>
+      <div className="flex items-center gap-3">
+        <button
+          onClick={onParentZoneClick}
+          className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center hover:bg-gray-200 transition-colors"
+          title="Parent Zone"
+        >
+          <Settings className="h-5 w-5 text-gray-700" />
+        </button>
+        <button
+          onClick={onMenuToggle}
+          className="w-10 h-10 rounded-full bg-purple-100 flex items-center justify-center hover:bg-purple-200 transition-colors"
+        >
+          {menuOpen ? (
+            <X className="h-6 w-6 text-purple-600" />
+          ) : (
+            <Menu className="h-6 w-6 text-purple-600" />
+          )}
+        </button>
+      </div>
     </header>
   );
 }

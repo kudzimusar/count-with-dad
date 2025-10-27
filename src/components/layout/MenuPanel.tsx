@@ -1,5 +1,5 @@
 import { Screen, CountingMode } from '@/types';
-import { Lock } from 'lucide-react';
+import { UserCircle } from 'lucide-react';
 import { ProgressTracker } from './ProgressTracker';
 
 interface MenuPanelProps {
@@ -10,6 +10,7 @@ interface MenuPanelProps {
   correctAnswersCount: number;
   onScreenChange: (screen: Screen) => void;
   onModeChange: (mode: CountingMode) => void;
+  onAskParent: () => void;
 }
 
 export function MenuPanel({
@@ -20,6 +21,7 @@ export function MenuPanel({
   correctAnswersCount,
   onScreenChange,
   onModeChange,
+  onAskParent,
 }: MenuPanelProps) {
   const screens: { screen: Screen; label: string; emoji: string }[] = [
     { screen: 'counting', label: 'Counting', emoji: '🔢' },
@@ -103,13 +105,13 @@ export function MenuPanel({
         </div>
       </div>
 
-      {/* Parent Access */}
+      {/* Ask Parent */}
       <button
-        onClick={() => onScreenChange('parent')}
-        className="w-full bg-gray-700 text-white py-3 rounded-xl font-bold hover:bg-gray-800 transition-colors flex items-center justify-center gap-2"
+        onClick={onAskParent}
+        className="w-full bg-gradient-to-r from-purple-500 to-purple-600 text-white py-4 rounded-xl font-bold hover:from-purple-600 hover:to-purple-700 transition-all shadow-lg hover:shadow-xl flex items-center justify-center gap-2"
       >
-        <Lock className="h-5 w-5" />
-        Parent Settings
+        <UserCircle className="h-6 w-6" />
+        Ask Parent
       </button>
     </div>
   );
