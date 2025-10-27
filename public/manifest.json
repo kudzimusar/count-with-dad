@@ -1,0 +1,26 @@
+{
+  "name": "Count to 100 - Kids Learning App",
+  "short_name": "Count to 100",
+  "description": "Interactive counting app for kids to learn numbers 1-100",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#9333ea",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "/favicon.ico",
+      "sizes": "64x64 32x32 24x24 16x16",
+      "type": "image/x-icon"
+    },
+    {
+      "src": "/placeholder.svg",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["education", "kids", "learning"],
+  "lang": "en",
+  "dir": "ltr"
+}
