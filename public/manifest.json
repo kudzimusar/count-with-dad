@@ -2,9 +2,9 @@
   "name": "Count to 100 - Kids Learning App",
   "short_name": "Count to 100",
   "description": "Interactive counting app for kids to learn numbers 1-100 through fun activities, games, and challenges",
-  "start_url": "/",
-  "id": "/",
-  "scope": "/",
+  "start_url": "https://kudzimusar.github.io/count-with-dad/",
+  "id": "https://kudzimusar.github.io/count-with-dad/",
+  "scope": "https://kudzimusar.github.io/count-with-dad/",
   "display": "standalone",
   "display_override": ["window-controls-overlay", "standalone"],
   "background_color": "#ffffff",
@@ -47,19 +47,19 @@
       "name": "Start Counting",
       "short_name": "Count",
       "description": "Begin counting practice",
-      "url": "/",
+      "url": "https://kudzimusar.github.io/count-with-dad/",
       "icons": [{ "src": "/placeholder.svg", "sizes": "192x192" }]
     },
     {
       "name": "Parent Dashboard",
       "short_name": "Dashboard",
       "description": "View progress and settings",
-      "url": "/?menu=parent",
+      "url": "https://kudzimusar.github.io/count-with-dad/?menu=parent",
       "icons": [{ "src": "/placeholder.svg", "sizes": "192x192" }]
     }
   ],
   "share_target": {
-    "action": "/",
+    "action": "https://kudzimusar.github.io/count-with-dad/",
     "method": "GET",
     "enctype": "application/x-www-form-urlencoded",
     "params": {
