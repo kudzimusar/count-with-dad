@@ -58,4 +58,6 @@ export interface AppState {
   correctAnswersCount: number;
   feedbackHistory: FeedbackData[];
   hasCompletedOnboarding: boolean;
+  subscriptionStatus: 'free' | 'trial' | 'premium';
+  trialStartedAt?: string;
 }

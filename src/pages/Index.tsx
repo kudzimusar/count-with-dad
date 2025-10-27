@@ -58,6 +58,7 @@ const initialState: AppState = {
   correctAnswersCount: 0,
   feedbackHistory: [],
   hasCompletedOnboarding: false,
+  subscriptionStatus: 'free',
 };
 
 const Index = () => {
@@ -104,14 +105,7 @@ const Index = () => {
     loadProgress,
   } = useSupabaseData(user?.id);
 
-  // Redirect to auth if not logged in
-  useEffect(() => {
-    if (!authLoading && !user) {
-      navigate('/auth');
-    }
-  }, [authLoading, user, navigate]);
-
-  // Load data from Supabase when user logs in
+  // Load data from Supabase when user logs in (optional, only if logged in)
   useEffect(() => {
     if (user && !dataLoaded) {
       const loadData = async () => {
@@ -631,10 +625,8 @@ const Index = () => {
         />
       )}
 
-      <RegistrationModal
-        isOpen={!state.hasCompletedOnboarding}
-        onComplete={handleRegistrationComplete}
-      />
+      {/* Optional: RegistrationModal can be triggered from Parent Dashboard */}
+      {/* For now, profile editing is done directly in ProfileTab */}
 
       <FeedbackModal
         isOpen={feedbackModalOpen}
