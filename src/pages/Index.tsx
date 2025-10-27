@@ -21,6 +21,7 @@ import { PuzzleScreen } from '@/components/puzzle/PuzzleScreen';
 import { MathScreen } from '@/components/math/MathScreen';
 import { RegistrationModal } from '@/components/onboarding/RegistrationModal';
 import { FeedbackModal } from '@/components/feedback/FeedbackModal';
+import { PremiumGate } from '@/components/modals/PremiumGate';
 
 const initialState: AppState = {
   currentScreen: 'counting',
@@ -168,6 +169,8 @@ const Index = () => {
   const [levelUnlockOpen, setLevelUnlockOpen] = useState(false);
   const [unlockedLevel, setUnlockedLevel] = useState({ level: 1, type: 'puzzle' as 'puzzle' | 'math' });
   const [feedbackModalOpen, setFeedbackModalOpen] = useState(false);
+  const [premiumGateOpen, setPremiumGateOpen] = useState(false);
+  const [premiumFeature, setPremiumFeature] = useState('');
   
   const { playSound } = useSound();
   const { speak } = useSpeech(state.voiceSettings);
@@ -391,6 +394,20 @@ const Index = () => {
     });
   };
 
+  const handlePremiumFeatureClick = (feature: string) => {
+    setPremiumFeature(feature);
+    setPremiumGateOpen(true);
+  };
+
+  const handleUpgradeSubscription = () => {
+    // Close premium gate and open parent dashboard to subscription tab
+    setPremiumGateOpen(false);
+    setState(prev => ({ ...prev, currentScreen: 'parent' }));
+    // In production, this would open the payment flow
+    // For now, user can manually update subscription status in database
+  };
+
+
   // Show loading while checking auth
   if (authLoading) {
     return (
@@ -444,9 +461,11 @@ const Index = () => {
               unlockedPuzzleLevels={state.unlockedPuzzleLevels}
               unlockedMathLevels={state.unlockedMathLevels}
               correctAnswersCount={state.correctAnswersCount}
+              subscriptionStatus={state.subscriptionStatus}
               onScreenChange={handleScreenChange}
               onModeChange={handleModeChange}
               onAskParent={() => setParentGateOpen(true)}
+              onPremiumFeatureClick={handlePremiumFeatureClick}
             />
           )}
         </>
@@ -622,11 +641,19 @@ const Index = () => {
           onUpdateVoiceSettings={(settings) => setState(prev => ({ ...prev, voiceSettings: settings }))}
           onUpdateTimeLimit={(limit) => setState(prev => ({ ...prev, timeLimit: limit }))}
           onOpenFeedback={() => setFeedbackModalOpen(true)}
+          onUpgradeSubscription={handleUpgradeSubscription}
         />
       )}
 
       {/* Optional: RegistrationModal can be triggered from Parent Dashboard */}
       {/* For now, profile editing is done directly in ProfileTab */}
+
+      <PremiumGate
+        isOpen={premiumGateOpen}
+        onClose={() => setPremiumGateOpen(false)}
+        onUpgrade={handleUpgradeSubscription}
+        feature={premiumFeature}
+      />
 
       <FeedbackModal
         isOpen={feedbackModalOpen}

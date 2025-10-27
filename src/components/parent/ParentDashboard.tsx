@@ -1,10 +1,11 @@
 import { AppState, VoiceSettings } from '@/types';
 import { useState } from 'react';
-import { User, Settings, TrendingUp, BookOpen, ArrowLeft } from 'lucide-react';
+import { User, Settings, TrendingUp, BookOpen, ArrowLeft, Crown } from 'lucide-react';
 import { ProfileTab } from './ProfileTab';
 import { ProgressTab } from './ProgressTab';
 import { SettingsTab } from './SettingsTab';
 import { ResourcesTab } from './ResourcesTab';
+import { SubscriptionTab } from './SubscriptionTab';
 
 interface ParentDashboardProps {
   state: AppState;
@@ -17,6 +18,7 @@ interface ParentDashboardProps {
   onUpdateVoiceSettings: (settings: VoiceSettings) => void;
   onUpdateTimeLimit: (limit: number) => void;
   onOpenFeedback: () => void;
+  onUpgradeSubscription: () => void;
 }
 
 export function ParentDashboard({
@@ -30,8 +32,9 @@ export function ParentDashboard({
   onUpdateVoiceSettings,
   onUpdateTimeLimit,
   onOpenFeedback,
+  onUpgradeSubscription,
 }: ParentDashboardProps) {
-  const [activeTab, setActiveTab] = useState<'profile' | 'progress' | 'settings' | 'resources'>('profile');
+  const [activeTab, setActiveTab] = useState<'profile' | 'progress' | 'settings' | 'subscription' | 'resources'>('profile');
 
   const handleReset = () => {
     if (confirm('Are you sure you want to reset all progress? This cannot be undone.')) {
@@ -93,6 +96,7 @@ export function ParentDashboard({
                 { id: 'profile', label: 'My Child', icon: User },
                 { id: 'progress', label: 'Progress', icon: TrendingUp },
                 { id: 'settings', label: 'Settings', icon: Settings },
+                { id: 'subscription', label: 'Subscription', icon: Crown },
                 { id: 'resources', label: 'Resources', icon: BookOpen },
               ].map(({ id, label, icon: Icon }) => (
                 <button
@@ -139,6 +143,14 @@ export function ParentDashboard({
                 onVoiceToggle={onVoiceToggle}
                 onUpdateVoiceSettings={onUpdateVoiceSettings}
                 onUpdateTimeLimit={onUpdateTimeLimit}
+              />
+            )}
+
+            {/* Subscription Tab */}
+            {activeTab === 'subscription' && (
+              <SubscriptionTab
+                state={state}
+                onUpgrade={onUpgradeSubscription}
               />
             )}
 

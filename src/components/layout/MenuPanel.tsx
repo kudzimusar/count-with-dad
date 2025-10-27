@@ -1,5 +1,5 @@
 import { Screen, CountingMode } from '@/types';
-import { UserCircle } from 'lucide-react';
+import { UserCircle, Lock } from 'lucide-react';
 import { ProgressTracker } from './ProgressTracker';
 
 interface MenuPanelProps {
@@ -8,9 +8,11 @@ interface MenuPanelProps {
   unlockedPuzzleLevels: number;
   unlockedMathLevels: number;
   correctAnswersCount: number;
+  subscriptionStatus: 'free' | 'trial' | 'premium';
   onScreenChange: (screen: Screen) => void;
   onModeChange: (mode: CountingMode) => void;
   onAskParent: () => void;
+  onPremiumFeatureClick: (feature: string) => void;
 }
 
 export function MenuPanel({
@@ -19,21 +21,41 @@ export function MenuPanel({
   unlockedPuzzleLevels,
   unlockedMathLevels,
   correctAnswersCount,
+  subscriptionStatus,
   onScreenChange,
   onModeChange,
   onAskParent,
+  onPremiumFeatureClick,
 }: MenuPanelProps) {
-  const screens: { screen: Screen; label: string; emoji: string }[] = [
+  const isPremium = subscriptionStatus === 'premium';
+  
+  const screens: { screen: Screen; label: string; emoji: string; isPremium?: boolean }[] = [
     { screen: 'counting', label: 'Counting', emoji: '🔢' },
-    { screen: 'puzzle', label: 'Puzzles', emoji: '🧩' },
-    { screen: 'math', label: 'Math', emoji: '➕' },
+    { screen: 'puzzle', label: 'Puzzles', emoji: '🧩', isPremium: false },
+    { screen: 'math', label: 'Math', emoji: '➕', isPremium: false },
   ];
 
-  const modes: { mode: CountingMode; label: string }[] = [
-    { mode: 'order', label: 'Count in Order' },
-    { mode: 'challenge', label: 'Number Challenge' },
-    { mode: 'free', label: 'Free Play' },
+  const modes: { mode: CountingMode; label: string; isPremium?: boolean }[] = [
+    { mode: 'order', label: 'Count in Order', isPremium: false },
+    { mode: 'challenge', label: 'Number Challenge', isPremium: true },
+    { mode: 'free', label: 'Free Play', isPremium: false },
   ];
+
+  const handleScreenClick = (screen: Screen, locked: boolean) => {
+    if (locked && !isPremium) {
+      onPremiumFeatureClick(screen === 'puzzle' ? 'Advanced Puzzles' : 'Advanced Math');
+    } else {
+      onScreenChange(screen);
+    }
+  };
+
+  const handleModeClick = (mode: CountingMode, locked: boolean) => {
+    if (locked && !isPremium) {
+      onPremiumFeatureClick('Number Challenge Mode');
+    } else {
+      onModeChange(mode);
+    }
+  };
 
   return (
     <div className="bg-white shadow-lg rounded-b-2xl p-6 space-y-6 animate-fade-in">
@@ -41,20 +63,28 @@ export function MenuPanel({
       <div>
         <h3 className="text-lg font-bold mb-3 text-purple-600">Choose Activity</h3>
         <div className="grid grid-cols-3 gap-3">
-          {screens.map(({ screen, label, emoji }) => (
-            <button
-              key={screen}
-              onClick={() => onScreenChange(screen)}
-              className={`p-4 rounded-xl font-bold transition-all ${
-                currentScreen === screen
-                  ? 'bg-purple-600 text-white shadow-lg scale-105'
-                  : 'bg-purple-100 text-purple-600 hover:bg-purple-200'
-              }`}
-            >
-              <div className="text-3xl mb-2">{emoji}</div>
-              <div className="text-sm">{label}</div>
-            </button>
-          ))}
+          {screens.map(({ screen, label, emoji, isPremium: screenIsPremium }) => {
+            const isLocked = screenIsPremium && !isPremium;
+            return (
+              <button
+                key={screen}
+                onClick={() => handleScreenClick(screen, isLocked)}
+                className={`p-4 rounded-xl font-bold transition-all relative ${
+                  currentScreen === screen
+                    ? 'bg-purple-600 text-white shadow-lg scale-105'
+                    : 'bg-purple-100 text-purple-600 hover:bg-purple-200'
+                }`}
+              >
+                {isLocked && (
+                  <div className="absolute top-2 right-2">
+                    <Lock className="h-4 w-4" />
+                  </div>
+                )}
+                <div className="text-3xl mb-2">{emoji}</div>
+                <div className="text-sm">{label}</div>
+              </button>
+            );
+          })}
         </div>
       </div>
 
@@ -63,19 +93,25 @@ export function MenuPanel({
         <div>
           <h3 className="text-lg font-bold mb-3 text-purple-600">Counting Mode</h3>
           <div className="flex flex-col gap-2">
-            {modes.map(({ mode, label }) => (
-              <button
-                key={mode}
-                onClick={() => onModeChange(mode)}
-                className={`px-4 py-3 rounded-lg font-bold text-sm transition-all ${
-                  currentMode === mode
-                    ? 'bg-purple-600 text-white shadow-md'
-                    : 'bg-purple-100 text-purple-600 hover:bg-purple-200'
-                }`}
-              >
-                {label}
-              </button>
-            ))}
+            {modes.map(({ mode, label, isPremium: modeIsPremium }) => {
+              const isLocked = modeIsPremium && !isPremium;
+              return (
+                <button
+                  key={mode}
+                  onClick={() => handleModeClick(mode, isLocked)}
+                  className={`px-4 py-3 rounded-lg font-bold text-sm transition-all relative ${
+                    currentMode === mode
+                      ? 'bg-purple-600 text-white shadow-md'
+                      : 'bg-purple-100 text-purple-600 hover:bg-purple-200'
+                  }`}
+                >
+                  <div className="flex items-center justify-between">
+                    <span>{label}</span>
+                    {isLocked && <Lock className="h-4 w-4" />}
+                  </div>
+                </button>
+              );
+            })}
           </div>
         </div>
       )}
@@ -96,12 +132,21 @@ export function MenuPanel({
         <div className="space-y-2 text-sm">
           <div className="flex justify-between items-center">
             <span>Puzzle Levels</span>
-            <span className="font-bold text-purple-600">{unlockedPuzzleLevels} unlocked</span>
+            <span className="font-bold text-purple-600">
+              {unlockedPuzzleLevels} unlocked {!isPremium && unlockedPuzzleLevels >= 3 && '🔒'}
+            </span>
           </div>
           <div className="flex justify-between items-center">
             <span>Math Levels</span>
-            <span className="font-bold text-purple-600">{unlockedMathLevels} unlocked</span>
+            <span className="font-bold text-purple-600">
+              {unlockedMathLevels} unlocked {!isPremium && unlockedMathLevels >= 3 && '🔒'}
+            </span>
           </div>
+          {!isPremium && (
+            <p className="text-xs text-muted-foreground mt-2">
+              Upgrade to unlock all 10 levels!
+            </p>
+          )}
         </div>
       </div>
 
