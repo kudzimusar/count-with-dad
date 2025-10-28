@@ -10,6 +10,7 @@ interface PuzzleScreenProps {
   level: number;
   soundEnabled: boolean;
   voiceEnabled: boolean;
+  childName: string;
   maxLevel: number;
   onLevelChange: (delta: number) => void;
   onPuzzleSolved: () => void;
@@ -19,6 +20,7 @@ export function PuzzleScreen({
   level, 
   soundEnabled, 
   voiceEnabled,
+  childName,
   maxLevel,
   onLevelChange, 
   onPuzzleSolved 
@@ -89,7 +91,7 @@ export function PuzzleScreen({
       if (newSlots.every(slot => slot !== null)) {
         onPuzzleSolved();
         if (soundEnabled) playSound('celebrate');
-        if (voiceEnabled) speak('Great job! You solved the puzzle!');
+        if (voiceEnabled) speak(`Amazing ${childName}! You solved the puzzle!`);
         setSuccessOpen(true);
         createConfetti();
       }

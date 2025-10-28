@@ -267,7 +267,14 @@ const Index = () => {
       if (num === state.currentNumber) {
         // Correct number
         if (state.soundEnabled) playSound('correct');
-        if (state.voiceEnabled) speak(num.toString());
+        if (state.voiceEnabled) {
+          // Every 10 numbers, give extra encouragement with name
+          if (num % 10 === 0) {
+            speak(`${num}! Great job ${state.childName}!`);
+          } else {
+            speak(num.toString());
+          }
+        }
         
         createSticker(num);
         
@@ -289,7 +296,7 @@ const Index = () => {
           }));
           setCelebrationOpen(true);
           if (state.soundEnabled) playSound('celebrate');
-          if (state.voiceEnabled) speak('Congratulations! You counted to 100! Amazing job!');
+          if (state.voiceEnabled) speak(`Congratulations ${state.childName}! You counted to 100! Amazing job!`);
           createConfetti();
         } else {
           setState(prev => ({ 
@@ -315,7 +322,7 @@ const Index = () => {
       if (num === state.challengeNumber) {
         // Correct
         if (state.soundEnabled) playSound('correct');
-        if (state.voiceEnabled) speak(`Yes! That's ${num}! Great job!`);
+        if (state.voiceEnabled) speak(`Yes! That's ${num}! Great job ${state.childName}!`);
         
         createSticker(num);
         
@@ -679,6 +686,7 @@ const Index = () => {
           level={state.puzzleLevel}
           soundEnabled={state.soundEnabled}
           voiceEnabled={state.voiceEnabled}
+          childName={state.childName}
           maxLevel={state.unlockedPuzzleLevels}
           onLevelChange={(delta) => {
             const currentLevel = Number(state.puzzleLevel) || 1;
