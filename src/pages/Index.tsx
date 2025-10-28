@@ -364,7 +364,12 @@ const Index = () => {
   };
 
   const handleRestartCounting = () => {
-    setState(prev => ({ ...prev, currentNumber: 1 }));
+    setState(prev => ({ 
+      ...prev, 
+      currentNumber: 1,
+      completedNumbers: [] // Clear all checkmarks to start fresh
+    }));
+    if (state.voiceEnabled) speak(`Let's count again ${state.childName}! Starting from 1!`);
   };
 
   const handleParentSuccess = () => {
@@ -645,12 +650,12 @@ const Index = () => {
               {state.countingMode === 'free' && 'Tap any number to hear it!'}
             </p>
             
-            {state.currentNumber > 100 && state.countingMode === 'order' && (
+            {state.currentNumber >= 100 && state.countingMode === 'order' && (
               <button
                 onClick={handleRestartCounting}
-                className="w-full bg-blue-500 text-white py-3 rounded-xl font-bold text-lg hover:bg-blue-600 transition-colors"
+                className="w-full bg-gradient-to-r from-green-500 to-blue-500 text-white py-4 rounded-xl font-bold text-xl hover:from-green-600 hover:to-blue-600 transition-all shadow-lg transform hover:scale-105"
               >
-                Start Again! 🔄
+                🎉 Start Again from 1! 🔄
               </button>
             )}
           </div>
