@@ -25,58 +25,58 @@
       "type": "image/png",
       "purpose": "maskable"
     }
-  ],
-  "screenshots": [
+  ], "screenshots": [
     {
-      "src": "/screenshots/parent zone.jpg",
+      "src": "screenshots/parent zone.jpg",
       "sizes": "1280x720",
       "type": "image/jpeg",
       "form_factor": "wide",
       "label": "Parent Zone Interface"
     },
     {
-      "src": "/screenshots/math challenge.jpg",
+      "src": "screenshots/math challenge.jpg",
       "sizes": "1280x720",
       "type": "image/jpeg", 
       "form_factor": "wide",
       "label": "Math Challenge Activity"
     },
     {
-      "src": "/screenshots/number puzzles.jpg",
+      "src": "screenshots/number puzzles.jpg",
       "sizes": "1280x720",
       "type": "image/jpeg",
       "form_factor": "wide",
       "label": "Number Puzzles Game"
     },
     {
-      "src": "/screenshots/child profile.jpg",
+      "src": "screenshots/child profile.jpg",
       "sizes": "1280x720",
       "type": "image/jpeg",
       "form_factor": "wide",
       "label": "Child Profile Management"
     },
     {
-      "src": "/screenshots/parent access.jpg",
+      "src": "screenshots/parent access.jpg",
       "sizes": "1280x720",
       "type": "image/jpeg",
       "form_factor": "wide",
       "label": "Parent Access Dashboard"
     },
     {
-      "src": "/screenshots/choose activity.jpg",
+      "src": "screenshots/choose activity.jpg",
       "sizes": "1280x720",
       "type": "image/jpeg",
       "form_factor": "wide",
       "label": "Activity Selection Screen"
     },
     {
-      "src": "/screenshots/free play count.jpg",
+      "src": "screenshots/free play count.jpg",
       "sizes": "1280x720",
       "type": "image/jpeg",
       "form_factor": "wide",
       "label": "Free Play Counting Activity"
     }
-],
+] 
+,
   "categories": ["education", "kids", "learning", "games"],
   "shortcuts": [
     {
