@@ -4,14 +4,18 @@
     <meta charset="utf-8">
     <title>Redirecting...</title>
     <script>
-      // Redirect /count-with-dad/anything → /count-with-dad/index.html
-      const path = window.location.pathname;
-      if (path.startsWith('/count-with-dad/') && path !== '/count-with-dad/') {
-        window.location.replace('/count-with-dad/');
+      // Always redirect to the app root with index.html
+      const basePath = '/count-with-dad/';
+      const currentPath = window.location.pathname;
+
+      if (currentPath.startsWith(basePath)) {
+        const cleanPath = currentPath === basePath ? '/' : currentPath.substring(basePath.length - 1);
+        const hash = window.location.hash;
+        window.location.replace(basePath + 'index.html' + cleanPath + hash);
       }
     </script>
   </head>
   <body>
-    <p>Redirecting...</p>
+    <p>Redirecting to app...</p>
   </body>
 </html>
