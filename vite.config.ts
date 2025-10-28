@@ -10,9 +10,12 @@ export default defineConfig(({ mode }) => ({
     port: 8080,
   },
   build: {
+    outDir: 'dist',
     rollupOptions: {
+      input: {
+        main: path.resolve(__dirname, 'index.html'),
+      },
       output: {
-        // Force relative paths
         assetFileNames: 'assets/[name]-[hash][extname]',
         chunkFileNames: 'assets/[name]-[hash].js',
         entryFileNames: 'assets/[name]-[hash].js',
