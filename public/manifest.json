@@ -28,20 +28,55 @@
   ],
   "screenshots": [
     {
-      "src": "screenshot-wide.png",
+      "src": "/screenshots/parent zone.jpg",
       "sizes": "1280x720",
-      "type": "image/png",
+      "type": "image/jpeg",
       "form_factor": "wide",
-      "label": "Count to 100 main counting screen"
+      "label": "Parent Zone Interface"
     },
     {
-      "src": "screenshot-mobile.png",
-      "sizes": "750x1334",
-      "type": "image/png",
-      "form_factor": "narrow",
-      "label": "Count to 100 mobile view"
+      "src": "/screenshots/math challenge.jpg",
+      "sizes": "1280x720",
+      "type": "image/jpeg", 
+      "form_factor": "wide",
+      "label": "Math Challenge Activity"
+    },
+    {
+      "src": "/screenshots/number puzzles.jpg",
+      "sizes": "1280x720",
+      "type": "image/jpeg",
+      "form_factor": "wide",
+      "label": "Number Puzzles Game"
+    },
+    {
+      "src": "/screenshots/child profile.jpg",
+      "sizes": "1280x720",
+      "type": "image/jpeg",
+      "form_factor": "wide",
+      "label": "Child Profile Management"
+    },
+    {
+      "src": "/screenshots/parent access.jpg",
+      "sizes": "1280x720",
+      "type": "image/jpeg",
+      "form_factor": "wide",
+      "label": "Parent Access Dashboard"
+    },
+    {
+      "src": "/screenshots/choose activity.jpg",
+      "sizes": "1280x720",
+      "type": "image/jpeg",
+      "form_factor": "wide",
+      "label": "Activity Selection Screen"
+    },
+    {
+      "src": "/screenshots/free play count.jpg",
+      "sizes": "1280x720",
+      "type": "image/jpeg",
+      "form_factor": "wide",
+      "label": "Free Play Counting Activity"
     }
-  ],
+],
   "categories": ["education", "kids", "learning", "games"],
   "shortcuts": [
     {
