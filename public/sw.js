@@ -1,5 +1,5 @@
-// public/sw.js - Enhanced for Education App (Offline + Sync)
-const CACHE = "count-to-100-v2";
+// public/sw.js - FULL FINAL VERSION
+const CACHE = "count-to-100-v3";
 const OFFLINE_PAGE = "/count-with-dad/offline.html";
 
 importScripts('https://storage.googleapis.com/workbox-cdn/releases/6.6.0/workbox-sw.js');
@@ -11,7 +11,7 @@ workbox.precaching.precacheAndRoute([
   { url: OFFLINE_PAGE, revision: '1' }
 ]);
 
-// Cache assets (JS, CSS, images)
+// Cache assets
 workbox.routing.registerRoute(
   /\.(?:png|jpg|jpeg|svg|gif|webp|js|css|woff2?|ttf)$/,
   new workbox.strategies.StaleWhileRevalidate({
@@ -19,7 +19,7 @@ workbox.routing.registerRoute(
   })
 );
 
-// HTML navigation fallback (offline support)
+// HTML fallback
 workbox.routing.registerRoute(
   ({ request }) => request.mode === 'navigate',
   async ({ event }) => {
@@ -35,40 +35,58 @@ workbox.routing.registerRoute(
   }
 );
 
-// Background Sync: Queue failed requests (e.g., save lesson progress offline)
+// Background Sync (for progress saves)
 workbox.routing.registerRoute(
   /api\/progress/,
   new workbox.strategies.NetworkOnly({
     plugins: [
       new workbox.backgroundSync.BackgroundSyncPlugin('progressQueue', {
-        maxRetentionTime: 24 * 60 // Retry for 24 hours
+        maxRetentionTime: 24 * 60
       })
     ]
   })
 );
 
-// Periodic Sync: Daily sync (e.g., fetch new challenges when online)
-if ('serviceWorkerRegistration' in navigator) {
-  navigator.serviceWorker.ready.then((reg) => {
-    reg.periodicSync.register('/count-with-dad/sync-daily', {
-      minPeriod: 24 * 60 * 60 * 1000 // 24 hours
-    }).catch((e) => console.error('Periodic sync failed:', e));
-  });
-}
+// PUSH NOTIFICATIONS
+self.addEventListener('push', (event) => {
+  const options = {
+    body: event.data ? event.data.text() : 'Time to count!',
+    icon: '/count-with-dad/android-launchericon-192-192.png',
+    badge: '/count-with-dad/badge.png',
+    vibrate: [100, 50, 100],
+    data: { url: '/count-with-dad/' },
+    actions: [
+      { action: 'open', title: 'Open App' },
+      { action: 'close', title: 'Later' }
+    ]
+  };
+  event.waitUntil(
+    self.registration.showNotification('Count to 100', options)
+  );
+});
+
+self.addEventListener('notificationclick', (event) => {
+  event.notification.close();
+  if (event.action === 'open') {
+    event.waitUntil(
+      clients.openWindow('/count-with-dad/')
+    );
+  }
+});
 
 // Enable navigation preload
 if (workbox.navigationPreload.isSupported()) {
   workbox.navigationPreload.enable();
 }
 
-// Claim clients & skip waiting
+// Skip waiting
 self.addEventListener('message', (event) => {
   if (event.data && event.data.type === 'SKIP_WAITING') {
     self.skipWaiting();
   }
 });
 
-// Activate: Clean old caches
+// Clean old caches
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys().then((cacheNames) => {
