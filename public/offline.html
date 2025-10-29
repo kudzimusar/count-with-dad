@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Offline - Count to 100</title>
+  <style>
+    body {
+      font-family: system-ui, sans-serif;
+      text-align: center;
+      padding: 2rem;
+      background: #f3f4f6;
+      color: #1f2937;
+      margin: 0;
+    }
+    h1 { color: #9333ea; margin-bottom: 1rem; }
+    p { margin: 0.5rem 0; }
+    button {
+      margin-top: 1.5rem;
+      padding: 0.75rem 1.5rem;
+      background: #9333ea;
+      color: white;
+      border: none;
+      border-radius: 0.5rem;
+      font-size: 1rem;
+      cursor: pointer;
+    }
+    button:hover { background: #7c2ab3; }
+  </style>
+</head>
+<body>
+  <h1>Offline</h1>
+  <p>You're not connected to the internet.</p>
+  <p>Check your connection and try again.</p>
+  <button onclick="location.reload()">Retry</button>
+</body>
+</html>
