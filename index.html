@@ -28,5 +28,14 @@
     <!-- VITE WILL REPLACE THIS DURING BUILD -->
     <!-- DO NOT CHANGE -->
     <script type="module" src="/src/main.tsx"></script>
+    <script>
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('/count-with-dad/sw.js')
+        .then(reg => console.log('SW registered:', reg.scope))
+        .catch(err => console.error('SW registration failed:', err));
+    });
+  }
+</script>
   </body>
 </html>
