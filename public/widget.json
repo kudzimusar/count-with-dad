@@ -1,0 +1,29 @@
+{
+  "template_type": "adaptivecard",
+  "card": {
+    "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
+    "type": "AdaptiveCard",
+    "version": "1.5",
+    "body": [
+      {
+        "type": "TextBlock",
+        "text": "Count to 100",
+        "weight": "bolder",
+        "size": "medium",
+        "color": "accent"
+      },
+      {
+        "type": "TextBlock",
+        "text": "Today’s Goal: Count to 50!",
+        "wrap": true
+      }
+    ],
+    "actions": [
+      {
+        "type": "Action.OpenUrl",
+        "title": "Open App",
+        "url": "https://kudzimusar.github.io/count-with-dad/"
+      }
+    ]
+  }
+}
