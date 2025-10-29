@@ -1,8 +1,8 @@
 {
   "name": "Count to 100 - Kids Learning App",
   "short_name": "Count to 100",
-  "description": "Interactive counting app for kids to learn numbers 1-100 through fun activities, games, and challenges",
-  "start_url": "./",
+  "description": "Interactive counting app for kids ages 3-7 to learn numbers 1-100 through fun activities, games, and challenges",
+  "start_url": "/count-with-dad/",
   "id": "/count-with-dad/",
   "scope": "/count-with-dad/",
   "display": "standalone",
@@ -14,13 +14,13 @@
   "dir": "ltr",
   "icons": [
     {
-      "src": "./android-launchericon-512-512.png",
+      "src": "/count-with-dad/android-launchericon-512-512.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "./android-launchericon-192-192.png",
+      "src": "/count-with-dad/android-launchericon-192-192.png",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "maskable"
@@ -28,53 +28,60 @@
   ],
   "screenshots": [
     {
-      "src": "./screenshots/parent-zone.jpg",
+      "src": "/count-with-dad/screenshots/parent-zone.jpg",
       "sizes": "1280x720",
       "type": "image/jpeg",
       "form_factor": "wide",
       "label": "Parent Zone Interface"
     },
     {
-      "src": "./screenshots/math-challenge.jpg",
+      "src": "/count-with-dad/screenshots/math-challenge.jpg",
       "sizes": "1280x720",
       "type": "image/jpeg",
       "form_factor": "wide",
       "label": "Math Challenge Activity"
     },
     {
-      "src": "./screenshots/number-puzzles.jpg",
+      "src": "/count-with-dad/screenshots/number-puzzles.jpg",
       "sizes": "1280x720",
       "type": "image/jpeg",
       "form_factor": "wide",
       "label": "Number Puzzles Game"
     },
     {
-      "src": "./screenshots/child-profile.jpg",
+      "src": "/count-with-dad/screenshots/child-profile.jpg",
       "sizes": "1280x720",
       "type": "image/jpeg",
       "form_factor": "wide",
       "label": "Child Profile Management"
     },
     {
-      "src": "./screenshots/parent-access.jpg",
+      "src": "/count-with-dad/screenshots/parent-access.jpg",
       "sizes": "1280x720",
       "type": "image/jpeg",
       "form_factor": "wide",
       "label": "Parent Access Dashboard"
     },
     {
-      "src": "./screenshots/choose-activity.jpg",
+      "src": "/count-with-dad/screenshots/choose-activity.jpg",
       "sizes": "1280x720",
       "type": "image/jpeg",
       "form_factor": "wide",
       "label": "Activity Selection Screen"
     },
     {
-      "src": "./screenshots/free-play-count.jpg",
+      "src": "/count-with-dad/screenshots/free-play-count.jpg",
       "sizes": "1280x720",
       "type": "image/jpeg",
       "form_factor": "wide",
       "label": "Free Play Counting Activity"
+    },
+    {
+      "src": "/count-with-dad/screenshots/mobile-home.jpg",
+      "sizes": "1080x1920",
+      "type": "image/jpeg",
+      "form_factor": "narrow",
+      "label": "Mobile Home Screen"
     }
   ],
   "categories": ["education", "kids", "learning", "games"],
@@ -83,19 +90,19 @@
       "name": "Start Counting",
       "short_name": "Count",
       "description": "Begin counting practice",
-      "url": "./",
-      "icons": [{ "src": "./icon.svg", "sizes": "192x192" }]
+      "url": "/count-with-dad/",
+      "icons": [{ "src": "/count-with-dad/icon.svg", "sizes": "192x192" }]
     },
     {
       "name": "Parent Dashboard",
       "short_name": "Dashboard",
       "description": "View progress and settings",
-      "url": "./?menu=parent",
-      "icons": [{ "src": "./icon.svg", "sizes": "192x192" }]
+      "url": "/count-with-dad/?menu=parent",
+      "icons": [{ "src": "/count-with-dad/icon.svg", "sizes": "192x192" }]
     }
   ],
   "share_target": {
-    "action": "./",
+    "action": "/count-with-dad/",
     "method": "GET",
     "enctype": "application/x-www-form-urlencoded",
     "params": {
