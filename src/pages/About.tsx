@@ -14,34 +14,79 @@ const About = () => {
           {/* Header */}
           <div className="text-center mb-16">
             <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/80 dark:bg-white/10 border border-purple-200 dark:border-purple-800 mb-6 shadow-lg">
-              <Sparkles className="h-4 w-4 text-purple-600" />
+              <Heart className="h-4 w-4 text-purple-600" />
               <span className="text-sm font-medium">Our Story</span>
             </div>
             <h1 className="text-5xl lg:text-6xl font-bold mb-6">
               <span className="bg-gradient-to-r from-purple-600 via-pink-600 to-yellow-600 bg-clip-text text-transparent">
-                About Count to 100
+                This App Was Born From My Son Nono's Struggle With Numbers
               </span>
             </h1>
             <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-              Making learning fun, one number at a time
+              Created by a dad who was tired of flashy apps that don't teach
             </p>
           </div>
 
-          {/* Mission Section */}
+          {/* Nono's Story */}
           <section className="max-w-4xl mx-auto mb-16">
             <div className="bg-background rounded-2xl border-2 border-border shadow-xl p-8 lg:p-12">
-              <h2 className="text-3xl lg:text-4xl font-bold mb-6 text-center">Our Mission</h2>
-              <p className="text-lg text-muted-foreground leading-relaxed text-center max-w-3xl mx-auto">
-                Count to 100 is designed to help young children ages 3-7 develop essential early math skills through 
-                engaging, interactive gameplay. We believe learning should be fun, rewarding, and accessible 
-                to every child.
+              <div className="prose prose-lg max-w-none">
+                <p className="text-lg text-muted-foreground leading-relaxed mb-6">
+                  I watched my son Nono play with countless 'educational' apps that were all flash and no substance. 
+                  He'd tap screens, collect points, but never actually understand what numbers meant. The apps were 
+                  either too distracting or too boring - none of them genuinely taught the foundational math skills 
+                  he needed.
+                </p>
+                <p className="text-lg text-muted-foreground leading-relaxed mb-6">
+                  One day, I realized: Nono could count to 10 when we sat together, focused. But the moment a sibling 
+                  walked by or a toy caught his eye, the learning stopped. That's when I knew we needed something different.
+                </p>
+                <p className="text-lg text-muted-foreground leading-relaxed">
+                  <strong>Count with Dad</strong> isn't just another app. It's the tool I created night after night, 
+                  watching what actually worked for Nono's learning. I built it step by step, testing each feature to 
+                  ensure it teaches practical understanding, not just memorization.
+                </p>
+              </div>
+            </div>
+          </section>
+
+          {/* What Makes It Different */}
+          <section className="max-w-4xl mx-auto mb-16">
+            <div className="bg-gradient-to-br from-purple-600 via-pink-600 to-yellow-600 rounded-2xl text-white p-8 lg:p-12 shadow-2xl">
+              <h2 className="text-3xl lg:text-4xl font-bold mb-6 text-center">I Didn't Build a Game - I Built a Learning Companion</h2>
+              <p className="text-lg leading-relaxed text-center max-w-3xl mx-auto mb-8 opacity-90">
+                While other apps try to disguise learning as play, we do the opposite: we make learning so engaging 
+                it feels like discovery. Every feature was designed with one question: "Will this help a child actually 
+                understand numbers?"
               </p>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="bg-white/10 backdrop-blur-sm rounded-xl p-6">
+                  <div className="text-4xl mb-3">✅</div>
+                  <p className="font-semibold mb-2">Teaches Practical Understanding</p>
+                  <p className="text-sm opacity-90">Not just memorization</p>
+                </div>
+                <div className="bg-white/10 backdrop-blur-sm rounded-xl p-6">
+                  <div className="text-4xl mb-3">✅</div>
+                  <p className="font-semibold mb-2">Grows With Your Child</p>
+                  <p className="text-sm opacity-90">From basic counting to complex math</p>
+                </div>
+                <div className="bg-white/10 backdrop-blur-sm rounded-xl p-6">
+                  <div className="text-4xl mb-3">✅</div>
+                  <p className="font-semibold mb-2">Minimizes Distractions</p>
+                  <p className="text-sm opacity-90">Focused, clean interface</p>
+                </div>
+                <div className="bg-white/10 backdrop-blur-sm rounded-xl p-6">
+                  <div className="text-4xl mb-3">✅</div>
+                  <p className="font-semibold mb-2">Provides Real Affirmation</p>
+                  <p className="text-sm opacity-90">Celebrates genuine achievements</p>
+                </div>
+              </div>
             </div>
           </section>
 
           {/* Core Values */}
           <section className="max-w-6xl mx-auto mb-16">
-            <h2 className="text-3xl lg:text-4xl font-bold mb-12 text-center">Why Choose Us</h2>
+            <h2 className="text-3xl lg:text-4xl font-bold mb-12 text-center">Built on Real Learning Principles</h2>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8">
               <div className="bg-background rounded-2xl border-2 border-border shadow-xl p-8 hover:border-purple-500/50 transition-all">
                 <div className="inline-flex p-4 rounded-xl bg-gradient-to-br from-purple-600 to-pink-600 mb-6">
@@ -157,22 +202,25 @@ const About = () => {
             </div>
           </section>
 
-          {/* Contact Section */}
+          {/* Final Message */}
           <section className="max-w-3xl mx-auto text-center">
-            <div className="bg-background rounded-2xl border-2 border-border shadow-xl p-8 lg:p-12">
-              <h2 className="text-3xl lg:text-4xl font-bold mb-4">Get in Touch</h2>
-              <p className="text-lg text-muted-foreground mb-6">
-                Questions, feedback, or need help? We're here for you!
+            <div className="bg-gradient-to-br from-purple-50 via-pink-50 to-yellow-50 dark:from-purple-950/20 dark:via-pink-950/20 dark:to-yellow-950/20 rounded-2xl border-2 border-border shadow-xl p-8 lg:p-12">
+              <Heart className="h-16 w-16 text-purple-600 mx-auto mb-6" />
+              <h2 className="text-3xl lg:text-4xl font-bold mb-6">
+                Today, Nono Doesn't Just Count Numbers - He Understands Them
+              </h2>
+              <p className="text-lg text-muted-foreground mb-8">
+                He doesn't just solve problems - he enjoys the challenge. And that's what I want for every child.
               </p>
-              <p className="text-muted-foreground mb-8">
-                Version 1.0.0 • Last Updated: {new Date().toLocaleDateString()}
+              <p className="text-xl font-semibold mb-8">
+                Because every child deserves to count with confidence - and every parent deserves tools that actually help.
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
                 <Button asChild size="lg" variant="default">
-                  <Link to="/support">Visit Support</Link>
+                  <Link to="/app">Start Learning Today</Link>
                 </Button>
                 <Button asChild size="lg" variant="outline">
-                  <Link to="/feedback">Send Feedback</Link>
+                  <Link to="/support">Get Support</Link>
                 </Button>
               </div>
             </div>
