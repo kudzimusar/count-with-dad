@@ -135,5 +135,21 @@
       "origin": "https://kudzimusar.github.io",
       "path": "/count-with-dad/*"
     }
+  ],
+  "edge_side_panel": {
+    "preferred_width": 380
+  },
+  "widgets": [
+    {
+      "name": "Daily Count",
+      "description": "Quick access to today’s counting session",
+      "icons": [
+        {
+          "src": "/count-with-dad/android-launchericon-192-192.png",
+          "sizes": "192x192"
+        }
+      ],
+      "ms_ac_template": "/count-with-dad/widget.json"
+    }
   ]
 }
