@@ -20,7 +20,7 @@ const App = () => (
     <TooltipProvider>
       <Toaster />
       <Sonner />
-      <BrowserRouter>
+      <BrowserRouter basename="/count-with-dad/">
         <Routes>
           {/* Public Website Routes */}
           <Route path="/" element={<Home />} />
@@ -34,7 +34,7 @@ const App = () => (
           <Route path="/app" element={<Index />} />
           <Route path="/auth" element={<Auth />} />
           
-          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+          {/* Catch-all */}
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
