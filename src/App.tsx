@@ -15,13 +15,16 @@ import Feedback from "./pages/Feedback";
 
 const queryClient = new QueryClient();
 
-const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter basename="/count-with-dad/">
-        <Routes>
+const App = () => {
+  const basename = import.meta.env.MODE === 'production' ? '/count-with-dad/' : '/';
+  
+  return (
+    <QueryClientProvider client={queryClient}>
+      <TooltipProvider>
+        <Toaster />
+        <Sonner />
+        <BrowserRouter basename={basename}>
+          <Routes>
           {/* Public Website Routes */}
           <Route path="/" element={<Home />} />
           <Route path="/about" element={<About />} />
@@ -40,6 +43,7 @@ const App = () => (
       </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>
-);
+  );
+};
 
 export default App;
