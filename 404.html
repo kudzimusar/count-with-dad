@@ -4,14 +4,19 @@
     <meta charset="utf-8">
     <title>Redirecting...</title>
     <script>
-      // Always redirect to the app root with index.html
+      // Redirect all /count-with-dad/* paths to index.html (for React Router)
       const basePath = '/count-with-dad/';
       const currentPath = window.location.pathname;
+      const search = window.location.search;
+      const hash = window.location.hash;
 
       if (currentPath.startsWith(basePath)) {
-        const cleanPath = currentPath === basePath ? '/' : currentPath.substring(basePath.length - 1);
-        const hash = window.location.hash;
-        window.location.replace(basePath + 'index.html' + cleanPath + hash);
+        // Clean path for React Router (e.g., /count-with-dad/feedback → /feedback)
+        const relativePath = currentPath.substring(basePath.length) || '/';
+        window.location.replace(basePath + 'index.html' + relativePath + search + hash);
+      } else {
+        // Fallback to app root
+        window.location.replace(basePath + 'index.html');
       }
     </script>
   </head>
