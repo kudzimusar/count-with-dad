@@ -217,6 +217,7 @@ const Index = () => {
   const [premiumGateOpen, setPremiumGateOpen] = useState(false);
   const [premiumFeature, setPremiumFeature] = useState('');
   const [mockPaymentModalOpen, setMockPaymentModalOpen] = useState(false);
+  const [registrationModalOpen, setRegistrationModalOpen] = useState(false);
   const [showScrollIndicator, setShowScrollIndicator] = useState(true);
   const [maxVisibleNumber, setMaxVisibleNumber] = useState(
     state.childAge <= 4 ? 20 : 100
@@ -229,6 +230,13 @@ const Index = () => {
   // Session tracking state
   const [sessionStartTime] = useState<number>(Date.now());
   const [currentSessionScreen, setCurrentSessionScreen] = useState<Screen>(state.currentScreen);
+
+  // Show registration modal if onboarding not completed
+  useEffect(() => {
+    if (!state.hasCompletedOnboarding && dataLoaded) {
+      setRegistrationModalOpen(true);
+    }
+  }, [state.hasCompletedOnboarding, dataLoaded]);
 
   // Track session start
   useEffect(() => {
@@ -498,9 +506,17 @@ const Index = () => {
       registeredAt: new Date().toISOString(),
     }));
 
+    // Close registration modal
+    setRegistrationModalOpen(false);
+
     // Optional: Save to cloud if authenticated
     if (user) {
-      await saveProfile(data);
+      const result = await saveProfile(data);
+      if (result.error) {
+        toast.error('Profile saved locally. Sign in to sync across devices.');
+      } else {
+        toast.success('Profile saved successfully!');
+      }
       await trackSupabaseEvent('registration_complete', {
         childAge: data.childAge,
         hasParentEmail: !!data.parentEmail,
@@ -871,8 +887,10 @@ const Index = () => {
         />
       )}
 
-      {/* Optional: RegistrationModal can be triggered from Parent Dashboard */}
-      {/* For now, profile editing is done directly in ProfileTab */}
+      <RegistrationModal
+        isOpen={registrationModalOpen}
+        onComplete={handleRegistrationComplete}
+      />
 
       <PremiumGate
         isOpen={premiumGateOpen}
