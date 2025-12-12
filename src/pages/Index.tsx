@@ -309,12 +309,37 @@ const Index = () => {
   const [sessionStartTime] = useState<number>(Date.now());
   const [currentSessionScreen, setCurrentSessionScreen] = useState<Screen>(state.currentScreen);
 
-  // Show registration modal if onboarding not completed
+  // Show registration modal only if:
+  // 1. Data is loaded (to avoid showing before checking profile)
+  // 2. User hasn't completed onboarding (no profile exists)
+  // 3. For signed-in users: only show if profile doesn't exist in database
+  // 4. For guest users: show if no local profile exists
   useEffect(() => {
-    if (!state.hasCompletedOnboarding && dataLoaded) {
-      setRegistrationModalOpen(true);
+    if (!dataLoaded || authLoading) return;
+
+    // If user is signed in and has a profile (childName exists), don't show modal
+    if (user && state.childName && state.hasCompletedOnboarding) {
+      setRegistrationModalOpen(false);
+      return;
     }
-  }, [state.hasCompletedOnboarding, dataLoaded]);
+
+    // If user is signed in but no profile exists yet, show modal (don't allow close)
+    if (user && !state.childName) {
+      setRegistrationModalOpen(true);
+      return;
+    }
+
+    // For guest users (not signed in), show modal if no profile exists (allow close)
+    if (!user && !state.hasCompletedOnboarding) {
+      setRegistrationModalOpen(true);
+      return;
+    }
+
+    // If profile exists, ensure modal is closed
+    if (state.hasCompletedOnboarding) {
+      setRegistrationModalOpen(false);
+    }
+  }, [user, state.hasCompletedOnboarding, state.childName, dataLoaded, authLoading]);
 
   // Track session start
   useEffect(() => {
@@ -1003,6 +1028,15 @@ const Index = () => {
       <RegistrationModal
         isOpen={registrationModalOpen}
         onComplete={handleRegistrationComplete}
+        onClose={() => {
+          // For guest users, allow closing modal but mark as temporarily dismissed
+          // They can complete registration later via profile settings
+          if (!user) {
+            setRegistrationModalOpen(false);
+            toast.info('You can complete your profile anytime from the Parent Dashboard');
+          }
+        }}
+        allowClose={!user} // Only allow closing for guest users (not signed in)
       />
 
       <PremiumGate
