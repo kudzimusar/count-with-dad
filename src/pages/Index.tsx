@@ -24,6 +24,7 @@ import { RegistrationModal } from '@/components/onboarding/RegistrationModal';
 import { FeedbackModal } from '@/components/feedback/FeedbackModal';
 import { PremiumGate } from '@/components/modals/PremiumGate';
 import { MockPaymentModal } from '@/components/modals/MockPaymentModal';
+import { VerificationErrorModal } from '@/components/auth/VerificationErrorModal';
 import { toast } from 'sonner';
 
 const initialState: AppState = {
@@ -328,6 +329,8 @@ const Index = () => {
   const [premiumFeature, setPremiumFeature] = useState('');
   const [mockPaymentModalOpen, setMockPaymentModalOpen] = useState(false);
   const [registrationModalOpen, setRegistrationModalOpen] = useState(false);
+  const [verificationErrorModalOpen, setVerificationErrorModalOpen] = useState(false);
+  const [verificationError, setVerificationError] = useState<{ code?: string; email?: string } | null>(null);
   const [showScrollIndicator, setShowScrollIndicator] = useState(true);
   const [maxVisibleNumber, setMaxVisibleNumber] = useState(
     state.childAge <= 4 ? 20 : 100
@@ -376,6 +379,36 @@ const Index = () => {
       setRegistrationModalOpen(false);
     }
   }, [user, state.hasCompletedOnboarding, state.childName, profileLoaded, dataLoaded, authLoading]);
+
+  // Check for OTP expiration errors in URL hash/query params
+  useEffect(() => {
+    // Check URL hash for error codes (Supabase redirects with hash fragments)
+    const hash = window.location.hash;
+    const searchParams = new URLSearchParams(window.location.search);
+    
+    // Check for error in hash (format: #error=description&error_code=otp_expired)
+    if (hash.includes('error') || searchParams.has('error')) {
+      const errorCode = hash.match(/error_code=([^&]+)/)?.[1] || 
+                       searchParams.get('error_code') ||
+                       hash.match(/error=([^&]+)/)?.[1] ||
+                       searchParams.get('error');
+      
+      if (errorCode === 'otp_expired' || errorCode?.includes('expired') || errorCode?.includes('invalid')) {
+        // Extract email if available from hash or try to get from localStorage
+        const emailMatch = hash.match(/email=([^&]+)/)?.[1];
+        const email = emailMatch ? decodeURIComponent(emailMatch) : undefined;
+        
+        setVerificationError({
+          code: errorCode,
+          email: email
+        });
+        setVerificationErrorModalOpen(true);
+        
+        // Clean up URL
+        window.history.replaceState({}, document.title, window.location.pathname);
+      }
+    }
+  }, []);
 
   // Track session start
   useEffect(() => {
@@ -1073,6 +1106,16 @@ const Index = () => {
           }
         }}
         allowClose={!user} // Only allow closing for guest users (not signed in)
+      />
+
+      <VerificationErrorModal
+        isOpen={verificationErrorModalOpen}
+        onClose={() => {
+          setVerificationErrorModalOpen(false);
+          setVerificationError(null);
+        }}
+        email={verificationError?.email}
+        errorCode={verificationError?.code}
       />
 
       <PremiumGate

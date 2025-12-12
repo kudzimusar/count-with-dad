@@ -60,6 +60,20 @@ export function useSupabaseAuth() {
     return { error };
   };
 
+  const resendVerificationEmail = async (email: string) => {
+    const productionUrl = 'https://kudzimusar.github.io/count-with-dad/app';
+    
+    const { error } = await supabase.auth.resend({
+      type: 'signup',
+      email: email,
+      options: {
+        emailRedirectTo: productionUrl
+      }
+    });
+    
+    return { error };
+  };
+
   return {
     user,
     session,
@@ -68,5 +82,6 @@ export function useSupabaseAuth() {
     signUp,
     signIn,
     signOut,
+    resendVerificationEmail,
   };
 }
