@@ -889,21 +889,27 @@ const Index = () => {
             setState(prev => ({ ...prev, puzzleLevel: newLevel }));
           }}
           onPuzzleSolved={() => {
-            const newCount = (state.puzzlesSolved || 0) + 1;
-            const correctCount = (state.correctAnswersCount || 0) + 1;
-            setState(prev => ({ 
-              ...prev, 
-              puzzlesSolved: newCount,
-              correctAnswersCount: correctCount,
-            }));
-
-            // Unlock next level every 10 correct answers
-            if (correctCount % 10 === 0 && state.unlockedPuzzleLevels < 10) {
-              const newMaxLevel = Math.min(10, state.unlockedPuzzleLevels + 1);
-              setState(prev => ({ ...prev, unlockedPuzzleLevels: newMaxLevel }));
-              setUnlockedLevel({ level: newMaxLevel, type: 'puzzle' });
-              setLevelUnlockOpen(true);
-            }
+            setState(prev => {
+              const newPuzzlesSolved = (prev.puzzlesSolved || 0) + 1;
+              const newCorrectCount = (prev.correctAnswersCount || 0) + 1;
+              
+              // Unlock next level every 10 correct answers
+              if (newCorrectCount % 10 === 0 && prev.unlockedPuzzleLevels < 10) {
+                const newMaxLevel = Math.min(10, prev.unlockedPuzzleLevels + 1);
+                // Use setTimeout to avoid setState during render
+                setTimeout(() => {
+                  setState(p => ({ ...p, unlockedPuzzleLevels: newMaxLevel }));
+                  setUnlockedLevel({ level: newMaxLevel, type: 'puzzle' });
+                  setLevelUnlockOpen(true);
+                }, 0);
+              }
+              
+              return {
+                ...prev,
+                puzzlesSolved: newPuzzlesSolved,
+                correctAnswersCount: newCorrectCount,
+              };
+            });
           }}
         />
       )}
@@ -923,21 +929,28 @@ const Index = () => {
             setState(prev => ({ ...prev, mathLevel: newLevel }));
           }}
           onMathSolved={() => {
-            const correctCount = (state.correctAnswersCount || 0) + 1;
-            setState(prev => ({ 
-              ...prev, 
-              mathSolved: prev.mathSolved + 1,
-              stars: prev.stars + 1,
-              correctAnswersCount: correctCount,
-            }));
-
-            // Unlock next level every 10 correct answers
-            if (correctCount % 10 === 0 && state.unlockedMathLevels < 10) {
-              const newMaxLevel = Math.min(10, state.unlockedMathLevels + 1);
-              setState(prev => ({ ...prev, unlockedMathLevels: newMaxLevel }));
-              setUnlockedLevel({ level: newMaxLevel, type: 'math' });
-              setLevelUnlockOpen(true);
-            }
+            setState(prev => {
+              const newMathSolved = prev.mathSolved + 1;
+              const newCorrectCount = (prev.correctAnswersCount || 0) + 1;
+              
+              // Unlock next level every 10 correct answers
+              if (newCorrectCount % 10 === 0 && prev.unlockedMathLevels < 10) {
+                const newMaxLevel = Math.min(10, prev.unlockedMathLevels + 1);
+                // Use setTimeout to avoid setState during render
+                setTimeout(() => {
+                  setState(p => ({ ...p, unlockedMathLevels: newMaxLevel }));
+                  setUnlockedLevel({ level: newMaxLevel, type: 'math' });
+                  setLevelUnlockOpen(true);
+                }, 0);
+              }
+              
+              return {
+                ...prev,
+                mathSolved: newMathSolved,
+                stars: prev.stars + 1,
+                correctAnswersCount: newCorrectCount,
+              };
+            });
           }}
         />
       )}
