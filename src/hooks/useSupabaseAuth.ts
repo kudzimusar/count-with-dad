@@ -6,11 +6,13 @@ export function useSupabaseAuth() {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
+  const [authEvent, setAuthEvent] = useState<string | null>(null);
 
   useEffect(() => {
     // Set up auth state listener first
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
+        setAuthEvent(event); // Track event type (SIGNED_IN, SIGNED_OUT, etc.)
         setSession(session);
         setUser(session?.user ?? null);
         setLoading(false);
@@ -59,6 +61,7 @@ export function useSupabaseAuth() {
     user,
     session,
     loading,
+    authEvent, // Export auth event for detecting sign-out
     signUp,
     signIn,
     signOut,

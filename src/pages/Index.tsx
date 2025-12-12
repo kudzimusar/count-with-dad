@@ -67,10 +67,13 @@ const initialState: AppState = {
 
 const Index = () => {
   const navigate = useNavigate();
-  const { user, loading: authLoading } = useSupabaseAuth();
+  const { user, loading: authLoading, authEvent } = useSupabaseAuth();
   const [rawState, setRawState] = useLocalStorage<AppState>('countingAppState', initialState);
   const [dataLoaded, setDataLoaded] = useState(false);
   
+  // Track the last user ID to detect user changes
+  const [lastUserId, setLastUserId] = useLocalStorage<string | null>('lastUserId', null);
+
   // Merge saved state with initial state to handle missing properties from updates
   const state: AppState = {
     ...initialState,
@@ -112,6 +115,77 @@ const Index = () => {
     updateSubscription,
     loadSubscription,
   } = useSupabaseData(user?.id);
+
+  // Clear data on sign-out or user change
+  useEffect(() => {
+    // Skip if auth is still loading
+    if (authLoading) return;
+
+    const currentUserId = user?.id || null;
+    
+    // Scenario 1: User explicitly signed out (SIGNED_OUT event takes priority)
+    if (authEvent === 'SIGNED_OUT') {
+      console.log('Clearing data: User signed out');
+      localStorage.removeItem('countingAppState');
+      localStorage.removeItem('lastUserId');
+      setRawState(initialState);
+      setDataLoaded(false);
+      setLastUserId(null);
+      toast.info('Signed out. All data cleared.');
+      return;
+    }
+    
+    // Scenario 2: Different authenticated user signed in
+    if (user && lastUserId !== null && lastUserId !== user.id && lastUserId !== 'guest') {
+      console.log('Clearing data: Different user signed in');
+      localStorage.removeItem('countingAppState');
+      setRawState(initialState);
+      setDataLoaded(false);
+      setLastUserId(user.id);
+      toast.info('Switched accounts. Loading your data...');
+      return;
+    }
+    
+    // Scenario 3: User signed in (first time or returning same user)
+    if (user && lastUserId !== user.id) {
+      // If switching from guest to user, clear guest data
+      if (lastUserId === 'guest') {
+        console.log('Clearing data: Switching from guest to user');
+        localStorage.removeItem('countingAppState');
+        setRawState(initialState);
+        setDataLoaded(false);
+        toast.info('Account connected. Starting fresh with cloud sync.');
+      }
+      setLastUserId(user.id);
+      return;
+    }
+    
+    // Scenario 4: User became null (signed out but no SIGNED_OUT event caught)
+    if (!user && lastUserId !== null && lastUserId !== 'guest') {
+      console.log('Clearing data: User became null');
+      localStorage.removeItem('countingAppState');
+      localStorage.removeItem('lastUserId');
+      setRawState(initialState);
+      setDataLoaded(false);
+      setLastUserId(null);
+      return;
+    }
+    
+    // Scenario 5: Guest mode - switching from user to guest
+    if (!user && lastUserId !== 'guest' && lastUserId !== null) {
+      console.log('Clearing data: Switching from user to guest');
+      localStorage.removeItem('countingAppState');
+      setRawState(initialState);
+      setDataLoaded(false);
+      setLastUserId('guest');
+      return;
+    }
+    
+    // Scenario 6: First time guest (initialize guest mode)
+    if (!user && lastUserId === null) {
+      setLastUserId('guest');
+    }
+  }, [user, authEvent, lastUserId, setRawState, authLoading, setLastUserId]);
 
   // Load data from Supabase when user logs in (optional, only if logged in)
   useEffect(() => {
@@ -195,6 +269,10 @@ const Index = () => {
       };
 
       loadData();
+    }
+    // For guests (no user), mark as loaded so app doesn't wait
+    else if (!user && !dataLoaded) {
+      setDataLoaded(true);
     }
   }, [user, dataLoaded, loadProfile, loadProgress, loadSessionHistory, loadSubscription, updateSubscription]);
 
@@ -351,7 +429,11 @@ const Index = () => {
         if (state.voiceEnabled) {
           // Every 10 numbers, give extra encouragement with name
           if (num % 10 === 0) {
-            speak(`${num}! Great job ${state.childName}!`);
+            if (state.childName) {
+              speak(`${num}! Great job ${state.childName}!`);
+            } else {
+              speak(`${num}! Great job!`);
+            }
           } else {
             speak(num.toString());
           }
@@ -377,7 +459,13 @@ const Index = () => {
           }));
           setCelebrationOpen(true);
           if (state.soundEnabled) playSound('celebrate');
-          if (state.voiceEnabled) speak(`Congratulations ${state.childName}! You counted to 100! Amazing job!`);
+          if (state.voiceEnabled) {
+            if (state.childName) {
+              speak(`Congratulations ${state.childName}! You counted to 100! Amazing job!`);
+            } else {
+              speak(`Congratulations! You counted to 100! Amazing job!`);
+            }
+          }
           createConfetti();
         } else {
           setState(prev => ({ 
@@ -403,7 +491,13 @@ const Index = () => {
       if (num === state.challengeNumber) {
         // Correct
         if (state.soundEnabled) playSound('correct');
-        if (state.voiceEnabled) speak(`Yes! That's ${num}! Great job ${state.childName}!`);
+        if (state.voiceEnabled) {
+          if (state.childName) {
+            speak(`Yes! That's ${num}! Great job ${state.childName}!`);
+          } else {
+            speak(`Yes! That's ${num}! Great job!`);
+          }
+        }
         
         createSticker(num);
         
@@ -450,7 +544,13 @@ const Index = () => {
       currentNumber: 1,
       completedNumbers: [] // Clear all checkmarks to start fresh
     }));
-    if (state.voiceEnabled) speak(`Let's count again ${state.childName}! Starting from 1!`);
+    if (state.voiceEnabled) {
+      if (state.childName) {
+        speak(`Let's count again ${state.childName}! Starting from 1!`);
+      } else {
+        speak(`Let's count again! Starting from 1!`);
+      }
+    }
   };
 
   const handleParentSuccess = () => {
@@ -856,7 +956,7 @@ const Index = () => {
               childName: name || prev.childName, 
               childAge: age || prev.childAge, 
               childAvatar: avatar || prev.childAvatar,
-              childGender: gender || prev.childGender,
+              childGender: (gender || prev.childGender) as 'boy' | 'girl' | 'other' | 'prefer-not-to-say' | undefined,
             }));
             
             // Save to Supabase if user is logged in
