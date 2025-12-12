@@ -14,7 +14,8 @@
     "db:reset": "supabase db reset",
     "db:status": "supabase migration list",
     "db:link": "supabase link --project-ref",
-    "db:types": "supabase gen types typescript --local > src/types/supabase.ts"
+    "db:types": "supabase gen types typescript --local > src/types/supabase.ts",
+    "db:verify": "./scripts/verify-supabase-setup.sh"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",

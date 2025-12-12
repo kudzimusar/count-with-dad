@@ -156,6 +156,23 @@ Before deploying new features:
 - [ ] Apply initial migration (if not already done)
 - [ ] Verify connection works
 
+## 🔍 Verify Your Setup
+
+Run the verification script to check your setup:
+
+```bash
+npm run db:verify
+# Or directly:
+./scripts/verify-supabase-setup.sh
+```
+
+This will check:
+- Supabase CLI installation
+- Login status
+- Project linking
+- Environment variables
+- Migration files
+
 ## 🆘 Troubleshooting
 
 ### "Command not found: supabase"
@@ -164,12 +181,39 @@ Before deploying new features:
 ### "Not logged in"
 - Run `supabase login`
 
-### "Project not linked"
-- Run `npm run db:link` and enter your project reference ID
+### "Project not linked" or Wrong Project
+
+If you're connected to the wrong Supabase project:
+
+1. **Check current link**:
+   ```bash
+   cat supabase/.temp/project-ref 2>/dev/null || echo "Not linked"
+   ```
+
+2. **Unlink current project** (if needed):
+   ```bash
+   rm -rf supabase/.temp
+   ```
+
+3. **Link correct project**:
+   ```bash
+   supabase link --project-ref your-counting-app-project-ref
+   ```
+   
+   Get your project reference ID from:
+   - Supabase Dashboard → Settings → General
+   - Or from your `.env` file's `VITE_SUPABASE_URL` (the subdomain)
 
 ### "Migration already applied"
 - Check migration status: `npm run db:status`
 - Verify you're linked to the correct project
+
+### Wrong Tables in Database
+
+If you see tables from a different app (e.g., driving test app):
+- You're likely connected to the wrong Supabase project
+- Follow the "Project not linked" troubleshooting above
+- Verify the project reference matches your counting app project
 
 ## 📚 Additional Resources
 

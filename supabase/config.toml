@@ -1,11 +1,6 @@
 # Supabase CLI Configuration
 # This file configures the Supabase CLI for local development and migrations
-
-[project]
-# Your Supabase project reference ID
-# Get this from: https://app.supabase.com/project/_/settings/general
-# Leave empty to use the project from your linked account
-project_id = ""
+# Project linking is done via: supabase link --project-ref <project-ref>
 
 [auth]
 # Enable email provider by default
@@ -48,4 +43,3 @@ file_size_limit = "50MiB"
 enable_signup = true
 double_confirm_changes = true
 enable_confirmations = false
-
