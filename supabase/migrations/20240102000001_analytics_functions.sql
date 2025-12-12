@@ -16,7 +16,7 @@ BEGIN
     SUM(score)::BIGINT as total_score
   FROM public.session_history
   WHERE user_id = user_uuid
-    AND DATE(date) = CURRENT_DATE;
+    AND DATE(date::timestamptz) = CURRENT_DATE;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
@@ -34,10 +34,10 @@ BEGIN
     COUNT(*)::BIGINT as sessions_count,
     ROUND(SUM(duration) / 60.0, 2)::NUMERIC as total_minutes,
     ROUND(AVG(duration) / 60.0, 2)::NUMERIC as avg_duration,
-    COUNT(DISTINCT DATE(date))::BIGINT as days_active
+    COUNT(DISTINCT DATE(date::timestamptz))::BIGINT as days_active
   FROM public.session_history
   WHERE user_id = user_uuid
-    AND date >= CURRENT_DATE - INTERVAL '7 days';
+    AND date::timestamptz >= CURRENT_DATE - INTERVAL '7 days';
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
@@ -83,13 +83,13 @@ RETURNS TABLE (
 BEGIN
   RETURN QUERY
   SELECT 
-    COALESCE(COUNT(DISTINCT DATE(sh.date))::INTEGER, 0) as days_active,
+    COALESCE(COUNT(DISTINCT DATE(sh.date::timestamptz))::INTEGER, 0) as days_active,
     COUNT(sh.id)::BIGINT as total_sessions,
-    p.registered_at as member_since
+    p.created_at as member_since
   FROM public.profiles p
   LEFT JOIN public.session_history sh ON sh.user_id = p.user_id
   WHERE p.user_id = user_uuid
-  GROUP BY p.registered_at;
+  GROUP BY p.created_at;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
