@@ -24,7 +24,13 @@ export function useSupabaseData(userId: string | undefined) {
         parent_email: data.parentEmail || null,
         parent_relationship: data.parentRelationship || null,
         registered_at: new Date().toISOString(),
+      }, {
+        onConflict: 'user_id' // Handle conflicts on user_id unique constraint
       });
+
+    if (error) {
+      console.error('Profile save error:', error);
+    }
 
     return { error };
   }, [userId]);
@@ -48,7 +54,13 @@ export function useSupabaseData(userId: string | undefined) {
         completed_numbers: progress.completedNumbers,
         correct_answers_count: progress.correctAnswersCount,
         daily_goal: progress.dailyGoal,
+      }, {
+        onConflict: 'user_id' // Handle conflicts on user_id unique constraint
       });
+
+    if (error) {
+      console.error('Progress save error:', error);
+    }
 
     return { error };
   }, [userId]);

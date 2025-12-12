@@ -70,6 +70,7 @@ const Index = () => {
   const { user, loading: authLoading, authEvent } = useSupabaseAuth();
   const [rawState, setRawState] = useLocalStorage<AppState>('countingAppState', initialState);
   const [dataLoaded, setDataLoaded] = useState(false);
+  const [profileLoaded, setProfileLoaded] = useState(false); // Track if profile check is complete
   
   // Track the last user ID to detect user changes
   const [lastUserId, setLastUserId] = useLocalStorage<string | null>('lastUserId', null);
@@ -130,6 +131,7 @@ const Index = () => {
       localStorage.removeItem('lastUserId');
       setRawState(initialState);
       setDataLoaded(false);
+      setProfileLoaded(false); // Reset profile check
       setLastUserId(null);
       toast.info('Signed out. All data cleared.');
       return;
@@ -141,6 +143,7 @@ const Index = () => {
       localStorage.removeItem('countingAppState');
       setRawState(initialState);
       setDataLoaded(false);
+      setProfileLoaded(false); // Reset profile check
       setLastUserId(user.id);
       toast.info('Switched accounts. Loading your data...');
       return;
@@ -154,6 +157,7 @@ const Index = () => {
         localStorage.removeItem('countingAppState');
         setRawState(initialState);
         setDataLoaded(false);
+        setProfileLoaded(false); // Reset profile check
         toast.info('Account connected. Starting fresh with cloud sync.');
       }
       setLastUserId(user.id);
@@ -167,6 +171,7 @@ const Index = () => {
       localStorage.removeItem('lastUserId');
       setRawState(initialState);
       setDataLoaded(false);
+      setProfileLoaded(false); // Reset profile check
       setLastUserId(null);
       return;
     }
@@ -177,6 +182,7 @@ const Index = () => {
       localStorage.removeItem('countingAppState');
       setRawState(initialState);
       setDataLoaded(false);
+      setProfileLoaded(false); // Reset profile check
       setLastUserId('guest');
       return;
     }
@@ -191,88 +197,114 @@ const Index = () => {
   useEffect(() => {
     if (user && !dataLoaded) {
       const loadData = async () => {
-        const [profileResult, progressResult, sessionResult] = await Promise.all([
-          loadProfile(),
-          loadProgress(),
-          loadSessionHistory(),
-        ]);
+        try {
+          const [profileResult, progressResult, sessionResult] = await Promise.all([
+            loadProfile(),
+            loadProgress(),
+            loadSessionHistory(),
+          ]);
 
-        if (profileResult.data) {
-          setState(prev => ({
-            ...prev,
-            childName: profileResult.data.child_name,
-            childAge: profileResult.data.child_age,
-            childAvatar: profileResult.data.child_avatar,
-            childGender: profileResult.data.child_gender as any,
-            parentEmail: profileResult.data.parent_email || undefined,
-            parentRelationship: profileResult.data.parent_relationship || undefined,
-            registeredAt: profileResult.data.registered_at || undefined,
-            hasCompletedOnboarding: true,
-          }));
-        }
-
-        if (progressResult.data) {
-          setState(prev => ({
-            ...prev,
-            highestCount: progressResult.data.highest_count,
-            stars: progressResult.data.stars,
-            puzzleLevel: progressResult.data.puzzle_level,
-            mathLevel: progressResult.data.math_level,
-            challengeLevel: progressResult.data.challenge_level,
-            puzzlesSolved: progressResult.data.puzzles_solved,
-            mathSolved: progressResult.data.math_solved,
-            unlockedPuzzleLevels: progressResult.data.unlocked_puzzle_levels,
-            unlockedMathLevels: progressResult.data.unlocked_math_levels,
-            completedNumbers: progressResult.data.completed_numbers,
-            correctAnswersCount: progressResult.data.correct_answers_count,
-            dailyGoal: progressResult.data.daily_goal ?? prev.dailyGoal,
-            subscriptionStatus: progressResult.data.subscription_status || 'free',
-            trialStartedAt: progressResult.data.subscription_started_at || undefined,
-          }));
-        }
-
-        if (sessionResult.data) {
-          const sessions = sessionResult.data.map(s => ({
-            date: s.date,
-            duration: s.duration,
-            screen: s.screen as Screen,
-            mode: s.mode as CountingMode | undefined,
-            score: s.score,
-          }));
-          setState(prev => ({
-            ...prev,
-            sessionHistory: sessions,
-          }));
-        }
-
-        // Load subscription data separately
-        const subscriptionResult = await loadSubscription();
-        if (subscriptionResult.data) {
-          // Check if subscription expired
-          const now = new Date();
-          const expiresAt = subscriptionResult.data.subscription_expires_at 
-            ? new Date(subscriptionResult.data.subscription_expires_at) 
-            : null;
+          // Log errors for debugging
+          if (profileResult.error) {
+            console.error('Profile load error:', profileResult.error);
+          } else if (!profileResult.data) {
+            console.log('No profile found for user');
+          }
           
-          if (expiresAt && expiresAt < now && subscriptionResult.data.subscription_status !== 'free') {
-            // Subscription expired, downgrade to free
-            await updateSubscription('free');
+          if (progressResult.error) {
+            console.error('Progress load error:', progressResult.error);
+          }
+
+          if (profileResult.data) {
             setState(prev => ({
               ...prev,
-              subscriptionStatus: 'free',
-              trialStartedAt: undefined,
+              childName: profileResult.data.child_name,
+              childAge: profileResult.data.child_age,
+              childAvatar: profileResult.data.child_avatar,
+              childGender: profileResult.data.child_gender as any,
+              parentEmail: profileResult.data.parent_email || undefined,
+              parentRelationship: profileResult.data.parent_relationship || undefined,
+              registeredAt: profileResult.data.registered_at || undefined,
+              hasCompletedOnboarding: true,
             }));
           }
-        }
 
-        setDataLoaded(true);
+          if (progressResult.data) {
+            setState(prev => ({
+              ...prev,
+              highestCount: progressResult.data.highest_count,
+              stars: progressResult.data.stars,
+              puzzleLevel: progressResult.data.puzzle_level,
+              mathLevel: progressResult.data.math_level,
+              challengeLevel: progressResult.data.challenge_level,
+              puzzlesSolved: progressResult.data.puzzles_solved,
+              mathSolved: progressResult.data.math_solved,
+              unlockedPuzzleLevels: progressResult.data.unlocked_puzzle_levels,
+              unlockedMathLevels: progressResult.data.unlocked_math_levels,
+              completedNumbers: progressResult.data.completed_numbers,
+              correctAnswersCount: progressResult.data.correct_answers_count,
+              dailyGoal: progressResult.data.daily_goal ?? prev.dailyGoal,
+              subscriptionStatus: progressResult.data.subscription_status || 'free',
+              trialStartedAt: progressResult.data.subscription_started_at || undefined,
+            }));
+          }
+
+          if (sessionResult.data) {
+            const sessions = sessionResult.data.map(s => ({
+              date: s.date,
+              duration: s.duration,
+              screen: s.screen as Screen,
+              mode: s.mode as CountingMode | undefined,
+              score: s.score,
+            }));
+            setState(prev => ({
+              ...prev,
+              sessionHistory: sessions,
+            }));
+          }
+
+          // Load subscription data separately
+          const subscriptionResult = await loadSubscription();
+          if (subscriptionResult.data) {
+            // Check if subscription expired
+            const now = new Date();
+            const expiresAt = subscriptionResult.data.subscription_expires_at 
+              ? new Date(subscriptionResult.data.subscription_expires_at) 
+              : null;
+            
+            if (expiresAt && expiresAt < now && subscriptionResult.data.subscription_status !== 'free') {
+              // Subscription expired, downgrade to free
+              await updateSubscription('free');
+              setState(prev => ({
+                ...prev,
+                subscriptionStatus: 'free',
+                trialStartedAt: undefined,
+              }));
+            }
+          }
+
+          // Mark profile as checked (whether it exists or not)
+          setProfileLoaded(true);
+          setDataLoaded(true);
+        } catch (error) {
+          console.error('Data loading error:', error);
+          // Even on error, mark as loaded to prevent infinite waiting
+          setProfileLoaded(true);
+          setDataLoaded(true);
+        }
       };
 
       loadData();
     }
     // For guests (no user), mark as loaded so app doesn't wait
     else if (!user && !dataLoaded) {
+      setProfileLoaded(true);
       setDataLoaded(true);
+    }
+    
+    // Reset profileLoaded when user changes
+    if (!user) {
+      setProfileLoaded(false);
     }
   }, [user, dataLoaded, loadProfile, loadProgress, loadSessionHistory, loadSubscription, updateSubscription]);
 
@@ -310,12 +342,16 @@ const Index = () => {
   const [currentSessionScreen, setCurrentSessionScreen] = useState<Screen>(state.currentScreen);
 
   // Show registration modal only if:
-  // 1. Data is loaded (to avoid showing before checking profile)
-  // 2. User hasn't completed onboarding (no profile exists)
-  // 3. For signed-in users: only show if profile doesn't exist in database
-  // 4. For guest users: show if no local profile exists
+  // 1. Profile check is complete (to avoid race condition)
+  // 2. Data is loaded
+  // 3. User hasn't completed onboarding (no profile exists)
+  // 4. For signed-in users: only show if profile doesn't exist in database
+  // 5. For guest users: show if no local profile exists
   useEffect(() => {
-    if (!dataLoaded || authLoading) return;
+    // Wait for profile to be checked (prevents race condition)
+    if (!profileLoaded || !dataLoaded || authLoading) {
+      return;
+    }
 
     // If user is signed in and has a profile (childName exists), don't show modal
     if (user && state.childName && state.hasCompletedOnboarding) {
@@ -339,7 +375,7 @@ const Index = () => {
     if (state.hasCompletedOnboarding) {
       setRegistrationModalOpen(false);
     }
-  }, [user, state.hasCompletedOnboarding, state.childName, dataLoaded, authLoading]);
+  }, [user, state.hasCompletedOnboarding, state.childName, profileLoaded, dataLoaded, authLoading]);
 
   // Track session start
   useEffect(() => {
