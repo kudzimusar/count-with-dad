@@ -14,7 +14,7 @@ interface ParentDashboardProps {
   onVoiceToggle: (enabled: boolean) => void;
   onResetProgress: () => void;
   onClose: () => void;
-  onUpdateChildProfile: (name: string, age: number, avatar: string) => void;
+  onUpdateChildProfile: (name: string, age: number, avatar: string, gender?: string) => void;
   onUpdateDailyGoal: (goal: number) => void;
   onUpdateVoiceSettings: (settings: VoiceSettings) => void;
   onUpdateTimeLimit: (limit: number) => void;

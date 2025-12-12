@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { AppState, CountingMode, Screen, VoiceSettings, FeedbackData } from '@/types';
+import { AppState, CountingMode, Screen, VoiceSettings, FeedbackData, SessionRecord } from '@/types';
 import { useLocalStorage } from '@/hooks/useLocalStorage';
 import { useSound } from '@/hooks/useSound';
 import { useSpeech } from '@/hooks/useSpeech';
@@ -45,7 +45,7 @@ const initialState: AppState = {
   puzzleSequence: [],
   uiVisible: true,
   menuOpen: false,
-  childName: 'NONO',
+  childName: '',
   childAge: 3,
   childAvatar: '👦',
   dailyGoal: 20,
@@ -107,6 +107,8 @@ const Index = () => {
     trackEvent: trackSupabaseEvent,
     loadProfile,
     loadProgress,
+    loadSessionHistory,
+    saveSession,
     updateSubscription,
     loadSubscription,
   } = useSupabaseData(user?.id);
@@ -115,9 +117,10 @@ const Index = () => {
   useEffect(() => {
     if (user && !dataLoaded) {
       const loadData = async () => {
-        const [profileResult, progressResult] = await Promise.all([
+        const [profileResult, progressResult, sessionResult] = await Promise.all([
           loadProfile(),
           loadProgress(),
+          loadSessionHistory(),
         ]);
 
         if (profileResult.data) {
@@ -148,8 +151,23 @@ const Index = () => {
             unlockedMathLevels: progressResult.data.unlocked_math_levels,
             completedNumbers: progressResult.data.completed_numbers,
             correctAnswersCount: progressResult.data.correct_answers_count,
+            dailyGoal: progressResult.data.daily_goal ?? prev.dailyGoal,
             subscriptionStatus: progressResult.data.subscription_status || 'free',
             trialStartedAt: progressResult.data.subscription_started_at || undefined,
+          }));
+        }
+
+        if (sessionResult.data) {
+          const sessions = sessionResult.data.map(s => ({
+            date: s.date,
+            duration: s.duration,
+            screen: s.screen as Screen,
+            mode: s.mode as CountingMode | undefined,
+            score: s.score,
+          }));
+          setState(prev => ({
+            ...prev,
+            sessionHistory: sessions,
           }));
         }
 
@@ -178,7 +196,7 @@ const Index = () => {
 
       loadData();
     }
-  }, [user, dataLoaded]);
+  }, [user, dataLoaded, loadProfile, loadProgress, loadSessionHistory, loadSubscription, updateSubscription]);
 
   // Auto-save progress to Supabase
   useEffect(() => {
@@ -189,7 +207,7 @@ const Index = () => {
 
       return () => clearTimeout(saveTimer);
     }
-  }, [user, dataLoaded, state.highestCount, state.stars, state.puzzleLevel, state.mathLevel, state.challengeLevel, state.puzzlesSolved, state.mathSolved, state.completedNumbers, state.correctAnswersCount]);
+  }, [user, dataLoaded, state.highestCount, state.stars, state.puzzleLevel, state.mathLevel, state.challengeLevel, state.puzzlesSolved, state.mathSolved, state.completedNumbers, state.correctAnswersCount, state.dailyGoal]);
   
   const [parentGateOpen, setParentGateOpen] = useState(false);
   const [celebrationOpen, setCelebrationOpen] = useState(false);
@@ -208,6 +226,10 @@ const Index = () => {
   const { speak } = useSpeech(state.voiceSettings);
   const { trackEvent } = useAnalytics();
 
+  // Session tracking state
+  const [sessionStartTime] = useState<number>(Date.now());
+  const [currentSessionScreen, setCurrentSessionScreen] = useState<Screen>(state.currentScreen);
+
   // Track session start
   useEffect(() => {
     trackEvent('session_start', {
@@ -215,6 +237,57 @@ const Index = () => {
       childAge: state.childAge,
     });
   }, []);
+
+  // Save session when screen changes or app closes
+  useEffect(() => {
+    const saveCurrentSession = async () => {
+      const duration = Math.floor((Date.now() - sessionStartTime) / 1000);
+      
+      // Only save sessions longer than 30 seconds and if progress was made
+      if (duration > 30) {
+        const sessionRecord: SessionRecord = {
+          date: new Date().toISOString(),
+          duration,
+          screen: currentSessionScreen,
+          mode: state.countingMode || undefined,
+          score: state.correctAnswersCount || 0,
+        };
+        
+        // Save to local state (localStorage)
+        setState(prev => ({
+          ...prev,
+          sessionHistory: [...prev.sessionHistory, sessionRecord]
+        }));
+        
+        // Save to database if logged in
+        if (user) {
+          const result = await saveSession(sessionRecord);
+          if (result.error) {
+            console.error('Failed to save session:', result.error);
+          }
+        }
+      }
+    };
+
+    // Save on screen change
+    if (currentSessionScreen !== state.currentScreen) {
+      saveCurrentSession();
+      setCurrentSessionScreen(state.currentScreen);
+    }
+
+    // Save on page unload
+    const handleBeforeUnload = () => {
+      saveCurrentSession();
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+      // Final save on cleanup
+      saveCurrentSession();
+    };
+  }, [state.currentScreen, state.countingMode, state.correctAnswersCount, user, currentSessionScreen, sessionStartTime, saveSession]);
 
   // Scroll detection for indicator
   useEffect(() => {
@@ -760,9 +833,35 @@ const Index = () => {
           onVoiceToggle={(enabled) => setState(prev => ({ ...prev, voiceEnabled: enabled }))}
           onResetProgress={handleResetProgress}
           onClose={() => setState(prev => ({ ...prev, currentScreen: 'counting' }))}
-          onUpdateChildProfile={(name, age, avatar) => 
-            setState(prev => ({ ...prev, childName: name, childAge: age, childAvatar: avatar }))
-          }
+          onUpdateChildProfile={async (name, age, avatar, gender) => {
+            // Update local state immediately
+            setState(prev => ({ 
+              ...prev, 
+              childName: name || prev.childName, 
+              childAge: age || prev.childAge, 
+              childAvatar: avatar || prev.childAvatar,
+              childGender: gender || prev.childGender,
+            }));
+            
+            // Save to Supabase if user is logged in
+            if (user) {
+              const result = await saveProfile({
+                childName: name || state.childName,
+                childAge: age || state.childAge,
+                childAvatar: avatar || state.childAvatar,
+                childGender: gender || state.childGender,
+                parentEmail: state.parentEmail,
+                parentRelationship: state.parentRelationship,
+              });
+              
+              if (result.error) {
+                toast.error('Failed to save profile. Please try again.');
+                console.error('Profile save error:', result.error);
+              } else {
+                toast.success('Profile saved successfully!');
+              }
+            }
+          }}
           onUpdateDailyGoal={(goal) => setState(prev => ({ ...prev, dailyGoal: goal }))}
           onUpdateVoiceSettings={(settings) => setState(prev => ({ ...prev, voiceSettings: settings }))}
           onUpdateTimeLimit={(limit) => setState(prev => ({ ...prev, timeLimit: limit }))}

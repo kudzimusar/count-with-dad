@@ -1,6 +1,8 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { AppState } from '@/types';
 import { User, Target, Calendar, Mail, Users } from 'lucide-react';
+import { useSupabaseAuth } from '@/hooks/useSupabaseAuth';
+import { useSupabaseData } from '@/hooks/useSupabaseData';
 
 interface ProfileTabProps {
   state: AppState;
@@ -14,6 +16,30 @@ export function ProfileTab({ state, onUpdateChildProfile, onUpdateDailyGoal }: P
   const [editName, setEditName] = useState(state.childName);
   const [editAge, setEditAge] = useState(state.childAge);
   const [editAvatar, setEditAvatar] = useState(state.childAvatar);
+  const { user } = useSupabaseAuth();
+  const { getUserStats } = useSupabaseData(user?.id);
+  const [accountStats, setAccountStats] = useState<{
+    daysActive: number;
+    totalSessions: number;
+    memberSince: string | null;
+  } | null>(null);
+
+  // Load account stats from database
+  useEffect(() => {
+    if (user) {
+      getUserStats().then(result => {
+        if (result.data) {
+          setAccountStats({
+            daysActive: result.data.days_active || 0,
+            totalSessions: Number(result.data.total_sessions) || 0,
+            memberSince: result.data.member_since || null,
+          });
+        }
+      }).catch(error => {
+        console.error('Failed to load account stats:', error);
+      });
+    }
+  }, [user, getUserStats]);
 
   const handleSaveProfile = () => {
     onUpdateChildProfile(editName, editAge, editAvatar, state.childGender);
@@ -103,18 +129,24 @@ export function ProfileTab({ state, onUpdateChildProfile, onUpdateDailyGoal }: P
           <div className="flex justify-between items-center p-3 bg-background rounded-lg">
             <span className="text-muted-foreground">Member Since</span>
             <span className="font-bold">
-              {state.registeredAt 
+              {accountStats?.memberSince
+                ? new Date(accountStats.memberSince).toLocaleDateString()
+                : state.registeredAt
                 ? new Date(state.registeredAt).toLocaleDateString()
                 : 'Just now'}
             </span>
           </div>
           <div className="flex justify-between items-center p-3 bg-background rounded-lg">
             <span className="text-muted-foreground">Days Active</span>
-            <span className="font-bold">{accountAge} days</span>
+            <span className="font-bold">
+              {accountStats?.daysActive ?? accountAge} days
+            </span>
           </div>
           <div className="flex justify-between items-center p-3 bg-background rounded-lg">
             <span className="text-muted-foreground">Total Sessions</span>
-            <span className="font-bold">{state.sessionHistory.length}</span>
+            <span className="font-bold">
+              {accountStats?.totalSessions ?? state.sessionHistory.length}
+            </span>
           </div>
         </div>
       </div>
@@ -165,7 +197,7 @@ export function ProfileTab({ state, onUpdateChildProfile, onUpdateDailyGoal }: P
             className="w-full px-4 py-3 border-2 border-input rounded-lg focus:border-primary outline-none bg-background transition-colors text-lg font-bold"
           />
           <p className="text-sm text-muted-foreground">
-            Set how many numbers {state.childName} should count per day
+            Set how many numbers {state.childName || 'your child'} should count per day
           </p>
           <div className="grid grid-cols-4 gap-2">
             {[5, 10, 20, 50].map((goal) => (
