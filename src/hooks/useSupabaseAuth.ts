@@ -30,13 +30,16 @@ export function useSupabaseAuth() {
   }, []);
 
   const signUp = async (email: string, password: string) => {
-    const redirectUrl = `${window.location.origin}/`;
+    // Always use production URL for email verification redirect
+    // This ensures users can always return to the app after clicking email link
+    // even if they signed up from localhost or a different environment
+    const productionUrl = 'https://kudzimusar.github.io/count-with-dad/app';
     
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
       options: {
-        emailRedirectTo: redirectUrl
+        emailRedirectTo: productionUrl
       }
     });
     
