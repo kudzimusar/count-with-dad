@@ -24,7 +24,13 @@ export function useSupabaseData(userId: string | undefined) {
         parent_email: data.parentEmail || null,
         parent_relationship: data.parentRelationship || null,
         registered_at: new Date().toISOString(),
+      }, {
+        onConflict: 'user_id' // Handle conflicts on user_id unique constraint
       });
+
+    if (error) {
+      console.error('Profile save error:', error);
+    }
 
     return { error };
   }, [userId]);
@@ -47,7 +53,14 @@ export function useSupabaseData(userId: string | undefined) {
         unlocked_math_levels: progress.unlockedMathLevels,
         completed_numbers: progress.completedNumbers,
         correct_answers_count: progress.correctAnswersCount,
+        daily_goal: progress.dailyGoal,
+      }, {
+        onConflict: 'user_id' // Handle conflicts on user_id unique constraint
       });
+
+    if (error) {
+      console.error('Progress save error:', error);
+    }
 
     return { error };
   }, [userId]);
@@ -163,6 +176,36 @@ export function useSupabaseData(userId: string | undefined) {
     return { data, error };
   }, [userId]);
 
+  const getTodayStats = useCallback(async () => {
+    if (!userId) return { data: null, error: 'No user ID' };
+
+    const { data, error } = await supabase.rpc('get_today_stats', {
+      user_uuid: userId
+    });
+
+    return { data: data?.[0] || null, error };
+  }, [userId]);
+
+  const getWeeklyStats = useCallback(async () => {
+    if (!userId) return { data: null, error: 'No user ID' };
+
+    const { data, error } = await supabase.rpc('get_weekly_stats', {
+      user_uuid: userId
+    });
+
+    return { data: data?.[0] || null, error };
+  }, [userId]);
+
+  const getUserStats = useCallback(async () => {
+    if (!userId) return { data: null, error: 'No user ID' };
+
+    const { data, error } = await supabase.rpc('get_user_stats', {
+      user_uuid: userId
+    });
+
+    return { data: data?.[0] || null, error };
+  }, [userId]);
+
   return {
     saveProfile,
     saveProgress,
@@ -174,5 +217,8 @@ export function useSupabaseData(userId: string | undefined) {
     loadSessionHistory,
     updateSubscription,
     loadSubscription,
+    getTodayStats,
+    getWeeklyStats,
+    getUserStats,
   };
 }

@@ -85,12 +85,18 @@ export function MathScreen({
       if (soundEnabled) playSound('correct');
       onMathSolved();
       
-      const message = `Correct! ${a} + ${b} = ${answer}. Good job ${childName}!`;
+      const message = childName 
+        ? `Correct! ${a} + ${b} = ${answer}. Good job ${childName}!`
+        : `Correct! ${a} + ${b} = ${answer}. Good job!`;
       setSuccessMessage(message);
       setSuccessOpen(true);
 
       if (voiceEnabled) {
-        speak(`Correct! ${a} plus ${b} equals ${answer}. Good job ${childName}!`);
+        if (childName) {
+          speak(`Correct! ${a} plus ${b} equals ${answer}. Good job ${childName}!`);
+        } else {
+          speak(`Correct! ${a} plus ${b} equals ${answer}. Good job!`);
+        }
       }
     } else {
       // Wrong

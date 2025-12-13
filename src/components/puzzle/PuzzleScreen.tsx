@@ -91,7 +91,13 @@ export function PuzzleScreen({
       if (newSlots.every(slot => slot !== null)) {
         onPuzzleSolved();
         if (soundEnabled) playSound('celebrate');
-        if (voiceEnabled) speak(`Amazing ${childName}! You solved the puzzle!`);
+        if (voiceEnabled) {
+          if (childName) {
+            speak(`Amazing ${childName}! You solved the puzzle!`);
+          } else {
+            speak(`Amazing! You solved the puzzle!`);
+          }
+        }
         setSuccessOpen(true);
         createConfetti();
       }

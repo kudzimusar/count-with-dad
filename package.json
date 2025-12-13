@@ -8,7 +8,14 @@
     "build": "vite build",
     "build:dev": "vite build --mode development",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "db:migrate": "supabase db push",
+    "db:migrate:new": "supabase migration new",
+    "db:reset": "supabase db reset",
+    "db:status": "supabase migration list",
+    "db:link": "supabase link --project-ref",
+    "db:types": "supabase gen types typescript --local > src/types/supabase.ts",
+    "db:verify": "./scripts/verify-supabase-setup.sh"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",

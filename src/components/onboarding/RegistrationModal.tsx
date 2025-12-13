@@ -16,11 +16,13 @@ interface RegistrationModalProps {
     parentEmail?: string;
     parentRelationship?: string;
   }) => void;
+  onClose?: () => void;
+  allowClose?: boolean; // Allow closing modal (for guest users)
 }
 
 const avatars = ['🦁', '🐻', '🐰', '🐼', '🦊', '🐯', '🐸', '🐨'];
 
-export function RegistrationModal({ isOpen, onComplete }: RegistrationModalProps) {
+export function RegistrationModal({ isOpen, onComplete, onClose, allowClose = false }: RegistrationModalProps) {
   const [step, setStep] = useState(1);
   const [childName, setChildName] = useState('');
   const [childAge, setChildAge] = useState('');
@@ -48,9 +50,19 @@ export function RegistrationModal({ isOpen, onComplete }: RegistrationModalProps
     });
   };
 
+  const handleOpenChange = (open: boolean) => {
+    if (!open && allowClose && onClose) {
+      onClose();
+    }
+  };
+
   return (
-    <Dialog open={isOpen} onOpenChange={() => {}}>
-      <DialogContent className="sm:max-w-md" onPointerDownOutside={(e) => e.preventDefault()}>
+    <Dialog open={isOpen} onOpenChange={allowClose ? handleOpenChange : undefined}>
+      <DialogContent 
+        className="sm:max-w-md" 
+        onPointerDownOutside={allowClose ? undefined : (e) => e.preventDefault()}
+        onEscapeKeyDown={allowClose ? undefined : (e) => e.preventDefault()}
+      >
         <DialogHeader>
           <DialogTitle className="text-2xl flex items-center gap-2">
             <Sparkles className="h-6 w-6 text-yellow-500" />
