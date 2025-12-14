@@ -5,7 +5,7 @@ type SoundType = 'correct' | 'wrong' | 'celebrate';
 export function useSound() {
   const playSound = useCallback((type: SoundType) => {
     try {
-      const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+      const audioContext = new (window.AudioContext || (window as typeof window & { webkitAudioContext?: typeof AudioContext }).webkitAudioContext)();
       
       if (type === 'correct') {
         const oscillator = audioContext.createOscillator();

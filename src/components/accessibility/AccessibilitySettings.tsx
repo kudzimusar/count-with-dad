@@ -22,7 +22,7 @@ export function AccessibilitySettings({ onSettingsChange }: AccessibilitySetting
     focusMode: false
   });
 
-  const handleSettingChange = (key: keyof AccessibilitySettings, value: any) => {
+  const handleSettingChange = (key: keyof AccessibilitySettings, value: string | number | boolean) => {
     const newSettings = { ...settings, [key]: value };
     setSettings(newSettings);
     onSettingsChange(newSettings);

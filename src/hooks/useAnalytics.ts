@@ -3,11 +3,11 @@ import { useCallback } from 'react';
 interface AnalyticsEvent {
   event: string;
   timestamp: string;
-  data?: Record<string, any>;
+  data?: Record<string, unknown>;
 }
 
 export function useAnalytics() {
-  const trackEvent = useCallback((eventName: string, data?: Record<string, any>) => {
+  const trackEvent = useCallback((eventName: string, data?: Record<string, unknown>) => {
     const event: AnalyticsEvent = {
       event: eventName,
       timestamp: new Date().toISOString(),

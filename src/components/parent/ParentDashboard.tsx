@@ -108,7 +108,7 @@ export function ParentDashboard({
               ].map(({ id, label, icon: Icon }) => (
                 <button
                   key={id}
-                  onClick={() => setActiveTab(id as any)}
+                  onClick={() => setActiveTab(id as 'profile' | 'progress' | 'analytics' | 'settings' | 'subscription' | 'resources' | 'account')}
                   className={`px-4 py-2.5 rounded-lg font-bold transition-all flex items-center gap-2 whitespace-nowrap ${
                     activeTab === id
                       ? 'bg-white text-primary shadow-md'

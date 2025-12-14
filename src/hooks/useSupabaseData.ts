@@ -97,7 +97,7 @@ export function useSupabaseData(userId: string | undefined) {
     return { error };
   }, [userId]);
 
-  const trackEvent = useCallback(async (eventName: string, eventData?: Record<string, any>) => {
+  const trackEvent = useCallback(async (eventName: string, eventData?: Record<string, unknown>) => {
     if (!userId) return { error: 'No user ID' };
 
     const { error } = await supabase

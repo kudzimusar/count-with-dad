@@ -5,7 +5,9 @@ export function generateProblems(
   level: number,
   count: number = 10
 ): Problem[] {
-  const generators: Record<string, Function> = {
+  type ProblemGenerator = (level: number, count: number) => Problem[];
+  
+  const generators: Record<string, ProblemGenerator> = {
     'number-sense': generateNumberSenseProblems,
     'shapes': generateShapeProblems,
     'addition-basic': generateAdditionBasicProblems,

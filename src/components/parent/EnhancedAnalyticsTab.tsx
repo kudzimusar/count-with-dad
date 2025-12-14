@@ -11,7 +11,7 @@ interface EnhancedAnalyticsTabProps {
 export function EnhancedAnalyticsTab({ userId, childName, childAge }: EnhancedAnalyticsTabProps) {
   const { loadProgress, loadSessionHistory } = useSupabaseData(userId);
   const [progress, setProgress] = useState<AppState | null>(null);
-  const [sessions, setSessions] = useState<any[]>([]);
+  const [sessions, setSessions] = useState<Array<{ date: string; duration: number; screen: string; score: number }>>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -30,6 +30,7 @@ export function EnhancedAnalyticsTab({ userId, childName, childAge }: EnhancedAn
     }
 
     loadData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userId]);
 
   if (loading) {
@@ -186,7 +187,14 @@ export function EnhancedAnalyticsTab({ userId, childName, childAge }: EnhancedAn
   );
 }
 
-function StatCard({ title, value, icon, color }: any) {
+interface StatCardProps {
+  title: string;
+  value: string | number;
+  icon: string;
+  color: 'blue' | 'green' | 'yellow' | 'purple';
+}
+
+function StatCard({ title, value, icon, color }: StatCardProps) {
   const colorClasses = {
     blue: 'bg-blue-50 text-blue-600',
     green: 'bg-green-50 text-green-600',
@@ -203,7 +211,13 @@ function StatCard({ title, value, icon, color }: any) {
   );
 }
 
-function ProgressBar({ label, value, color }: any) {
+interface ProgressBarProps {
+  label: string;
+  value: number;
+  color: string;
+}
+
+function ProgressBar({ label, value, color }: ProgressBarProps) {
   return (
     <div>
       <div className="flex justify-between mb-1">
@@ -220,7 +234,13 @@ function ProgressBar({ label, value, color }: any) {
   );
 }
 
-function RecommendationItem({ title, description, action }: any) {
+interface RecommendationItemProps {
+  title: string;
+  description: string;
+  action?: string;
+}
+
+function RecommendationItem({ title, description, action }: RecommendationItemProps) {
   return (
     <div className="bg-white p-4 rounded-xl shadow-sm border border-purple-100">
       <div className="flex justify-between items-start">

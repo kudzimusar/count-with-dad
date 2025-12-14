@@ -53,7 +53,18 @@ export interface Problem {
 
 export interface VisualAid {
   type: 'objects' | 'number_line' | 'array' | 'money' | 'clock' | 'blocks';
-  data: any;
+  data: Record<string, unknown> | {
+    groups?: Array<{ count: number; object: string; label?: string }>;
+    min?: number;
+    max?: number;
+    markedPositions?: number[];
+    jumps?: Array<{ from: number; to: number; label?: string }>;
+    rows?: number;
+    columns?: number;
+    coins?: Array<{ type: string; count: number }>;
+    hour?: number;
+    minute?: number;
+  };
 }
 
 export interface LevelAttempt {
@@ -90,7 +101,7 @@ export interface ProblemAttempt {
   modeId: string;
   levelNumber: number;
   problemType: ProblemType;
-  problemData: any;
+  problemData: Record<string, unknown>;
   userAnswer: string;
   correctAnswer: string;
   isCorrect: boolean;

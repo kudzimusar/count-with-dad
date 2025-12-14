@@ -70,6 +70,7 @@ export function MathScreen({
     if (!USE_NEW_MATH_SYSTEM || !selectedMode) {
       generateProblem();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [level, selectedMode]);
 
   const generateProblem = () => {

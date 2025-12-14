@@ -1,4 +1,14 @@
 import { Badge } from '@/types/badges';
+import { MATH_MODES } from './mathLevels';
+
+interface UserStats {
+  completedModes: string[];
+  totalStars: number;
+  maxStreak: number;
+  recentAccuracy: number;
+  problemsPerMinute: number;
+  modeProgress: Record<string, number>;
+}
 
 export const BADGES: Badge[] = [
   // Skill Badges
@@ -325,14 +335,14 @@ export function checkBadgeCriteria(
 }
 
 export function getEarnedBadges(
-  userStats: any,
+  userStats: UserStats,
   earnedBadgeIds: string[]
 ): Badge[] {
   return BADGES.filter(badge => earnedBadgeIds.includes(badge.id));
 }
 
 export function getUpcomingBadges(
-  userStats: any,
+  userStats: UserStats,
   earnedBadgeIds: string[]
 ): Array<{ badge: Badge; progress: number }> {
   return BADGES
@@ -346,25 +356,27 @@ export function getUpcomingBadges(
     .slice(0, 3);
 }
 
-function calculateBadgeProgress(badge: Badge, userStats: any): number {
+function calculateBadgeProgress(badge: Badge, userStats: UserStats): number {
   const { criteria } = badge;
 
   switch (criteria.type) {
-    case 'total_stars':
+    case 'total_stars': {
       return Math.min(1, userStats.totalStars / criteria.starTarget!);
+    }
 
-    case 'streak':
+    case 'streak': {
       return Math.min(1, userStats.maxStreak / criteria.streakTarget!);
+    }
 
-    case 'mode_complete':
+    case 'mode_complete': {
       const modeProgress = userStats.modeProgress[criteria.modeId!] || 0;
       const totalLevels = MATH_MODES.find(m => m.id === criteria.modeId)?.totalLevels || 20;
       return modeProgress / totalLevels;
+    }
 
     default:
       return 0;
   }
 }
 
-// Import MATH_MODES from mathLevels
-import { MATH_MODES } from '@/utils/mathLevels';
+// MATH_MODES already imported at top of file
