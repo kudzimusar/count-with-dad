@@ -50,6 +50,11 @@ export function MathScreen({
 
   // Feature flag: Enable new math mode system
   const USE_NEW_MATH_SYSTEM = true;
+  
+  // Debug: Log when component renders
+  useEffect(() => {
+    console.log('MathScreen rendered:', { USE_NEW_MATH_SYSTEM, selectedMode, childAge });
+  }, [selectedMode, childAge]);
 
   // Load user progress (would come from Supabase in production)
   useEffect(() => {
