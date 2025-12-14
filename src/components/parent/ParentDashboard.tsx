@@ -26,6 +26,7 @@ interface ParentDashboardProps {
 
 export function ParentDashboard({
   state,
+  userId,
   onSoundToggle,
   onVoiceToggle,
   onResetProgress,

@@ -1054,6 +1054,7 @@ const Index = () => {
       {state.currentScreen === 'parent' && (
         <ParentDashboard
           state={state}
+          userId={user?.id}
           onSoundToggle={(enabled) => setState(prev => ({ ...prev, soundEnabled: enabled }))}
           onVoiceToggle={(enabled) => setState(prev => ({ ...prev, voiceEnabled: enabled }))}
           onResetProgress={handleResetProgress}
