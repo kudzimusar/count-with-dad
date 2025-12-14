@@ -142,6 +142,15 @@ export function ParentDashboard({
               />
             )}
 
+            {/* Analytics Tab - Enhanced */}
+            {activeTab === 'analytics' && (
+              <EnhancedAnalyticsTab 
+                userId={userId || 'guest'}
+                childName={state.childName || 'Guest'}
+                childAge={state.childAge}
+              />
+            )}
+
             {/* Account Tab */}
             {activeTab === 'account' && (
               <AccountTab />
