@@ -1014,8 +1014,10 @@ const Index = () => {
           soundEnabled={state.soundEnabled}
           voiceEnabled={state.voiceEnabled}
           childName={state.childName}
+          childAge={state.childAge}
           voiceSettings={state.voiceSettings}
           maxLevel={state.unlockedMathLevels}
+          userId={user?.id}
           onLevelChange={(delta) => {
             const currentLevel = Number(state.mathLevel) || 1;
             const maxLevel = Number(state.unlockedMathLevels) || 1;

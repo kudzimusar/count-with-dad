@@ -2,16 +2,20 @@ import { useState, useEffect } from 'react';
 import { useSound } from '@/hooks/useSound';
 import { useSpeech } from '@/hooks/useSpeech';
 import { SuccessModal } from '@/components/modals/SuccessModal';
+import { MathModeSelector } from './MathModeSelector';
+import { MathGameContainer } from './MathGameContainer';
 import { VoiceSettings } from '@/types';
-import { Lock } from 'lucide-react';
+import { Lock, ArrowLeft } from 'lucide-react';
 
 interface MathScreenProps {
   level: number;
   soundEnabled: boolean;
   voiceEnabled: boolean;
   childName: string;
+  childAge: number;
   voiceSettings: VoiceSettings;
   maxLevel: number;
+  userId?: string;
   onLevelChange: (delta: number) => void;
   onMathSolved: () => void;
 }
@@ -21,11 +25,19 @@ export function MathScreen({
   soundEnabled, 
   voiceEnabled,
   childName,
+  childAge,
   voiceSettings,
   maxLevel,
+  userId = 'guest',
   onLevelChange, 
   onMathSolved 
 }: MathScreenProps) {
+  // State for new math mode system
+  const [selectedMode, setSelectedMode] = useState<string | null>(null);
+  const [currentLevel, setCurrentLevel] = useState(level);
+  const [userProgress, setUserProgress] = useState<Record<string, number>>({});
+  const [userStars, setUserStars] = useState<Record<string, number>>({});
+  // Legacy state for old math system (backward compatibility)
   const [a, setA] = useState(0);
   const [b, setB] = useState(0);
   const [answer, setAnswer] = useState(0);
@@ -36,9 +48,29 @@ export function MathScreen({
   const { playSound } = useSound();
   const { speak } = useSpeech(voiceSettings);
 
+  // Feature flag: Enable new math mode system
+  const USE_NEW_MATH_SYSTEM = true;
+
+  // Load user progress (would come from Supabase in production)
   useEffect(() => {
-    generateProblem();
-  }, [level]);
+    // TODO: Load from Supabase user_math_progress table
+    // For now, use local storage or empty object
+    const savedProgress = localStorage.getItem('mathProgress');
+    if (savedProgress) {
+      try {
+        setUserProgress(JSON.parse(savedProgress));
+      } catch (e) {
+        console.error('Failed to parse math progress', e);
+      }
+    }
+  }, []);
+
+  // Legacy problem generation (kept for backward compatibility)
+  useEffect(() => {
+    if (!USE_NEW_MATH_SYSTEM || !selectedMode) {
+      generateProblem();
+    }
+  }, [level, selectedMode]);
 
   const generateProblem = () => {
     const levelConfig: Record<number, { maxNumber: number; maxSum: number }> = {
@@ -116,6 +148,93 @@ export function MathScreen({
     }
   };
 
+  // Handle mode selection from MathModeSelector
+  const handleModeSelect = (modeId: string) => {
+    setSelectedMode(modeId);
+    // Set initial level for selected mode
+    const modeProgress = userProgress[modeId] || 1;
+    setCurrentLevel(modeProgress);
+  };
+
+  // Handle game completion from MathGameContainer
+  const handleGameComplete = (result: {
+    passed: boolean;
+    stars: number;
+    accuracy: number;
+    timeSpent: number;
+  }) => {
+    if (result.passed) {
+      // Update progress
+      const newLevel = currentLevel + 1;
+      setCurrentLevel(newLevel);
+      setUserProgress(prev => ({
+        ...prev,
+        [selectedMode!]: newLevel
+      }));
+      
+      // Save to localStorage (would save to Supabase in production)
+      localStorage.setItem('mathProgress', JSON.stringify({
+        ...userProgress,
+        [selectedMode!]: newLevel
+      }));
+
+      // Update stars
+      setUserStars(prev => ({
+        ...prev,
+        [selectedMode!]: (prev[selectedMode!] || 0) + result.stars
+      }));
+
+      // Trigger parent callback
+      onMathSolved();
+    }
+  };
+
+  // Show new math mode selector if no mode selected
+  if (USE_NEW_MATH_SYSTEM && !selectedMode) {
+    return (
+      <section className="p-4">
+        <MathModeSelector
+          userAge={childAge || 5}
+          userProgress={userProgress}
+          userStars={userStars}
+          onSelectMode={handleModeSelect}
+        />
+      </section>
+    );
+  }
+
+  // Show new math game container if mode is selected
+  if (USE_NEW_MATH_SYSTEM && selectedMode) {
+    return (
+      <section className="p-4">
+        <div className="mb-4">
+          <button
+            onClick={() => {
+              setSelectedMode(null);
+              setCurrentLevel(level);
+            }}
+            className="flex items-center gap-2 px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            Back to Modes
+          </button>
+        </div>
+        <MathGameContainer
+          modeId={selectedMode}
+          level={currentLevel}
+          userId={userId}
+          childName={childName}
+          voiceSettings={voiceSettings}
+          soundEnabled={soundEnabled}
+          voiceEnabled={voiceEnabled}
+          onComplete={handleGameComplete}
+          onExit={() => setSelectedMode(null)}
+        />
+      </section>
+    );
+  }
+
+  // Legacy math screen (backward compatibility)
   return (
     <section className="p-4">
       <SuccessModal

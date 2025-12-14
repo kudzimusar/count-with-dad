@@ -6,6 +6,7 @@ import { LevelCompleteModal } from '../modals/LevelCompleteModal';
 import { useSound } from '@/hooks/useSound';
 import { useSpeech } from '@/hooks/useSpeech';
 import { VoiceSettings } from '@/types';
+import { Problem } from '@/types/math';
 
 interface MathGameContainerProps {
   modeId: string;

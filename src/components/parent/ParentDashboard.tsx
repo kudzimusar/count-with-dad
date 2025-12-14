@@ -1,12 +1,13 @@
 import { AppState, VoiceSettings } from '@/types';
 import { useState } from 'react';
-import { User, Settings, TrendingUp, BookOpen, ArrowLeft, Crown } from 'lucide-react';
+import { User, Settings, TrendingUp, BookOpen, ArrowLeft, Crown, BarChart3 } from 'lucide-react';
 import { ProfileTab } from './ProfileTab';
 import { ProgressTab } from './ProgressTab';
 import { SettingsTab } from './SettingsTab';
 import { ResourcesTab } from './ResourcesTab';
 import { SubscriptionTab } from './SubscriptionTab';
 import { AccountTab } from './AccountTab';
+import { EnhancedAnalyticsTab } from './EnhancedAnalyticsTab';
 
 interface ParentDashboardProps {
   state: AppState;
@@ -37,7 +38,7 @@ export function ParentDashboard({
   onUpgradeSubscription,
   onDowngradeSubscription,
 }: ParentDashboardProps) {
-  const [activeTab, setActiveTab] = useState<'profile' | 'progress' | 'settings' | 'subscription' | 'resources' | 'account'>('profile');
+  const [activeTab, setActiveTab] = useState<'profile' | 'progress' | 'analytics' | 'settings' | 'subscription' | 'resources' | 'account'>('profile');
 
   const handleReset = () => {
     if (confirm('Are you sure you want to reset all progress? This cannot be undone.')) {
@@ -98,6 +99,7 @@ export function ParentDashboard({
               {[
                 { id: 'profile', label: 'My Child', icon: User },
                 { id: 'progress', label: 'Progress', icon: TrendingUp },
+                { id: 'analytics', label: 'Analytics', icon: BarChart3 },
                 { id: 'account', label: 'Account', icon: User },
                 { id: 'subscription', label: 'Subscription', icon: Crown },
                 { id: 'settings', label: 'Settings', icon: Settings },
