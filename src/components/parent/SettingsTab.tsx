@@ -1,8 +1,9 @@
-import { AppState, VoiceSettings } from '@/types';
-import { Volume2, Clock, Shield, Palette } from 'lucide-react';
+import { AppState, VoiceSettings, SafetySettings } from '@/types';
+import { Volume2, Clock, Shield, Baby } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { Slider } from '@/components/ui/slider';
+import { useLocalStorage } from '@/hooks/useLocalStorage';
 
 interface SettingsTabProps {
   state: AppState;
@@ -155,6 +156,16 @@ export function SettingsTab({
         </div>
       </div>
 
+      {/* Child Safety & Distraction Prevention Section */}
+      <div className="bg-gradient-to-br from-green-500/10 to-green-500/5 p-6 rounded-xl border-2 border-green-500/20">
+        <h3 className="text-xl font-bold mb-4 flex items-center gap-2">
+          <Baby className="h-5 w-5 text-green-600" />
+          Child Safety & Distraction Prevention
+        </h3>
+        
+        <SafetySettingsPanel />
+      </div>
+
       {/* Privacy & Safety Section */}
       <div className="bg-muted/50 p-6 rounded-xl">
         <h3 className="text-xl font-bold mb-4 flex items-center gap-2">
@@ -181,6 +192,93 @@ export function SettingsTab({
           </div>
         </div>
       </div>
+    </div>
+  );
+}
+
+function SafetySettingsPanel() {
+  const [settings, setSettings] = useLocalStorage<SafetySettings>('safetySettings', {
+    disableZoom: true,
+    disableCopy: true,
+    confirmExit: true,
+    orientationLock: true,
+    simplifiedUI: false,
+  });
+
+  const updateSetting = (key: keyof SafetySettings, value: boolean) => {
+    setSettings({ ...settings, [key]: value });
+  };
+
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center justify-between bg-background p-4 rounded-lg">
+        <div className="space-y-0.5">
+          <Label htmlFor="disable-zoom" className="text-base font-medium">
+            Disable Zooming/Pinching
+          </Label>
+          <p className="text-sm text-muted-foreground">
+            Prevents accidental zooming during gameplay
+          </p>
+        </div>
+        <Switch
+          id="disable-zoom"
+          checked={settings.disableZoom}
+          onCheckedChange={(v) => updateSetting('disableZoom', v)}
+        />
+      </div>
+
+      <div className="flex items-center justify-between bg-background p-4 rounded-lg">
+        <div className="space-y-0.5">
+          <Label htmlFor="disable-copy" className="text-base font-medium">
+            Disable Text Copying
+          </Label>
+          <p className="text-sm text-muted-foreground">
+            Prevents text selection and copy/paste menus
+          </p>
+        </div>
+        <Switch
+          id="disable-copy"
+          checked={settings.disableCopy}
+          onCheckedChange={(v) => updateSetting('disableCopy', v)}
+        />
+      </div>
+
+      <div className="flex items-center justify-between bg-background p-4 rounded-lg">
+        <div className="space-y-0.5">
+          <Label htmlFor="confirm-exit" className="text-base font-medium">
+            Exit Confirmation
+          </Label>
+          <p className="text-sm text-muted-foreground">
+            Asks for confirmation before exiting game
+          </p>
+        </div>
+        <Switch
+          id="confirm-exit"
+          checked={settings.confirmExit}
+          onCheckedChange={(v) => updateSetting('confirmExit', v)}
+        />
+      </div>
+
+      <div className="flex items-center justify-between bg-background p-4 rounded-lg">
+        <div className="space-y-0.5">
+          <Label htmlFor="orientation-lock" className="text-base font-medium">
+            Lock Portrait Orientation
+          </Label>
+          <p className="text-sm text-muted-foreground">
+            Keeps game in portrait mode (mobile only)
+          </p>
+        </div>
+        <Switch
+          id="orientation-lock"
+          checked={settings.orientationLock}
+          onCheckedChange={(v) => updateSetting('orientationLock', v)}
+        />
+      </div>
+
+      <p className="text-xs text-muted-foreground bg-background/50 p-3 rounded-lg">
+        These settings help minimize distractions and keep children focused on learning.
+        Text selection is always enabled in this Parent Dashboard.
+      </p>
     </div>
   );
 }
