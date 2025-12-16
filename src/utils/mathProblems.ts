@@ -352,24 +352,38 @@ function shuffle<T>(array: T[]): T[] {
 
 // Placeholder generators for other modes
 export function generateShapeProblems(level: number, count: number): Problem[] {
-  return Array(count).fill(0).map((_, i) => ({
-    id: `shape-${level}-${i}`,
-    type: 'visual',
-    operation: 'comparison',
-    question: 'What shape is this?',
-    visualAid: {
-      type: 'objects',
-      data: {
-        shape: 'circle',
-        color: 'red'
-      }
-    },
-    answer: 'circle',
-    choices: ['circle', 'square', 'triangle'],
-    hint: 'Look at the shape',
-    difficulty: 'easy',
-    concept: 'shape_recognition'
-  }));
+  const basicShapes = ['circle', 'square', 'triangle'];
+  const mediumShapes = ['circle', 'square', 'triangle', 'rectangle', 'oval'];
+  const advancedShapes = ['circle', 'square', 'triangle', 'rectangle', 'oval', 'star', 'pentagon', 'hexagon', 'diamond'];
+  const colors = ['red', 'blue', 'green', 'yellow', 'purple', 'orange'];
+
+  const shapes = level <= 5 ? basicShapes : level <= 10 ? mediumShapes : advancedShapes;
+
+  return Array(count).fill(0).map((_, i) => {
+    const shape = shapes[randomInt(0, shapes.length - 1)];
+    const color = colors[randomInt(0, colors.length - 1)];
+    const wrongChoices = shapes.filter(s => s !== shape);
+    const choices = shuffle([shape, ...wrongChoices.slice(0, 3)]).slice(0, 4);
+
+    return {
+      id: `shape-${level}-${i}`,
+      type: 'visual' as ProblemType,
+      operation: 'comparison' as Operation,
+      question: 'What shape is this?',
+      visualAid: {
+        type: 'shape' as const,
+        data: {
+          shape,
+          color
+        }
+      },
+      answer: shape,
+      choices,
+      hint: `Look at the number of sides and corners`,
+      difficulty: level <= 5 ? 'easy' : level <= 10 ? 'medium' : 'hard',
+      concept: 'shape_recognition'
+    };
+  });
 }
 
 export function generateSubtractionBasicProblems(level: number, count: number): Problem[] {

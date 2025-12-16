@@ -79,10 +79,20 @@ export function MathGameContainer({
     if (correct) {
       setScore(score + 1);
       if (soundEnabled) playSound('correct');
-      if (voiceEnabled) speak('Correct! Great job!');
+      if (voiceEnabled) {
+        const message = childName
+          ? `Correct! Great job, ${childName}!`
+          : 'Correct! Great job!';
+        speak(message);
+      }
     } else {
       if (soundEnabled) playSound('wrong');
-      if (voiceEnabled) speak('Oops! Try again!');
+      if (voiceEnabled) {
+        const message = childName
+          ? `Oops! Try again, ${childName}!`
+          : 'Oops! Try again!';
+        speak(message);
+      }
     }
 
     if (isLastProblem) {
@@ -95,7 +105,10 @@ export function MathGameContainer({
       setStartTime(null);
 
       if (passed && voiceEnabled) {
-        speak(`Level complete! You got ${stars} stars!`);
+        const message = childName
+          ? `Amazing, ${childName}! Level complete! You got ${stars} stars!`
+          : `Level complete! You got ${stars} stars!`;
+        speak(message);
       }
     } else {
       // Move to next problem

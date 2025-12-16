@@ -52,7 +52,7 @@ export interface Problem {
 }
 
 export interface VisualAid {
-  type: 'objects' | 'number_line' | 'array' | 'money' | 'clock' | 'blocks';
+  type: 'objects' | 'number_line' | 'array' | 'money' | 'clock' | 'blocks' | 'shape';
   data: Record<string, unknown> | {
     groups?: Array<{ count: number; object: string; label?: string }>;
     min?: number;
@@ -64,6 +64,9 @@ export interface VisualAid {
     coins?: Array<{ type: string; count: number }>;
     hour?: number;
     minute?: number;
+    shape?: string;
+    color?: string;
+    showGrouping?: boolean;
   };
 }
 
