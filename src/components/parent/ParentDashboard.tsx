@@ -11,6 +11,7 @@ import { EnhancedAnalyticsTab } from './EnhancedAnalyticsTab';
 
 interface ParentDashboardProps {
   state: AppState;
+  userId?: string;
   onSoundToggle: (enabled: boolean) => void;
   onVoiceToggle: (enabled: boolean) => void;
   onResetProgress: () => void;
