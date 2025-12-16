@@ -71,10 +71,43 @@ All colors MUST be HSL.
 }
 
 @layer utilities {
+  /* Child Safety - Prevent text selection and copying globally */
   * {
     -webkit-tap-highlight-color: transparent;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    -webkit-touch-callout: none;
   }
-  
+
+  /* Allow selection in parent dashboard and forms */
+  .parent-dashboard *,
+  .allow-selection *,
+  input,
+  textarea {
+    -webkit-user-select: text;
+    -moz-user-select: text;
+    -ms-user-select: text;
+    user-select: text;
+    -webkit-touch-callout: default;
+  }
+
+  /* Prevent image dragging */
+  img {
+    -webkit-user-drag: none;
+    user-drag: none;
+    pointer-events: none;
+  }
+
+  /* Touch manipulation for interactive elements */
+  button,
+  .number-bubble,
+  .answer-button,
+  [role="button"] {
+    touch-action: manipulation;
+  }
+
   body {
     overscroll-behavior: none;
   }

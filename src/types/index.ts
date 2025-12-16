@@ -7,6 +7,14 @@ export interface VoiceSettings {
   voiceType: string;
 }
 
+export interface SafetySettings {
+  disableZoom: boolean;
+  disableCopy: boolean;
+  confirmExit: boolean;
+  orientationLock: boolean;
+  simplifiedUI: boolean;
+}
+
 export interface SessionRecord {
   date: string;
   duration: number;
