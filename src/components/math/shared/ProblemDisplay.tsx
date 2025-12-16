@@ -51,43 +51,43 @@ export function ProblemDisplay({ problem, showHint, onRequestHint }: ProblemDisp
   };
 
   return (
-    <div className="problem-display bg-card rounded-3xl p-8 shadow-2xl max-w-3xl mx-auto">
+    <div className="problem-display bg-card rounded-2xl p-4 md:p-6 shadow-xl max-w-2xl mx-auto">
       {/* Question Text */}
-      <div className="flex items-center justify-between mb-6">
-        <h2 className="text-3xl md:text-5xl font-bold text-foreground flex-1">
+      <div className="flex items-center justify-between mb-3">
+        <h2 className="text-2xl md:text-4xl font-bold text-foreground flex-1">
           {problem.question}
         </h2>
         <button
           onClick={handleSpeakQuestion}
-          className="ml-4 p-3 bg-primary/10 hover:bg-primary/20 rounded-full transition-colors"
+          className="ml-3 p-2 bg-primary/10 hover:bg-primary/20 rounded-full transition-colors"
           aria-label="Read question aloud"
         >
-          <Volume2 size={32} className="text-primary" />
+          <Volume2 size={24} className="text-primary" />
         </button>
       </div>
 
-      {/* Visual Aid */}
+      {/* Visual Aid - Compact */}
       {problem.visualAid && (
-        <div className="mb-8">
+        <div className="mb-3">
           {renderVisualAid()}
         </div>
       )}
 
-      {/* Hint Display */}
+      {/* Hint Display - Compact */}
       {showHint && problem.hint && (
-        <div className="mb-6 p-4 bg-yellow-50 border-2 border-yellow-300 rounded-2xl">
-          <p className="text-lg text-yellow-800">
+        <div className="mb-3 p-3 bg-yellow-50 border-2 border-yellow-300 rounded-xl">
+          <p className="text-sm md:text-base text-yellow-800">
             💡 <strong>Hint:</strong> {problem.hint}
           </p>
         </div>
       )}
 
-      {/* Hint Request Button */}
+      {/* Hint Request Button - Smaller */}
       {!showHint && onRequestHint && (
-        <div className="text-center mb-6">
+        <div className="text-center">
           <button
             onClick={onRequestHint}
-            className="px-6 py-3 bg-yellow-400 hover:bg-yellow-500 text-white font-bold rounded-full transition-colors"
+            className="px-4 py-2 bg-yellow-400 hover:bg-yellow-500 text-white text-sm font-bold rounded-full transition-colors"
           >
             Need a hint? 💡
           </button>

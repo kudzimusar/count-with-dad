@@ -145,37 +145,39 @@ export function MathGameContainer({
   if (!currentProblem) return null;
 
   return (
-    <div className="math-game-container p-4">
-      {/* Progress */}
-      <div className="flex justify-between items-center mb-4">
-        <div className="text-lg font-semibold">
+    <div className="math-game-container flex flex-col h-[calc(100vh-120px)] max-h-[800px]">
+      {/* Progress - Compact Header */}
+      <div className="flex justify-between items-center mb-2 px-2">
+        <div className="text-sm md:text-base font-semibold">
           Problem {currentProblemIndex + 1} of {problems.length}
         </div>
         <div className="flex gap-2">
           <button
             onClick={() => setShowHint(!showHint)}
-            className="px-4 py-2 bg-yellow-400 hover:bg-yellow-500 text-white rounded-lg font-semibold"
+            className="px-3 py-1.5 bg-yellow-400 hover:bg-yellow-500 text-white rounded-lg text-sm font-semibold"
           >
             {showHint ? 'Hide Hint' : 'Show Hint'}
           </button>
           <button
             onClick={onExit}
-            className="px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-lg font-semibold"
+            className="px-3 py-1.5 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-lg text-sm font-semibold"
           >
             Exit
           </button>
         </div>
       </div>
 
-      {/* Problem Display */}
-      <ProblemDisplay
-        problem={currentProblem}
-        showHint={showHint}
-        onRequestHint={() => setShowHint(true)}
-      />
+      {/* Problem Display - Flex grow to take available space */}
+      <div className="flex-shrink-0">
+        <ProblemDisplay
+          problem={currentProblem}
+          showHint={showHint}
+          onRequestHint={() => setShowHint(true)}
+        />
+      </div>
 
-      {/* Answer Input */}
-      <div className="mt-8">
+      {/* Answer Input - Always visible at bottom */}
+      <div className="mt-auto pt-3">
         <NumberInput
           min={0}
           max={100}
