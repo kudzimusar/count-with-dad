@@ -212,17 +212,17 @@ export function MathScreen({
   // Show new math game container if mode is selected
   if (USE_NEW_MATH_SYSTEM && selectedMode) {
     return (
-      <section className="p-4">
-        <div className="mb-4">
+      <section className="px-2 py-1">
+        <div className="mb-2">
           <button
             onClick={() => {
               setSelectedMode(null);
               setCurrentLevel(level);
             }}
-            className="flex items-center gap-2 px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
+            className="flex items-center gap-1 px-3 py-1.5 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors text-sm"
           >
             <ArrowLeft className="h-4 w-4" />
-            Back to Modes
+            Back
           </button>
         </div>
         <MathGameContainer

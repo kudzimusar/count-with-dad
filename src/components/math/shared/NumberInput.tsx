@@ -59,18 +59,18 @@ export function NumberInput({
     }
   };
 
-  // Multiple Choice Mode
+  // Multiple Choice Mode - Compact for mobile
   if (multipleChoice) {
     return (
-      <div className="number-input-multiple-choice grid grid-cols-2 gap-4 max-w-md mx-auto">
+      <div className="number-input-multiple-choice grid grid-cols-3 gap-2 md:gap-3 max-w-lg mx-auto">
         {multipleChoice.map((choice, idx) => (
           <button
             key={idx}
             onClick={() => handleMultipleChoiceClick(choice)}
             disabled={feedback !== null}
-            className={`py-8 text-5xl font-bold rounded-3xl shadow-xl transition-all transform ${
+            className={`py-4 md:py-6 text-3xl md:text-4xl font-bold rounded-2xl shadow-lg transition-all transform ${
               feedback === 'correct' && choice === correctAnswer
-                ? 'bg-green-500 text-white scale-110'
+                ? 'bg-green-500 text-white scale-105'
                 : feedback === 'wrong' && choice === correctAnswer
                 ? 'bg-red-500 text-white animate-pulse'
                 : feedback !== null
@@ -80,10 +80,10 @@ export function NumberInput({
           >
             {choice}
             {feedback === 'correct' && choice === correctAnswer && (
-              <Check className="inline ml-2" size={40} />
+              <Check className="inline ml-1" size={24} />
             )}
             {feedback === 'wrong' && choice !== correctAnswer && value === choice.toString() && (
-              <X className="inline ml-2" size={40} />
+              <X className="inline ml-1" size={24} />
             )}
           </button>
         ))}

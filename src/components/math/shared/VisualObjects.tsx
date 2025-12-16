@@ -21,35 +21,38 @@ export function VisualObjects({
   groups,
   showCombined = false
 }: VisualObjectsProps) {
-  // Render multiple groups side by side
+  // Render multiple groups side by side - Compact
   if (groups && groups.length > 0) {
     return (
-      <div className="flex flex-col items-center gap-4">
-        <div className="flex flex-wrap justify-center gap-8">
+      <div className="flex flex-col items-center gap-2">
+        <div className="flex flex-wrap justify-center gap-4">
           {groups.map((group, groupIndex) => (
-            <div key={groupIndex} className="flex flex-col items-center gap-2">
+            <div key={groupIndex} className="flex flex-col items-center gap-1">
               {group.label && (
-                <span className="text-lg font-semibold text-muted-foreground">
+                <span className="text-sm font-semibold text-muted-foreground">
                   {group.label}
                 </span>
               )}
-              <div className="flex flex-wrap gap-2 justify-center p-4 bg-secondary/30 rounded-2xl min-w-[100px]">
-                {Array.from({ length: group.count }, (_, i) => (
+              <div className="flex flex-wrap gap-1 justify-center p-2 bg-secondary/30 rounded-xl min-w-[60px]">
+                {Array.from({ length: Math.min(group.count, 12) }, (_, i) => (
                   <div
                     key={i}
-                    className={`text-3xl md:text-4xl ${animated ? 'animate-bounce' : ''}`}
+                    className={`text-xl md:text-2xl ${animated ? 'animate-bounce' : ''}`}
                     style={{ animationDelay: `${(groupIndex * group.count + i) * 0.05}s` }}
                   >
                     {group.object}
                   </div>
                 ))}
+                {group.count > 12 && (
+                  <span className="text-sm text-muted-foreground">+{group.count - 12}</span>
+                )}
               </div>
-              <span className="text-xl font-bold text-foreground">{group.count}</span>
+              <span className="text-lg font-bold text-foreground">{group.count}</span>
             </div>
           ))}
         </div>
         {showCombined && (
-          <div className="text-2xl font-bold text-primary mt-2">
+          <div className="text-xl font-bold text-primary">
             Total: {groups.reduce((sum, g) => sum + g.count, 0)}
           </div>
         )}
@@ -57,19 +60,20 @@ export function VisualObjects({
     );
   }
 
-  // Render single group (original behavior)
+  // Render single group (original behavior) - Compact
   if (count !== undefined) {
     return (
-      <div className="flex flex-wrap gap-2 justify-center">
-        {Array.from({ length: count }, (_, i) => (
+      <div className="flex flex-wrap gap-1 justify-center">
+        {Array.from({ length: Math.min(count, 15) }, (_, i) => (
           <div
             key={i}
-            className={`text-4xl ${animated ? 'animate-bounce' : ''}`}
+            className={`text-2xl md:text-3xl ${animated ? 'animate-bounce' : ''}`}
             style={{ animationDelay: `${i * 0.1}s` }}
           >
             {object}
           </div>
         ))}
+        {count > 15 && <span className="text-sm text-muted-foreground ml-1">+{count - 15}</span>}
       </div>
     );
   }
