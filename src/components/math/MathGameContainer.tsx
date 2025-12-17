@@ -1,12 +1,14 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect } from 'react';
 import { generateProblems } from '@/utils/mathProblems';
 import { ProblemDisplay } from './shared/ProblemDisplay';
 import { NumberInput } from './shared/NumberInput';
 import { LevelCompleteModal } from '../modals/LevelCompleteModal';
+import { GameModeWrapper } from '../game/GameModeWrapper';
 import { useSound } from '@/hooks/useSound';
 import { useSpeech } from '@/hooks/useSpeech';
 import { VoiceSettings } from '@/types';
 import { Problem } from '@/types/math';
+import { MATH_MODES } from '@/utils/mathLevels';
 
 interface MathGameContainerProps {
   modeId: string;
@@ -75,9 +77,12 @@ export function MathGameContainer({
 
     const correct = userAnswer === currentProblem.answer;
     const isLastProblem = currentProblemIndex === problems.length - 1;
+    
+    // Track new score for accurate calculation
+    const newScore = correct ? score + 1 : score;
 
     if (correct) {
-      setScore(score + 1);
+      setScore(newScore);
       if (soundEnabled) playSound('correct');
       if (voiceEnabled) {
         const message = childName
@@ -96,8 +101,8 @@ export function MathGameContainer({
     }
 
     if (isLastProblem) {
-      // Level complete
-      const accuracy = score / problems.length;
+      // Level complete - use newScore for accurate calculation
+      const accuracy = newScore / problems.length;
       const stars = calculateStars(accuracy);
       const passed = accuracy >= 0.8;
 
@@ -114,6 +119,7 @@ export function MathGameContainer({
       // Move to next problem
       setTimeout(() => {
         setCurrentProblemIndex(currentProblemIndex + 1);
+        setShowHint(false);
       }, 1000);
     }
   };
@@ -145,30 +151,13 @@ export function MathGameContainer({
   if (!currentProblem) return null;
 
   return (
-    <div className="math-game-container flex flex-col h-[calc(100vh-120px)] max-h-[800px]">
-      {/* Progress - Compact Header */}
-      <div className="flex justify-between items-center mb-2 px-2">
-        <div className="text-sm md:text-base font-semibold">
-          Problem {currentProblemIndex + 1} of {problems.length}
-        </div>
-        <div className="flex gap-2">
-          <button
-            onClick={() => setShowHint(!showHint)}
-            className="px-3 py-1.5 bg-yellow-400 hover:bg-yellow-500 text-white rounded-lg text-sm font-semibold"
-          >
-            {showHint ? 'Hide Hint' : 'Show Hint'}
-          </button>
-          <button
-            onClick={onExit}
-            className="px-3 py-1.5 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-lg text-sm font-semibold"
-          >
-            Exit
-          </button>
-        </div>
-      </div>
-
-      {/* Problem Display - Flex grow to take available space */}
-      <div className="flex-shrink-0">
+    <GameModeWrapper
+      onExit={onExit}
+      totalProblems={problems.length}
+      currentProblem={currentProblemIndex}
+    >
+      {/* Main content - Question and Visual */}
+      <div className="flex-1 flex flex-col justify-center items-center px-2 overflow-hidden">
         <ProblemDisplay
           problem={currentProblem}
           showHint={showHint}
@@ -176,8 +165,8 @@ export function MathGameContainer({
         />
       </div>
 
-      {/* Answer Input - Always visible at bottom */}
-      <div className="mt-auto pt-3">
+      {/* Answer area - Always visible at bottom */}
+      <div className="flex-shrink-0 px-2 pb-4 pt-2">
         <NumberInput
           min={0}
           max={100}
@@ -207,7 +196,7 @@ export function MathGameContainer({
           onExit={onExit}
         />
       )}
-    </div>
+    </GameModeWrapper>
   );
 }
 
@@ -217,6 +206,3 @@ function calculateStars(accuracy: number): 0 | 1 | 2 | 3 {
   if (accuracy >= 0.8) return 1;
   return 0;
 }
-
-// Import MATH_MODES from mathLevels
-import { MATH_MODES } from '@/utils/mathLevels';
