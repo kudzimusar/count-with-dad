@@ -184,6 +184,161 @@ All colors MUST be HSL.
   .completed-number {
     opacity: 0.6;
   }
+
+  /* ============================================
+     FULLSCREEN GAME MODE STYLES
+     ============================================ */
+  
+  /* Body class when game is active */
+  body.game-mode-active {
+    position: fixed;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    overscroll-behavior: none;
+  }
+
+  /* Fullscreen game container */
+  .game-fullscreen {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 9999;
+    background: linear-gradient(to bottom right, hsl(48 100% 93%), hsl(330 100% 95%), hsl(270 100% 96%));
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  /* Game header - minimal */
+  .game-header {
+    flex-shrink: 0;
+    height: 48px;
+    min-height: 48px;
+  }
+
+  /* Game content area */
+  .game-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    padding: 0.5rem;
+  }
+
+  /* Progress dots */
+  .progress-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    transition: all 0.3s ease;
+  }
+
+  .progress-dot.completed {
+    background: hsl(48 96% 53%);
+    transform: scale(1.1);
+    box-shadow: 0 0 8px hsl(48 96% 53% / 0.5);
+  }
+
+  .progress-dot.pending {
+    background: hsl(var(--muted));
+  }
+
+  /* ============================================
+     CHILD-FRIENDLY BUTTON STYLES
+     ============================================ */
+  
+  .btn-child {
+    min-height: 60px;
+    min-width: 80px;
+    font-size: 1.25rem;
+    font-weight: 700;
+    border-radius: 1rem;
+    touch-action: manipulation;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+  }
+
+  .btn-child:active {
+    transform: scale(0.95);
+  }
+
+  /* Yes/No answer buttons */
+  .btn-yes {
+    background: hsl(142 76% 45%);
+    color: white;
+  }
+
+  .btn-yes:hover {
+    background: hsl(142 76% 40%);
+  }
+
+  .btn-no {
+    background: hsl(0 84% 60%);
+    color: white;
+  }
+
+  .btn-no:hover {
+    background: hsl(0 84% 55%);
+  }
+
+  /* Comparison cards */
+  .comparison-card {
+    background: hsl(var(--card));
+    border: 3px solid hsl(var(--border));
+    border-radius: 1rem;
+    padding: 0.75rem;
+    min-width: 100px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+
+  .comparison-card:active {
+    transform: scale(0.98);
+  }
+
+  /* Gentle bounce animation for objects */
+  @keyframes bounceGentle {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-4px); }
+  }
+
+  .animate-bounce-gentle {
+    animation: bounceGentle 1.5s ease-in-out infinite;
+  }
+
+  /* Answer button grid - responsive */
+  .answer-grid {
+    display: grid;
+    gap: 0.75rem;
+    width: 100%;
+    max-width: 400px;
+    margin: 0 auto;
+  }
+
+  .answer-grid.cols-2 {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .answer-grid.cols-3 {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  /* Landscape adaptation */
+  @media (orientation: landscape) and (max-height: 500px) {
+    .game-content {
+      flex-direction: row;
+      gap: 1rem;
+    }
+
+    .game-header {
+      height: 40px;
+      min-height: 40px;
+    }
+  }
 }
 
 @layer base {

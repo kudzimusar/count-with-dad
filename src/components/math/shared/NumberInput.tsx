@@ -20,6 +20,7 @@ export function NumberInput({
 }: NumberInputProps) {
   const [value, setValue] = useState<string>('');
   const [feedback, setFeedback] = useState<'correct' | 'wrong' | null>(null);
+  const [selectedChoice, setSelectedChoice] = useState<number | string | null>(null);
 
   const handleNumberClick = (num: number) => {
     setValue(value + num);
@@ -48,73 +49,122 @@ export function NumberInput({
   };
 
   const handleMultipleChoiceClick = (choice: number | string) => {
+    setSelectedChoice(choice);
     if (showFeedback && correctAnswer !== undefined) {
       setFeedback(choice === correctAnswer ? 'correct' : 'wrong');
       setTimeout(() => {
         onSubmit(choice);
         setFeedback(null);
+        setSelectedChoice(null);
       }, 1500);
     } else {
       onSubmit(choice);
     }
   };
 
-  // Multiple Choice Mode - Compact for mobile
-  if (multipleChoice) {
+  // Detect Yes/No comparison questions
+  const isYesNoQuestion = multipleChoice?.length === 2 && 
+    multipleChoice.every(c => 
+      typeof c === 'string' && 
+      ['yes', 'no'].includes(String(c).toLowerCase())
+    );
+
+  // Yes/No Comparison Mode - Large centered buttons
+  if (multipleChoice && isYesNoQuestion) {
     return (
-      <div className="number-input-multiple-choice grid grid-cols-3 gap-2 md:gap-3 max-w-lg mx-auto">
-        {multipleChoice.map((choice, idx) => (
-          <button
-            key={idx}
-            onClick={() => handleMultipleChoiceClick(choice)}
-            disabled={feedback !== null}
-            className={`py-4 md:py-6 text-3xl md:text-4xl font-bold rounded-2xl shadow-lg transition-all transform ${
-              feedback === 'correct' && choice === correctAnswer
-                ? 'bg-green-500 text-white scale-105'
-                : feedback === 'wrong' && choice === correctAnswer
-                ? 'bg-red-500 text-white animate-pulse'
-                : feedback !== null
-                ? 'opacity-50'
-                : 'bg-white hover:bg-purple-50 hover:scale-105 active:scale-95'
-            }`}
-          >
-            {choice}
-            {feedback === 'correct' && choice === correctAnswer && (
-              <Check className="inline ml-1" size={24} />
-            )}
-            {feedback === 'wrong' && choice !== correctAnswer && value === choice.toString() && (
-              <X className="inline ml-1" size={24} />
-            )}
-          </button>
-        ))}
+      <div className="answer-grid cols-2 max-w-sm mx-auto">
+        {multipleChoice.map((choice, idx) => {
+          const isYes = String(choice).toLowerCase() === 'yes';
+          const isSelected = selectedChoice === choice;
+          const isCorrect = feedback === 'correct' && choice === correctAnswer;
+          const isWrong = feedback === 'wrong' && isSelected;
+          
+          return (
+            <button
+              key={idx}
+              onClick={() => handleMultipleChoiceClick(choice)}
+              disabled={feedback !== null}
+              className={`btn-child flex items-center justify-center gap-2 py-5 text-2xl rounded-2xl shadow-lg transition-all ${
+                isCorrect
+                  ? 'bg-green-500 text-white scale-105'
+                  : isWrong
+                  ? 'bg-red-500 text-white animate-pulse'
+                  : feedback !== null
+                  ? 'opacity-50'
+                  : isYes
+                  ? 'btn-yes hover:scale-105 active:scale-95'
+                  : 'btn-no hover:scale-105 active:scale-95'
+              }`}
+            >
+              {isYes ? <Check size={28} strokeWidth={3} /> : <X size={28} strokeWidth={3} />}
+              {choice}
+            </button>
+          );
+        })}
       </div>
     );
   }
 
-  // Numeric Keypad Mode
+  // Multiple Choice Mode - Responsive grid
+  if (multipleChoice) {
+    const cols = multipleChoice.length <= 2 ? 'cols-2' : 'cols-3';
+    
+    return (
+      <div className={`answer-grid ${cols}`}>
+        {multipleChoice.map((choice, idx) => {
+          const isSelected = selectedChoice === choice;
+          const isCorrect = feedback === 'correct' && choice === correctAnswer;
+          const isWrong = feedback === 'wrong' && isSelected;
+          
+          return (
+            <button
+              key={idx}
+              onClick={() => handleMultipleChoiceClick(choice)}
+              disabled={feedback !== null}
+              className={`btn-child py-4 text-xl md:text-2xl rounded-2xl shadow-lg transition-all ${
+                isCorrect
+                  ? 'bg-green-500 text-white scale-105'
+                  : isWrong
+                  ? 'bg-red-500 text-white animate-pulse'
+                  : feedback !== null
+                  ? 'opacity-50 bg-card'
+                  : 'bg-card hover:bg-primary/10 hover:scale-105 active:scale-95 border-2 border-border'
+              }`}
+            >
+              {choice}
+              {isCorrect && <Check className="inline ml-2" size={20} />}
+              {isWrong && <X className="inline ml-2" size={20} />}
+            </button>
+          );
+        })}
+      </div>
+    );
+  }
+
+  // Numeric Keypad Mode - Compact
   return (
-    <div className="number-input-keypad max-w-md mx-auto">
+    <div className="max-w-xs mx-auto">
       {/* Display */}
-      <div className={`mb-6 p-6 rounded-3xl text-center text-6xl font-bold transition-colors ${
+      <div className={`mb-3 p-4 rounded-2xl text-center text-4xl font-bold transition-colors ${
         feedback === 'correct'
           ? 'bg-green-100 text-green-600'
           : feedback === 'wrong'
           ? 'bg-red-100 text-red-600 animate-pulse'
-          : 'bg-purple-50 text-purple-900'
+          : 'bg-card text-foreground border-2 border-border'
       }`}>
         {value || '_'}
-        {feedback === 'correct' && <Check className="inline ml-4" size={48} />}
-        {feedback === 'wrong' && <X className="inline ml-4" size={48} />}
+        {feedback === 'correct' && <Check className="inline ml-3" size={32} />}
+        {feedback === 'wrong' && <X className="inline ml-3" size={32} />}
       </div>
 
-      {/* Keypad */}
-      <div className="grid grid-cols-3 gap-4 mb-4">
+      {/* Keypad - Compact */}
+      <div className="grid grid-cols-3 gap-2 mb-2">
         {[1, 2, 3, 4, 5, 6, 7, 8, 9].map(num => (
           <button
             key={num}
             onClick={() => handleNumberClick(num)}
             disabled={feedback !== null}
-            className="py-6 text-4xl font-bold bg-white hover:bg-purple-50 rounded-2xl shadow-lg transition-all hover:scale-105 active:scale-95 disabled:opacity-50"
+            className="py-3 text-2xl font-bold bg-card hover:bg-primary/10 rounded-xl shadow transition-all hover:scale-105 active:scale-95 disabled:opacity-50 border border-border"
           >
             {num}
           </button>
@@ -122,23 +172,23 @@ export function NumberInput({
         <button
           onClick={handleClear}
           disabled={feedback !== null}
-          className="py-6 text-2xl font-bold bg-gray-200 hover:bg-gray-300 rounded-2xl shadow-lg transition-all hover:scale-105 active:scale-95"
+          className="py-3 text-lg font-bold bg-muted hover:bg-muted/80 rounded-xl shadow transition-all active:scale-95"
         >
           Clear
         </button>
         <button
           onClick={() => handleNumberClick(0)}
           disabled={feedback !== null}
-          className="py-6 text-4xl font-bold bg-white hover:bg-purple-50 rounded-2xl shadow-lg transition-all hover:scale-105 active:scale-95 disabled:opacity-50"
+          className="py-3 text-2xl font-bold bg-card hover:bg-primary/10 rounded-xl shadow transition-all hover:scale-105 active:scale-95 disabled:opacity-50 border border-border"
         >
           0
         </button>
         <button
           onClick={handleSubmit}
           disabled={!value || feedback !== null}
-          className="py-6 text-2xl font-bold bg-green-500 hover:bg-green-600 text-white rounded-2xl shadow-lg transition-all hover:scale-105 active:scale-95 disabled:opacity-50"
+          className="py-3 text-lg font-bold bg-green-500 hover:bg-green-600 text-white rounded-xl shadow transition-all active:scale-95 disabled:opacity-50"
         >
-          ✓ Submit
+          ✓
         </button>
       </div>
     </div>

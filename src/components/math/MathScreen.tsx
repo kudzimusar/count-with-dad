@@ -5,7 +5,7 @@ import { SuccessModal } from '@/components/modals/SuccessModal';
 import { MathModeSelector } from './MathModeSelector';
 import { MathGameContainer } from './MathGameContainer';
 import { VoiceSettings } from '@/types';
-import { Lock, ArrowLeft } from 'lucide-react';
+import { Lock } from 'lucide-react';
 
 interface MathScreenProps {
   level: number;
@@ -209,34 +209,20 @@ export function MathScreen({
     );
   }
 
-  // Show new math game container if mode is selected
+  // Show new math game container if mode is selected (fullscreen)
   if (USE_NEW_MATH_SYSTEM && selectedMode) {
     return (
-      <section className="px-2 py-1">
-        <div className="mb-2">
-          <button
-            onClick={() => {
-              setSelectedMode(null);
-              setCurrentLevel(level);
-            }}
-            className="flex items-center gap-1 px-3 py-1.5 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors text-sm"
-          >
-            <ArrowLeft className="h-4 w-4" />
-            Back
-          </button>
-        </div>
-        <MathGameContainer
-          modeId={selectedMode}
-          level={currentLevel}
-          userId={userId}
-          childName={childName}
-          voiceSettings={voiceSettings}
-          soundEnabled={soundEnabled}
-          voiceEnabled={voiceEnabled}
-          onComplete={handleGameComplete}
-          onExit={() => setSelectedMode(null)}
-        />
-      </section>
+      <MathGameContainer
+        modeId={selectedMode}
+        level={currentLevel}
+        userId={userId}
+        childName={childName}
+        voiceSettings={voiceSettings}
+        soundEnabled={soundEnabled}
+        voiceEnabled={voiceEnabled}
+        onComplete={handleGameComplete}
+        onExit={() => setSelectedMode(null)}
+      />
     );
   }
 

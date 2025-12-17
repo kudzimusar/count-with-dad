@@ -14,7 +14,7 @@ const SHAPE_COLORS: Record<string, string> = {
   pink: '#EC4899'
 };
 
-export function ShapeDisplay({ shape, color = 'blue', size = 200 }: ShapeDisplayProps) {
+export function ShapeDisplay({ shape, color = 'blue', size = 140 }: ShapeDisplayProps) {
   const fillColor = SHAPE_COLORS[color] || color;
 
   const renderShape = () => {
@@ -77,7 +77,7 @@ export function ShapeDisplay({ shape, color = 'blue', size = 200 }: ShapeDisplay
   };
 
   return (
-    <div className="flex justify-center items-center p-4">
+    <div className="flex justify-center items-center">
       <svg
         width={size}
         height={size}
