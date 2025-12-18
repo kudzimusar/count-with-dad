@@ -126,49 +126,21 @@ export function generateAdditionBasicProblems(level: number, count: number): Pro
     const num2 = randomInt(0, maxSum - num1);
     const sum = num1 + num2;
 
-    if (level <= 5) {
-      problems.push({
-        id: `add-${level}-${i}`,
-        type: 'visual',
-        operation: 'addition',
-        question: `${num1} + ${num2} = ?`,
-        visualAid: {
-          type: 'objects',
-          data: {
-            groups: [
-              { count: num1, object: '🍎', label: `${num1}` },
-              { count: num2, object: '🍎', label: `+ ${num2}` }
-            ],
-            showCombined: true
-          }
-        },
-        answer: sum,
-        hint: 'Count all the objects together',
-        difficulty: 'easy',
-        concept: 'addition_visual'
-      });
-    } else if (level <= 10) {
+    if (level <= 10) {
+      // Simple 4-choice format - no visual aids, just the equation
       problems.push({
         id: `add-${level}-${i}`,
         type: 'numeric',
         operation: 'addition',
         question: `${num1} + ${num2} = ?`,
-        visualAid: {
-          type: 'blocks',
-          data: {
-            tens: 0,
-            ones: num1 + num2,
-            showSeparate: true,
-            groups: [num1, num2]
-          }
-        },
         answer: sum,
         choices: generateChoices(sum, 4),
         hint: `Think: ${num1} and ${num2} more`,
-        difficulty: 'medium',
-        concept: 'addition_within_10'
+        difficulty: level <= 5 ? 'easy' : 'medium',
+        concept: 'addition_basic'
       });
     } else {
+      // Higher levels - missing addend problems
       const knownAddend = randomInt(1, maxSum - 1);
       const missingAddend = randomInt(1, maxSum - knownAddend);
       const total = knownAddend + missingAddend;
