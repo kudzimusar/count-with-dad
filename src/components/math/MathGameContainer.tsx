@@ -59,6 +59,22 @@ export function MathGameContainer({
     setTimeSpent(0);
   }, [modeId, level]);
 
+  // Auto-speak the question when a new problem appears
+  useEffect(() => {
+    if (currentProblem && voiceEnabled) {
+      const spokenQuestion = currentProblem.question
+        .replace(/\+/g, 'plus')
+        .replace(/-/g, 'minus')
+        .replace(/×/g, 'times')
+        .replace(/=/g, 'equals')
+        .replace(/\?/g, 'what?');
+      
+      setTimeout(() => {
+        speak(spokenQuestion);
+      }, 300);
+    }
+  }, [currentProblemIndex, voiceEnabled]);
+
   // Track time spent
   useEffect(() => {
     if (startTime) {
@@ -85,9 +101,16 @@ export function MathGameContainer({
       setScore(newScore);
       if (soundEnabled) playSound('correct');
       if (voiceEnabled) {
+        // Speak the full equation with answer and personalized praise
+        const equation = currentProblem.question.replace('?', String(currentProblem.answer));
+        const spokenEquation = equation
+          .replace(/\+/g, 'plus')
+          .replace(/-/g, 'minus')
+          .replace(/×/g, 'times')
+          .replace(/=/g, 'equals');
         const message = childName
-          ? `Correct! Great job, ${childName}!`
-          : 'Correct! Great job!';
+          ? `${spokenEquation}, Good job ${childName}!`
+          : `${spokenEquation}, Good job!`;
         speak(message);
       }
     } else {
@@ -162,6 +185,7 @@ export function MathGameContainer({
           problem={currentProblem}
           showHint={showHint}
           onRequestHint={() => setShowHint(true)}
+          hideControls={currentProblem.concept === 'addition_basic'}
         />
       </div>
 

@@ -11,9 +11,10 @@ interface ProblemDisplayProps {
   problem: Problem;
   showHint: boolean;
   onRequestHint?: () => void;
+  hideControls?: boolean;
 }
 
-export function ProblemDisplay({ problem, showHint, onRequestHint }: ProblemDisplayProps) {
+export function ProblemDisplay({ problem, showHint, onRequestHint, hideControls = false }: ProblemDisplayProps) {
   const { speak } = useSpeech();
 
   const handleSpeakQuestion = () => {
@@ -57,13 +58,16 @@ export function ProblemDisplay({ problem, showHint, onRequestHint }: ProblemDisp
         <h2 className="text-5xl md:text-7xl font-bold text-foreground leading-tight">
           {problem.question}
         </h2>
-        <button
-          onClick={handleSpeakQuestion}
-          className="p-2 bg-primary/10 hover:bg-primary/20 rounded-full transition-colors flex-shrink-0"
-          aria-label="Read question aloud"
-        >
-          <Volume2 size={24} className="text-primary" />
-        </button>
+        {/* Only show speaker button if NOT hiding controls */}
+        {!hideControls && (
+          <button
+            onClick={handleSpeakQuestion}
+            className="p-2 bg-primary/10 hover:bg-primary/20 rounded-full transition-colors flex-shrink-0"
+            aria-label="Read question aloud"
+          >
+            <Volume2 size={24} className="text-primary" />
+          </button>
+        )}
       </div>
 
       {/* Visual Aid - Only show for non-basic-addition problems */}
@@ -82,8 +86,8 @@ export function ProblemDisplay({ problem, showHint, onRequestHint }: ProblemDisp
         </div>
       )}
 
-      {/* Friendly Hint Button */}
-      {!showHint && onRequestHint && (
+      {/* Friendly Hint Button - Only show if NOT hiding controls */}
+      {!hideControls && !showHint && onRequestHint && (
         <button
           onClick={onRequestHint}
           className="flex items-center gap-2 px-4 py-2 bg-blue-100 hover:bg-blue-200 text-blue-700 rounded-full text-sm font-medium transition-colors"
