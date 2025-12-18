@@ -105,7 +105,39 @@ export function NumberInput({
     );
   }
 
-  // Multiple Choice Mode - Responsive grid
+  // 4-Choice Mode - 2x2 grid with HUGE numbers (like the old version)
+  if (multipleChoice && multipleChoice.length === 4) {
+    return (
+      <div className="grid grid-cols-2 gap-4 max-w-sm mx-auto px-4">
+        {multipleChoice.map((choice, idx) => {
+          const isSelected = selectedChoice === choice;
+          const isCorrect = feedback === 'correct' && choice === correctAnswer;
+          const isWrong = feedback === 'wrong' && isSelected;
+          
+          return (
+            <button
+              key={idx}
+              onClick={() => handleMultipleChoiceClick(choice)}
+              disabled={feedback !== null}
+              className={`py-8 text-5xl md:text-6xl font-bold rounded-3xl shadow-lg transition-all min-h-[100px] ${
+                isCorrect
+                  ? 'bg-green-500 text-white scale-105'
+                  : isWrong
+                  ? 'bg-red-500 text-white animate-pulse'
+                  : feedback !== null
+                  ? 'opacity-50 bg-card'
+                  : 'bg-white hover:bg-primary/10 hover:scale-105 active:scale-95 border-2 border-muted text-foreground'
+              }`}
+            >
+              {choice}
+            </button>
+          );
+        })}
+      </div>
+    );
+  }
+
+  // Multiple Choice Mode - Other sizes
   if (multipleChoice) {
     const cols = multipleChoice.length <= 2 ? 'cols-2' : 'cols-3';
     

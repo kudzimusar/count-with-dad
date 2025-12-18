@@ -52,9 +52,9 @@ export function ProblemDisplay({ problem, showHint, onRequestHint }: ProblemDisp
 
   return (
     <div className="problem-display flex flex-col items-center text-center w-full max-w-lg mx-auto">
-      {/* Question - DOMINANT */}
-      <div className="flex items-center gap-2 mb-4">
-        <h2 className="text-2xl md:text-4xl font-bold text-foreground leading-tight">
+      {/* Question - MASSIVE and DOMINANT */}
+      <div className="flex items-center justify-center gap-3 mb-6">
+        <h2 className="text-5xl md:text-7xl font-bold text-foreground leading-tight">
           {problem.question}
         </h2>
         <button
@@ -62,12 +62,12 @@ export function ProblemDisplay({ problem, showHint, onRequestHint }: ProblemDisp
           className="p-2 bg-primary/10 hover:bg-primary/20 rounded-full transition-colors flex-shrink-0"
           aria-label="Read question aloud"
         >
-          <Volume2 size={20} className="text-primary" />
+          <Volume2 size={24} className="text-primary" />
         </button>
       </div>
 
-      {/* Visual Aid - Centered */}
-      {problem.visualAid && (
+      {/* Visual Aid - Only show for non-basic-addition problems */}
+      {problem.visualAid && problem.concept !== 'addition_basic' && (
         <div className="mb-4 flex justify-center">
           {renderVisualAid()}
         </div>
