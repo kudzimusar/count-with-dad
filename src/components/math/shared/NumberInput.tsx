@@ -105,10 +105,10 @@ export function NumberInput({
     );
   }
 
-  // 4-Choice Mode - 2x2 grid with clean, child-friendly styling (reference design)
+  // 4-Choice Mode - 2x2 grid with legacy yellow highlight styling
   if (multipleChoice && multipleChoice.length === 4) {
     return (
-      <div className="grid grid-cols-2 gap-3 max-w-md mx-auto px-2">
+      <div className="grid grid-cols-2 gap-4 max-w-2xl mx-auto px-2">
         {multipleChoice.map((choice, idx) => {
           const isSelected = selectedChoice === choice;
           const isCorrect = feedback === 'correct' && choice === correctAnswer;
@@ -119,15 +119,17 @@ export function NumberInput({
               key={idx}
               onClick={() => handleMultipleChoiceClick(choice)}
               disabled={feedback !== null}
-              className={`py-6 text-4xl md:text-5xl font-bold rounded-2xl shadow-lg transition-all ${
-                isCorrect
-                  ? 'bg-green-500 text-white scale-105'
+              className={`
+                py-6 md:py-8 text-4xl md:text-5xl font-bold rounded-2xl shadow-lg 
+                transition-all duration-200
+                ${isCorrect
+                  ? 'bg-yellow-300 scale-105'
                   : isWrong
-                  ? 'bg-red-500 text-white animate-pulse'
+                  ? 'bg-red-200 animate-shake'
                   : feedback !== null
-                  ? 'opacity-50 bg-card'
-                  : 'bg-white hover:bg-yellow-100 hover:scale-105 active:scale-95 text-foreground'
-              }`}
+                  ? 'opacity-50 bg-white'
+                  : 'bg-white hover:bg-yellow-100 hover:scale-105 active:scale-95 text-gray-900'}
+              `}
             >
               {choice}
             </button>

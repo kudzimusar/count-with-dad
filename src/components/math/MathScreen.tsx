@@ -53,8 +53,8 @@ export function MathScreen({
   const { saveProgress, saveSession, trackEvent } = useSupabaseData(userId);
 
   // Feature flag: Enable new math mode system
-  // Set to false to use the legacy level-based math challenge
-  const USE_NEW_MATH_SYSTEM = false;
+  // Set to true to use the new modular math system with all modes
+  const USE_NEW_MATH_SYSTEM = true;
   
   // Debug: Log when component renders
   useEffect(() => {
