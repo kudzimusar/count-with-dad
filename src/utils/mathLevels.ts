@@ -35,7 +35,7 @@ export const MATH_MODES: MathMode[] = [
     displayName: 'Addition',
     icon: '➕',
     description: 'Add numbers within 10',
-    ageRange: [4, 6],
+    ageRange: [3, 6],
     totalLevels: 20,
     unlockRequirements: [],
     category: 'operations',
