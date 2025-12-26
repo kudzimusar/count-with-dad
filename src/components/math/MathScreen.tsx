@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useSound } from '@/hooks/useSound';
 import { useSpeech } from '@/hooks/useSpeech';
 import { useSupabaseData } from '@/hooks/useSupabaseData';
+import { useModeProgress } from '@/hooks/useModeProgress';
 import { SuccessModal } from '@/components/modals/SuccessModal';
 import { MathModeSelector } from './MathModeSelector';
 import { MathGameContainer } from './MathGameContainer';
@@ -35,9 +36,21 @@ export function MathScreen({
 }: MathScreenProps) {
   // State for new math mode system
   const [selectedMode, setSelectedMode] = useState<string | null>(null);
-  const [currentLevel, setCurrentLevel] = useState(level);
-  const [userProgress, setUserProgress] = useState<Record<string, number>>({});
-  const [userStars, setUserStars] = useState<Record<string, number>>({});
+  
+  // Use the per-mode progress hook for proper level tracking
+  const { 
+    getAllLevels, 
+    getAllStars, 
+    getModeLevel, 
+    recordLevelAttempt,
+    isLoaded: progressLoaded 
+  } = useModeProgress(userId);
+
+  // Get current levels and stars from the progress hook
+  const userProgress = getAllLevels();
+  const userStars = getAllStars();
+  const currentLevel = selectedMode ? getModeLevel(selectedMode) : level;
+
   // Legacy state for old math system (backward compatibility)
   const [a, setA] = useState(0);
   const [b, setB] = useState(0);
@@ -56,22 +69,17 @@ export function MathScreen({
   // Set to true to use the new modular math system with all modes
   const USE_NEW_MATH_SYSTEM = true;
   
-  // Debug: Log when component renders
+  // Debug: Log when component renders with age info
   useEffect(() => {
-    console.log('MathScreen rendered:', { USE_NEW_MATH_SYSTEM, selectedMode, childAge });
-  }, [selectedMode, childAge]);
-
-  // Load user progress from localStorage (and sync with Supabase)
-  useEffect(() => {
-    const savedProgress = localStorage.getItem('mathProgress');
-    if (savedProgress) {
-      try {
-        setUserProgress(JSON.parse(savedProgress));
-      } catch (e) {
-        console.error('Failed to parse math progress', e);
-      }
-    }
-  }, []);
+    console.log('MathScreen rendered:', { 
+      USE_NEW_MATH_SYSTEM, 
+      selectedMode, 
+      childAge,
+      currentLevel,
+      progressLoaded,
+      userProgress: Object.keys(userProgress).length > 0 ? userProgress : 'empty'
+    });
+  }, [selectedMode, childAge, currentLevel, progressLoaded, userProgress]);
 
   // Legacy problem generation (kept for backward compatibility)
   useEffect(() => {
@@ -185,10 +193,8 @@ export function MathScreen({
 
   // Handle mode selection from MathModeSelector
   const handleModeSelect = (modeId: string) => {
+    console.log('Mode selected:', modeId, 'Current level for mode:', getModeLevel(modeId));
     setSelectedMode(modeId);
-    // Set initial level for selected mode
-    const modeProgress = userProgress[modeId] || 1;
-    setCurrentLevel(modeProgress);
   };
 
   // Handle game completion from MathGameContainer
@@ -197,29 +203,28 @@ export function MathScreen({
     stars: number;
     accuracy: number;
     timeSpent: number;
+    problemsCount?: number;
   }) => {
+    if (!selectedMode) return;
+
+    // Record the level attempt using the progress hook
+    recordLevelAttempt(selectedMode, {
+      passed: result.passed,
+      level: currentLevel,
+      accuracy: result.accuracy,
+      starsEarned: result.stars,
+      problemsCount: result.problemsCount || 10,
+    });
+
+    console.log('Game complete:', {
+      mode: selectedMode,
+      level: currentLevel,
+      passed: result.passed,
+      newLevel: result.passed ? currentLevel + 1 : currentLevel
+    });
+
+    // Trigger parent callback if passed
     if (result.passed) {
-      // Update progress
-      const newLevel = currentLevel + 1;
-      setCurrentLevel(newLevel);
-      setUserProgress(prev => ({
-        ...prev,
-        [selectedMode!]: newLevel
-      }));
-      
-      // Save to localStorage (would save to Supabase in production)
-      localStorage.setItem('mathProgress', JSON.stringify({
-        ...userProgress,
-        [selectedMode!]: newLevel
-      }));
-
-      // Update stars
-      setUserStars(prev => ({
-        ...prev,
-        [selectedMode!]: (prev[selectedMode!] || 0) + result.stars
-      }));
-
-      // Trigger parent callback
       onMathSolved();
     }
   };

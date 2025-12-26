@@ -27,6 +27,7 @@ interface MathGameContainerProps {
     stars: number;
     accuracy: number;
     timeSpent: number;
+    problemsCount: number;
   }) => void;
   onExit: () => void;
 }
@@ -234,7 +235,8 @@ export function MathGameContainer({
       passed,
       stars,
       accuracy,
-      timeSpent
+      timeSpent,
+      problemsCount: problems.length,
     });
 
     setShowCompleteModal(false);
