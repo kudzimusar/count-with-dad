@@ -246,6 +246,7 @@ export function MathScreen({
         level={currentLevel}
         userId={userId}
         childName={childName}
+        childAge={childAge}
         voiceSettings={voiceSettings}
         soundEnabled={soundEnabled}
         voiceEnabled={voiceEnabled}

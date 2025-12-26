@@ -18,6 +18,7 @@ interface MathGameContainerProps {
   level: number;
   userId: string;
   childName?: string;
+  childAge?: number;
   voiceSettings: VoiceSettings;
   soundEnabled: boolean;
   voiceEnabled: boolean;
@@ -35,6 +36,7 @@ export function MathGameContainer({
   level,
   userId,
   childName,
+  childAge = 5,
   voiceSettings,
   soundEnabled,
   voiceEnabled,
@@ -61,9 +63,9 @@ export function MathGameContainer({
   const mode = MATH_MODES.find(m => m.id === modeId);
   const maxLevel = mode?.totalLevels || 20;
 
-  // Generate problems for this level
+  // Generate problems for this level with age-based difficulty
   useEffect(() => {
-    const generated = generateProblems(modeId, currentLevel, 10);
+    const generated = generateProblems(modeId, currentLevel, 10, childAge);
     setProblems(generated);
     setCurrentProblemIndex(0);
     setScore(0);
@@ -71,7 +73,7 @@ export function MathGameContainer({
     setTimeSpent(0);
     setSelectedAnswer(null);
     setIsCorrect(null);
-  }, [modeId, currentLevel]);
+  }, [modeId, currentLevel, childAge]);
 
   // Auto-speak the question when a new problem appears
   useEffect(() => {
