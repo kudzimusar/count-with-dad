@@ -2,6 +2,10 @@ import { MathMode, UnlockRequirement } from '@/types/math';
 
 export type ModeDefinition = MathMode;
 
+// Legacy modes are preserved for backward compatibility
+export const LEGACY_MODES = ['legacy-counting', 'legacy-puzzle', 'legacy-addition'] as const;
+export type LegacyMode = typeof LEGACY_MODES[number];
+
 export const MATH_MODES: MathMode[] = [
   {
     id: 'number-sense',
