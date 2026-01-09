@@ -11,28 +11,55 @@ export function useSupabaseData(userId: string | undefined) {
     parentEmail?: string;
     parentRelationship?: string;
   }) => {
-    if (!userId) return { error: 'No user ID' };
+    if (!userId) return { error: 'No user ID', success: false };
+
+    // First check if profile exists
+    const { data: existingProfile } = await supabase
+      .from('profiles')
+      .select('user_id')
+      .eq('user_id', userId)
+      .maybeSingle();
+
+    // Build the profile data - only include registered_at for new profiles
+    const profileData: Record<string, unknown> = {
+      user_id: userId,
+      child_name: data.childName,
+      child_age: data.childAge,
+      child_avatar: data.childAvatar,
+      child_gender: data.childGender || null,
+      parent_email: data.parentEmail || null,
+      parent_relationship: data.parentRelationship || null,
+    };
+
+    // Only set registered_at for new profiles (not updates)
+    if (!existingProfile) {
+      profileData.registered_at = new Date().toISOString();
+    }
 
     const { error } = await supabase
       .from('profiles')
-      .upsert({
-        user_id: userId,
-        child_name: data.childName,
-        child_age: data.childAge,
-        child_avatar: data.childAvatar,
-        child_gender: data.childGender || null,
-        parent_email: data.parentEmail || null,
-        parent_relationship: data.parentRelationship || null,
-        registered_at: new Date().toISOString(),
-      }, {
-        onConflict: 'user_id' // Handle conflicts on user_id unique constraint
+      .upsert(profileData, {
+        onConflict: 'user_id'
       });
 
     if (error) {
       console.error('Profile save error:', error);
+      return { error: error.message, success: false };
     }
 
-    return { error };
+    // Verify the save was successful by reading it back
+    const { data: verifyData, error: verifyError } = await supabase
+      .from('profiles')
+      .select('user_id, child_name')
+      .eq('user_id', userId)
+      .maybeSingle();
+
+    if (verifyError || !verifyData) {
+      console.error('Profile verification failed:', verifyError);
+      return { error: 'Failed to verify profile save', success: false };
+    }
+
+    return { error: null, success: true };
   }, [userId]);
 
   const saveProgress = useCallback(async (progress: Partial<AppState>) => {

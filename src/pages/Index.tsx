@@ -152,14 +152,17 @@ const Index = () => {
     
     // Scenario 3: User signed in (first time or returning same user)
     if (user && lastUserId !== user.id) {
-      // If switching from guest to user, clear guest data
+      // If switching from guest to user, preserve guest progress for potential merge
       if (lastUserId === 'guest') {
-        console.log('Clearing data: Switching from guest to user');
-        localStorage.removeItem('countingAppState');
-        setRawState(initialState);
+        console.log('Guest signing in: Will attempt to merge progress');
+        // Store guest progress temporarily for merge
+        const guestState = localStorage.getItem('countingAppState');
+        if (guestState) {
+          localStorage.setItem('guestProgressBackup', guestState);
+        }
         setDataLoaded(false);
-        setProfileLoaded(false); // Reset profile check
-        toast.info('Account connected. Starting fresh with cloud sync.');
+        setProfileLoaded(false);
+        toast.info('Account connected. Checking for existing data...');
       }
       setLastUserId(user.id);
       return;
@@ -216,38 +219,105 @@ const Index = () => {
             console.error('Progress load error:', progressResult.error);
           }
 
-          if (profileResult.data) {
-            setState(prev => ({
-              ...prev,
-              childName: profileResult.data.child_name,
-              childAge: profileResult.data.child_age,
-              childAvatar: profileResult.data.child_avatar,
-              childGender: profileResult.data.child_gender as 'boy' | 'girl' | 'other' | 'prefer-not-to-say' | undefined,
-              parentEmail: profileResult.data.parent_email || undefined,
-              parentRelationship: profileResult.data.parent_relationship || undefined,
-              registeredAt: profileResult.data.registered_at || undefined,
-              hasCompletedOnboarding: true,
-            }));
-          }
+          // Check for guest progress to merge
+          const guestBackup = localStorage.getItem('guestProgressBackup');
+          const hasCloudProgress = progressResult.data && (
+            progressResult.data.highest_count > 1 ||
+            progressResult.data.stars > 0 ||
+            progressResult.data.puzzles_solved > 0 ||
+            progressResult.data.math_solved > 0
+          );
 
-          if (progressResult.data) {
-            setState(prev => ({
-              ...prev,
-              highestCount: progressResult.data.highest_count,
-              stars: progressResult.data.stars,
-              puzzleLevel: progressResult.data.puzzle_level,
-              mathLevel: progressResult.data.math_level,
-              challengeLevel: progressResult.data.challenge_level,
-              puzzlesSolved: progressResult.data.puzzles_solved,
-              mathSolved: progressResult.data.math_solved,
-              unlockedPuzzleLevels: progressResult.data.unlocked_puzzle_levels,
-              unlockedMathLevels: progressResult.data.unlocked_math_levels,
-              completedNumbers: progressResult.data.completed_numbers,
-              correctAnswersCount: progressResult.data.correct_answers_count,
-              dailyGoal: progressResult.data.daily_goal ?? prev.dailyGoal,
-              subscriptionStatus: progressResult.data.subscription_status || 'free',
-              trialStartedAt: progressResult.data.subscription_started_at || undefined,
-            }));
+          // If guest has progress but cloud is empty, merge guest progress
+          if (guestBackup && !hasCloudProgress) {
+            try {
+              const guestState = JSON.parse(guestBackup);
+              console.log('Merging guest progress into account:', guestState);
+              
+              // Save guest progress to cloud
+              await saveProgress({
+                highestCount: guestState.highestCount,
+                stars: guestState.stars,
+                puzzleLevel: guestState.puzzleLevel,
+                mathLevel: guestState.mathLevel,
+                challengeLevel: guestState.challengeLevel,
+                puzzlesSolved: guestState.puzzlesSolved,
+                mathSolved: guestState.mathSolved,
+                unlockedPuzzleLevels: guestState.unlockedPuzzleLevels,
+                unlockedMathLevels: guestState.unlockedMathLevels,
+                completedNumbers: guestState.completedNumbers,
+                correctAnswersCount: guestState.correctAnswersCount,
+                dailyGoal: guestState.dailyGoal,
+              });
+              
+              // Update local state with merged guest progress
+              setState(prev => ({
+                ...prev,
+                highestCount: guestState.highestCount ?? prev.highestCount,
+                stars: guestState.stars ?? prev.stars,
+                puzzleLevel: guestState.puzzleLevel ?? prev.puzzleLevel,
+                mathLevel: guestState.mathLevel ?? prev.mathLevel,
+                challengeLevel: guestState.challengeLevel ?? prev.challengeLevel,
+                puzzlesSolved: guestState.puzzlesSolved ?? prev.puzzlesSolved,
+                mathSolved: guestState.mathSolved ?? prev.mathSolved,
+                unlockedPuzzleLevels: guestState.unlockedPuzzleLevels ?? prev.unlockedPuzzleLevels,
+                unlockedMathLevels: guestState.unlockedMathLevels ?? prev.unlockedMathLevels,
+                completedNumbers: guestState.completedNumbers ?? prev.completedNumbers,
+                correctAnswersCount: guestState.correctAnswersCount ?? prev.correctAnswersCount,
+                dailyGoal: guestState.dailyGoal ?? prev.dailyGoal,
+                // Also merge profile info if cloud profile is empty
+                childName: profileResult.data?.child_name || guestState.childName,
+                childAge: profileResult.data?.child_age || guestState.childAge,
+                childAvatar: profileResult.data?.child_avatar || guestState.childAvatar,
+                hasCompletedOnboarding: guestState.hasCompletedOnboarding || !!profileResult.data,
+              }));
+              
+              toast.success('Your guest progress has been saved to your account!');
+            } catch (e) {
+              console.error('Failed to merge guest progress:', e);
+            }
+            
+            // Clean up guest backup
+            localStorage.removeItem('guestProgressBackup');
+            localStorage.removeItem('countingAppState');
+          } else {
+            // No merge needed - use cloud data
+            if (profileResult.data) {
+              setState(prev => ({
+                ...prev,
+                childName: profileResult.data.child_name,
+                childAge: profileResult.data.child_age,
+                childAvatar: profileResult.data.child_avatar,
+                childGender: profileResult.data.child_gender as 'boy' | 'girl' | 'other' | 'prefer-not-to-say' | undefined,
+                parentEmail: profileResult.data.parent_email || undefined,
+                parentRelationship: profileResult.data.parent_relationship || undefined,
+                registeredAt: profileResult.data.registered_at || undefined,
+                hasCompletedOnboarding: true,
+              }));
+            }
+
+            if (progressResult.data) {
+              setState(prev => ({
+                ...prev,
+                highestCount: progressResult.data.highest_count,
+                stars: progressResult.data.stars,
+                puzzleLevel: progressResult.data.puzzle_level,
+                mathLevel: progressResult.data.math_level,
+                challengeLevel: progressResult.data.challenge_level,
+                puzzlesSolved: progressResult.data.puzzles_solved,
+                mathSolved: progressResult.data.math_solved,
+                unlockedPuzzleLevels: progressResult.data.unlocked_puzzle_levels,
+                unlockedMathLevels: progressResult.data.unlocked_math_levels,
+                completedNumbers: progressResult.data.completed_numbers,
+                correctAnswersCount: progressResult.data.correct_answers_count,
+                dailyGoal: progressResult.data.daily_goal ?? prev.dailyGoal,
+                subscriptionStatus: progressResult.data.subscription_status || 'free',
+                trialStartedAt: progressResult.data.subscription_started_at || undefined,
+              }));
+            }
+            
+            // Clean up any stale guest backup
+            localStorage.removeItem('guestProgressBackup');
           }
 
           if (sessionResult.data) {
@@ -702,33 +772,53 @@ const Index = () => {
     parentEmail?: string;
     parentRelationship?: string;
   }) => {
-    setState(prev => ({
-      ...prev,
-      childName: data.childName,
-      childAge: data.childAge,
-      childAvatar: data.childAvatar,
-      childGender: data.childGender as 'boy' | 'girl' | 'other' | 'prefer-not-to-say' | undefined,
-      parentEmail: data.parentEmail,
-      parentRelationship: data.parentRelationship,
-      hasCompletedOnboarding: true,
-      registeredAt: new Date().toISOString(),
-    }));
-
-    // Close registration modal
-    setRegistrationModalOpen(false);
-
-    // Optional: Save to cloud if authenticated
+    // For authenticated users: STRICT save verification - must succeed before closing modal
     if (user) {
       const result = await saveProfile(data);
-      if (result.error) {
-        toast.error('Profile saved locally. Sign in to sync across devices.');
-      } else {
-        toast.success('Profile saved successfully!');
+      
+      if (result.error || !result.success) {
+        toast.error('Failed to save profile. Please try again.');
+        console.error('Profile save failed:', result.error);
+        // Keep modal open - don't update state
+        return;
       }
+      
+      // Profile saved successfully - now update local state and close modal
+      setState(prev => ({
+        ...prev,
+        childName: data.childName,
+        childAge: data.childAge,
+        childAvatar: data.childAvatar,
+        childGender: data.childGender as 'boy' | 'girl' | 'other' | 'prefer-not-to-say' | undefined,
+        parentEmail: data.parentEmail,
+        parentRelationship: data.parentRelationship,
+        hasCompletedOnboarding: true,
+        registeredAt: new Date().toISOString(),
+      }));
+      
+      setRegistrationModalOpen(false);
+      toast.success('Profile saved successfully!');
+      
       await trackSupabaseEvent('registration_complete', {
         childAge: data.childAge,
         hasParentEmail: !!data.parentEmail,
       });
+    } else {
+      // Guest user: save locally only
+      setState(prev => ({
+        ...prev,
+        childName: data.childName,
+        childAge: data.childAge,
+        childAvatar: data.childAvatar,
+        childGender: data.childGender as 'boy' | 'girl' | 'other' | 'prefer-not-to-say' | undefined,
+        parentEmail: data.parentEmail,
+        parentRelationship: data.parentRelationship,
+        hasCompletedOnboarding: true,
+        registeredAt: new Date().toISOString(),
+      }));
+      
+      setRegistrationModalOpen(false);
+      toast.success('Profile saved locally!');
     }
 
     trackEvent('registration_complete', {
