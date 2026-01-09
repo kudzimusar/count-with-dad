@@ -9,10 +9,12 @@ import { useSound } from '@/hooks/useSound';
 import { useSpeech } from '@/hooks/useSpeech';
 import { useSupabaseData } from '@/hooks/useSupabaseData';
 import { useAgeAnalytics } from '@/hooks/useAgeAnalytics';
+import { useGraduationRequests } from '@/hooks/useGraduationRequests';
 import { VoiceSettings } from '@/types';
 import { Problem } from '@/types/math';
 import { MATH_MODES } from '@/utils/mathLevels';
 import { Lock } from 'lucide-react';
+import { toast } from '@/hooks/use-toast';
 
 interface MathGameContainerProps {
   modeId: string;
@@ -62,6 +64,7 @@ export function MathGameContainer({
   const { speak } = useSpeech(voiceSettings);
   const { saveProgress, saveSession, trackEvent } = useSupabaseData(userId);
   const { trackAgeEngagement, trackModeUsage, trackDifficultyCheck } = useAgeAnalytics(userId);
+  const { checkEligibility, requestGraduation } = useGraduationRequests(userId);
 
   // Track hints and response times for difficulty analysis
   const hintsUsedRef = useRef(0);
@@ -286,6 +289,26 @@ export function MathGameContainer({
       hintsUsed: hintsUsedRef.current,
       streakLength: correctStreak.current
     });
+
+    // Check graduation eligibility after successful level completion
+    if (passed && stars >= 2) {
+      // Build a simplified mode progress for eligibility check
+      const modeProgress: Record<string, { level: number; accuracy: number }> = {
+        [modeId]: { level: currentLevel, accuracy: accuracy * 100 }
+      };
+      
+      const eligibility = checkEligibility(childAge, modeProgress);
+      
+      if (eligibility.isEligible && !eligibility.isRequested) {
+        // Child is eligible for graduation - request it
+        await requestGraduation(childAge, modeProgress);
+        
+        toast({
+          title: "🎉 Amazing Progress!",
+          description: `${childName || 'You'} completed all Age ${childAge} goals! Ask a parent to approve graduation to Age ${childAge + 1}!`,
+        });
+      }
+    }
 
     onComplete({
       passed,

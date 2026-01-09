@@ -1,6 +1,6 @@
 import { AppState, VoiceSettings } from '@/types';
-import { useState } from 'react';
-import { User, Settings, TrendingUp, BookOpen, ArrowLeft, Crown, BarChart3 } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { User, Settings, TrendingUp, BookOpen, ArrowLeft, Crown, BarChart3, Bell } from 'lucide-react';
 import { ProfileTab } from './ProfileTab';
 import { ProgressTab } from './ProgressTab';
 import { SettingsTab } from './SettingsTab';
@@ -8,7 +8,8 @@ import { ResourcesTab } from './ResourcesTab';
 import { SubscriptionTab } from './SubscriptionTab';
 import { AccountTab } from './AccountTab';
 import { EnhancedAnalyticsTab } from './EnhancedAnalyticsTab';
-
+import { useGraduationRequests } from '@/hooks/useGraduationRequests';
+import { toast } from '@/hooks/use-toast';
 interface ParentDashboardProps {
   state: AppState;
   userId?: string;
@@ -41,6 +42,17 @@ export function ParentDashboard({
   onDowngradeSubscription,
 }: ParentDashboardProps) {
   const [activeTab, setActiveTab] = useState<'profile' | 'progress' | 'analytics' | 'settings' | 'subscription' | 'resources' | 'account'>('profile');
+  
+  // Graduation flow integration
+  const { 
+    status: graduationStatus, 
+    loading: graduationLoading, 
+    approveGraduation, 
+    denyGraduation 
+  } = useGraduationRequests(userId);
+
+  // Show notification dot if there's a pending graduation request
+  const hasPendingGraduation = graduationStatus?.isRequested && graduationStatus.request;
 
   const handleReset = () => {
     if (confirm('Are you sure you want to reset all progress? This cannot be undone.')) {
@@ -99,18 +111,18 @@ export function ParentDashboard({
             {/* Tabs */}
             <div className="flex gap-2 mt-6 overflow-x-auto pb-2">
               {[
-                { id: 'profile', label: 'My Child', icon: User },
-                { id: 'progress', label: 'Progress', icon: TrendingUp },
-                { id: 'analytics', label: 'Analytics', icon: BarChart3 },
-                { id: 'account', label: 'Account', icon: User },
-                { id: 'subscription', label: 'Subscription', icon: Crown },
-                { id: 'settings', label: 'Settings', icon: Settings },
-                { id: 'resources', label: 'Resources', icon: BookOpen },
-              ].map(({ id, label, icon: Icon }) => (
+                { id: 'profile', label: 'My Child', icon: User, hasNotification: false },
+                { id: 'progress', label: 'Progress', icon: TrendingUp, hasNotification: hasPendingGraduation },
+                { id: 'analytics', label: 'Analytics', icon: BarChart3, hasNotification: false },
+                { id: 'account', label: 'Account', icon: User, hasNotification: false },
+                { id: 'subscription', label: 'Subscription', icon: Crown, hasNotification: false },
+                { id: 'settings', label: 'Settings', icon: Settings, hasNotification: false },
+                { id: 'resources', label: 'Resources', icon: BookOpen, hasNotification: false },
+              ].map(({ id, label, icon: Icon, hasNotification }) => (
                 <button
                   key={id}
                   onClick={() => setActiveTab(id as 'profile' | 'progress' | 'analytics' | 'settings' | 'subscription' | 'resources' | 'account')}
-                  className={`px-4 py-2.5 rounded-lg font-bold transition-all flex items-center gap-2 whitespace-nowrap ${
+                  className={`relative px-4 py-2.5 rounded-lg font-bold transition-all flex items-center gap-2 whitespace-nowrap ${
                     activeTab === id
                       ? 'bg-white text-primary shadow-md'
                       : 'text-primary-foreground/80 hover:bg-white/10'
@@ -118,6 +130,9 @@ export function ParentDashboard({
                 >
                   <Icon className="h-4 w-4" />
                   {label}
+                  {hasNotification && (
+                    <span className="absolute -top-1 -right-1 w-3 h-3 bg-yellow-400 rounded-full border-2 border-white animate-pulse" />
+                  )}
                 </button>
               ))}
             </div>
@@ -138,8 +153,38 @@ export function ParentDashboard({
             {/* Progress Tab */}
             {activeTab === 'progress' && (
               <ProgressTab 
-                state={state} 
+                state={state}
+                userId={userId}
                 onExportProgress={exportProgress}
+                graduationStatus={graduationStatus}
+                graduationLoading={graduationLoading}
+                onApproveGraduation={async () => {
+                  if (graduationStatus?.request) {
+                    const result = await approveGraduation(graduationStatus.request);
+                    if (result.success) {
+                      toast({
+                        title: "🎓 Graduation Approved!",
+                        description: `${state.childName} is now Age ${result.newAge}!`,
+                      });
+                      // Update using current values for unchanged fields
+                      onUpdateChildProfile(
+                        state.childName, 
+                        result.newAge, 
+                        state.childAvatar, 
+                        state.childGender
+                      );
+                    }
+                  }
+                }}
+                onDeferGraduation={async () => {
+                  if (graduationStatus?.request) {
+                    await denyGraduation(graduationStatus.request);
+                    toast({
+                      title: "Graduation Deferred",
+                      description: "Your child can continue practicing at this level.",
+                    });
+                  }
+                }}
               />
             )}
 
