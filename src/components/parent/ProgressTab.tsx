@@ -1,13 +1,55 @@
 import { AppState } from '@/types';
 import { Download, TrendingUp, Calendar, Award, Target, Clock, Activity } from 'lucide-react';
-import { useMemo } from 'react';
+import { useMemo, useEffect, useState } from 'react';
+import { supabase } from '@/integrations/supabase/client';
+import { AgeAdvancementApproval } from './AgeAdvancementApproval';
+import { PreviousAgeMastery, GraduationRecord } from '@/components/progress/PreviousAgeMastery';
+import { GraduationStatus } from '@/hooks/useGraduationRequests';
 
 interface ProgressTabProps {
   state: AppState;
+  userId?: string;
   onExportProgress: () => void;
+  graduationStatus?: GraduationStatus | null;
+  graduationLoading?: boolean;
+  onApproveGraduation?: () => Promise<void>;
+  onDeferGraduation?: () => Promise<void>;
 }
 
-export function ProgressTab({ state, onExportProgress }: ProgressTabProps) {
+export function ProgressTab({ 
+  state, 
+  userId,
+  onExportProgress,
+  graduationStatus,
+  graduationLoading,
+  onApproveGraduation,
+  onDeferGraduation
+}: ProgressTabProps) {
+  const [graduationHistory, setGraduationHistory] = useState<GraduationRecord[]>([]);
+
+  // Fetch graduation history from database
+  useEffect(() => {
+    async function fetchGraduationHistory() {
+      if (!userId) return;
+      
+      const { data, error } = await supabase
+        .from('graduation_history')
+        .select('*')
+        .eq('user_id', userId)
+        .order('graduated_at', { ascending: false });
+      
+      if (!error && data) {
+        setGraduationHistory(data.map(record => ({
+          fromAge: record.from_age,
+          toAge: record.to_age,
+          graduatedAt: record.graduated_at,
+          summaryData: record.summary_data as GraduationRecord['summaryData']
+        })));
+      }
+    }
+    
+    fetchGraduationHistory();
+  }, [userId]);
   const getTodayStats = () => {
     const today = new Date().toISOString().split('T')[0];
     const todaySessions = state.sessionHistory.filter(s => s.date.startsWith(today));
@@ -55,6 +97,26 @@ export function ProgressTab({ state, onExportProgress }: ProgressTabProps) {
 
   return (
     <div className="space-y-6">
+      {/* Graduation Request Approval */}
+      {graduationStatus?.isRequested && graduationStatus.request && onApproveGraduation && onDeferGraduation && (
+        <AgeAdvancementApproval
+          childName={state.childName}
+          request={graduationStatus.request}
+          onApprove={onApproveGraduation}
+          onDefer={onDeferGraduation}
+          loading={graduationLoading}
+        />
+      )}
+
+      {/* Previous Age Achievements */}
+      {graduationHistory.length > 0 && (
+        <PreviousAgeMastery
+          currentAge={state.childAge}
+          graduationHistory={graduationHistory}
+          compact={false}
+        />
+      )}
+
       {/* Overview Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div className="bg-gradient-to-br from-purple-500/10 to-purple-500/5 p-6 rounded-xl border border-purple-500/20">
