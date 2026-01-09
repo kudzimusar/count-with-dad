@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { generateProblems } from '@/utils/mathProblems';
 import { ProblemDisplay } from './shared/ProblemDisplay';
 import { NumberInput } from './shared/NumberInput';
@@ -8,6 +8,7 @@ import { GameModeWrapper } from '../game/GameModeWrapper';
 import { useSound } from '@/hooks/useSound';
 import { useSpeech } from '@/hooks/useSpeech';
 import { useSupabaseData } from '@/hooks/useSupabaseData';
+import { useAgeAnalytics } from '@/hooks/useAgeAnalytics';
 import { VoiceSettings } from '@/types';
 import { Problem } from '@/types/math';
 import { MATH_MODES } from '@/utils/mathLevels';
@@ -60,6 +61,13 @@ export function MathGameContainer({
   const { playSound } = useSound();
   const { speak } = useSpeech(voiceSettings);
   const { saveProgress, saveSession, trackEvent } = useSupabaseData(userId);
+  const { trackAgeEngagement, trackModeUsage, trackDifficultyCheck } = useAgeAnalytics(userId);
+
+  // Track hints and response times for difficulty analysis
+  const hintsUsedRef = useRef(0);
+  const problemStartTimeRef = useRef<number>(Date.now());
+  const responseTimes = useRef<number[]>([]);
+  const correctStreak = useRef(0);
 
   const mode = MATH_MODES.find(m => m.id === modeId);
   const maxLevel = mode?.totalLevels || 20;
@@ -74,6 +82,11 @@ export function MathGameContainer({
     setTimeSpent(0);
     setSelectedAnswer(null);
     setIsCorrect(null);
+    // Reset tracking refs
+    hintsUsedRef.current = 0;
+    responseTimes.current = [];
+    correctStreak.current = 0;
+    problemStartTimeRef.current = Date.now();
   }, [modeId, currentLevel, childAge]);
 
   // Auto-speak the question when a new problem appears
@@ -116,6 +129,10 @@ export function MathGameContainer({
   const handleAnswer = (userAnswer: number | string) => {
     if (!currentProblem) return;
 
+    // Track response time for this problem
+    const responseTime = (Date.now() - problemStartTimeRef.current) / 1000;
+    responseTimes.current.push(responseTime);
+
     setSelectedAnswer(userAnswer);
     const correct = userAnswer === currentProblem.answer;
     const isLastProblem = currentProblemIndex === problems.length - 1;
@@ -126,6 +143,7 @@ export function MathGameContainer({
     if (correct) {
       setIsCorrect(true);
       setScore(newScore);
+      correctStreak.current++;
       if (soundEnabled) playSound('correct');
       
       // Build personalized success message
@@ -223,13 +241,51 @@ export function MathGameContainer({
       // Move to next problem
       setCurrentProblemIndex(currentProblemIndex + 1);
       setShowHint(false);
+      // Reset problem start time for next problem
+      problemStartTimeRef.current = Date.now();
     }
   };
 
-  const handleComplete = () => {
+  const handleComplete = async () => {
     const accuracy = score / problems.length;
     const stars = calculateStars(accuracy);
     const passed = accuracy >= 0.8;
+
+    // Track age-based analytics
+    const avgResponseTime = responseTimes.current.length > 0
+      ? responseTimes.current.reduce((a, b) => a + b, 0) / responseTimes.current.length
+      : 0;
+
+    // Track engagement
+    await trackAgeEngagement({
+      ageYear: childAge,
+      modeId,
+      duration: timeSpent,
+      problemsAttempted: problems.length,
+      problemsCorrect: score,
+      hintsUsed: hintsUsedRef.current,
+      difficultyLevel: currentLevel
+    });
+
+    // Track mode usage
+    await trackModeUsage({
+      ageYear: childAge,
+      modeId,
+      level: currentLevel,
+      sessionDuration: timeSpent,
+      completed: passed
+    });
+
+    // Track difficulty appropriateness
+    await trackDifficultyCheck({
+      ageYear: childAge,
+      modeId,
+      level: currentLevel,
+      accuracy: accuracy * 100,
+      avgResponseTime,
+      hintsUsed: hintsUsedRef.current,
+      streakLength: correctStreak.current
+    });
 
     onComplete({
       passed,
@@ -319,7 +375,7 @@ export function MathGameContainer({
           <ProblemDisplay
             problem={currentProblem}
             showHint={showHint}
-            onRequestHint={() => setShowHint(true)}
+            onRequestHint={() => { setShowHint(true); hintsUsedRef.current++; }}
             hideControls={currentProblem.concept === 'addition_basic'}
           />
         </div>
