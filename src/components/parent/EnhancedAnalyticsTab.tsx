@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useSupabaseData } from '@/hooks/useSupabaseData';
+import { useAgeAnalytics } from '@/hooks/useAgeAnalytics';
 import { AppState } from '@/types';
+import { TrendingUp, TrendingDown, Minus, AlertTriangle, CheckCircle, Lightbulb } from 'lucide-react';
 
 interface EnhancedAnalyticsTabProps {
   userId: string;
@@ -8,51 +10,82 @@ interface EnhancedAnalyticsTabProps {
   childAge: number;
 }
 
+interface WeeklySummary {
+  ageYear: number;
+  days: Array<{ date: string; sessions: number; timeMinutes: number; problemsSolved: number }>;
+  totalSessions: number;
+  totalTimeMinutes: number;
+  totalProblemsSolved: number;
+}
+
+interface AgeEngagementStats {
+  ageYear: number;
+  totalSessions: number;
+  totalTimeMinutes: number;
+  avgSessionMinutes: number;
+  modesUsed: string[];
+  favoriteMode: string | null;
+  successRate: number;
+}
+
 export function EnhancedAnalyticsTab({ userId, childName, childAge }: EnhancedAnalyticsTabProps) {
   const { loadProgress, loadSessionHistory } = useSupabaseData(userId);
+  const { getAgeEngagementStats, getWeeklySummary } = useAgeAnalytics(userId);
+  
   const [progress, setProgress] = useState<AppState | null>(null);
   const [sessions, setSessions] = useState<Array<{ date: string; duration: number; screen: string; score: number }>>([]);
+  const [ageStats, setAgeStats] = useState<AgeEngagementStats | null>(null);
+  const [weeklySummary, setWeeklySummary] = useState<WeeklySummary | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     async function loadData() {
       setLoading(true);
-      const { data: progressData } = await loadProgress();
-      const { data: sessionData } = await loadSessionHistory();
+      
+      // Load all data in parallel
+      const [progressResult, sessionResult, ageStatsResult, weeklyResult] = await Promise.all([
+        loadProgress(),
+        loadSessionHistory(),
+        getAgeEngagementStats(childAge),
+        getWeeklySummary(childAge)
+      ]);
 
-      if (progressData) {
-        setProgress(progressData);
+      if (progressResult.data) {
+        setProgress(progressResult.data);
       }
-      if (sessionData) {
-        setSessions(sessionData);
+      if (sessionResult.data) {
+        setSessions(sessionResult.data);
       }
+      setAgeStats(ageStatsResult);
+      setWeeklySummary(weeklyResult);
+      
       setLoading(false);
     }
 
     loadData();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [userId]);
+  }, [userId, childAge]);
 
   if (loading) {
     return (
       <div className="p-6 text-center">
-        <div className="text-2xl text-gray-500">Loading enhanced analytics...</div>
+        <div className="animate-pulse space-y-4">
+          <div className="h-8 bg-gray-200 rounded w-1/3 mx-auto"></div>
+          <div className="grid grid-cols-4 gap-4">
+            {[1, 2, 3, 4].map(i => (
+              <div key={i} className="h-32 bg-gray-200 rounded-2xl"></div>
+            ))}
+          </div>
+        </div>
       </div>
     );
   }
 
-  if (!progress) {
-    return (
-      <div className="p-6 text-center">
-        <div className="text-xl text-gray-600">No data available yet</div>
-      </div>
-    );
-  }
-
-  // Calculate statistics
-  const totalMathSolved = progress.mathSolved || 0;
-  const mathLevel = progress.mathLevel || 1;
-  const totalStars = progress.stars || 0;
+  // Calculate statistics - handle both camelCase (AppState) and snake_case (DB response)
+  const progressData = progress as unknown as Record<string, unknown>;
+  const totalMathSolved = Number(progressData?.mathSolved ?? progressData?.math_solved ?? 0);
+  const mathLevel = Number(progressData?.mathLevel ?? progressData?.math_level ?? 1);
+  const totalStars = Number(progressData?.stars ?? 0);
 
   // Calculate recent activity (last 7 days)
   const recentSessions = sessions.filter(session => {
@@ -65,10 +98,23 @@ export function EnhancedAnalyticsTab({ userId, childName, childAge }: EnhancedAn
   const mathSessions = recentSessions.filter(s => s.screen === 'math');
   const mathTimeSpent = mathSessions.reduce((sum, s) => sum + s.duration, 0);
 
+  // Difficulty analysis based on success rate
+  const getDifficultyInsight = () => {
+    const successRate = ageStats?.successRate || 0;
+    if (successRate > 95) {
+      return { type: 'easy', message: 'Content may be too easy. Consider advancing to harder levels.', icon: TrendingUp, color: 'text-blue-600' };
+    } else if (successRate < 50) {
+      return { type: 'hard', message: 'Content may be challenging. Extra support recommended.', icon: TrendingDown, color: 'text-orange-600' };
+    }
+    return { type: 'appropriate', message: 'Difficulty level is appropriate for the child.', icon: CheckCircle, color: 'text-green-600' };
+  };
+
+  const difficultyInsight = getDifficultyInsight();
+
   return (
     <div className="enhanced-analytics-tab p-6 space-y-6">
       <h2 className="text-3xl font-bold text-gray-800 mb-6">
-        {childName}'s Math Progress (Age {childAge})
+        {childName}'s Learning Progress (Age {childAge})
       </h2>
 
       {/* Overview Cards */}
@@ -81,9 +127,10 @@ export function EnhancedAnalyticsTab({ userId, childName, childAge }: EnhancedAn
         />
         <StatCard
           title="Problems Solved"
-          value={totalMathSolved}
+          value={weeklySummary?.totalProblemsSolved || totalMathSolved}
           icon="✅"
           color="green"
+          subtitle="This week"
         />
         <StatCard
           title="Total Stars"
@@ -92,11 +139,117 @@ export function EnhancedAnalyticsTab({ userId, childName, childAge }: EnhancedAn
           color="yellow"
         />
         <StatCard
-          title="Time Spent (7 days)"
-          value={`${Math.floor(mathTimeSpent / 60)} min`}
+          title="Learning Time"
+          value={`${weeklySummary?.totalTimeMinutes || Math.floor(mathTimeSpent / 60)} min`}
           icon="⏱️"
           color="purple"
+          subtitle="This week"
         />
+      </div>
+
+      {/* Age-Based Engagement Stats */}
+      {ageStats && (
+        <div className="bg-white p-6 rounded-2xl shadow-lg">
+          <h3 className="text-xl font-bold mb-4 flex items-center gap-2">
+            <span>📈</span> Age {childAge} Engagement Insights
+          </h3>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <InsightCard
+              label="Sessions"
+              value={ageStats.totalSessions}
+              subtitle="Last 30 days"
+            />
+            <InsightCard
+              label="Avg Session"
+              value={`${ageStats.avgSessionMinutes} min`}
+              subtitle="Duration"
+            />
+            <InsightCard
+              label="Success Rate"
+              value={`${ageStats.successRate}%`}
+              subtitle="Accuracy"
+              highlight={ageStats.successRate >= 70}
+            />
+            <InsightCard
+              label="Favorite Mode"
+              value={formatModeName(ageStats.favoriteMode) || 'N/A'}
+              subtitle="Most played"
+            />
+          </div>
+          
+          {/* Modes explored */}
+          {ageStats.modesUsed.length > 0 && (
+            <div className="mt-4 pt-4 border-t">
+              <div className="text-sm font-semibold text-gray-600 mb-2">Modes Explored:</div>
+              <div className="flex flex-wrap gap-2">
+                {ageStats.modesUsed.map(mode => (
+                  <span key={mode} className="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm">
+                    {formatModeName(mode)}
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Weekly Activity Chart */}
+      {weeklySummary && weeklySummary.days.length > 0 && (
+        <div className="bg-white p-6 rounded-2xl shadow-lg">
+          <h3 className="text-xl font-bold mb-4">📅 Weekly Activity</h3>
+          <div className="flex items-end gap-2 h-32">
+            {weeklySummary.days.map((day, index) => {
+              const maxProblems = Math.max(...weeklySummary.days.map(d => d.problemsSolved), 1);
+              const height = (day.problemsSolved / maxProblems) * 100;
+              const dayName = new Date(day.date).toLocaleDateString('en-US', { weekday: 'short' });
+              
+              return (
+                <div key={index} className="flex-1 flex flex-col items-center">
+                  <div className="w-full flex flex-col items-center">
+                    <span className="text-xs text-gray-500 mb-1">{day.problemsSolved}</span>
+                    <div
+                      className="w-full bg-gradient-to-t from-blue-500 to-blue-400 rounded-t-lg transition-all duration-300"
+                      style={{ height: `${Math.max(height, 4)}%`, minHeight: '4px' }}
+                    />
+                  </div>
+                  <span className="text-xs text-gray-600 mt-1">{dayName}</span>
+                </div>
+              );
+            })}
+          </div>
+          <div className="mt-4 pt-4 border-t flex justify-between text-sm text-gray-600">
+            <span>Total Sessions: {weeklySummary.totalSessions}</span>
+            <span>Total Problems: {weeklySummary.totalProblemsSolved}</span>
+          </div>
+        </div>
+      )}
+
+      {/* Difficulty Analysis */}
+      <div className={`p-6 rounded-2xl shadow-lg ${
+        difficultyInsight.type === 'easy' ? 'bg-blue-50' :
+        difficultyInsight.type === 'hard' ? 'bg-orange-50' :
+        'bg-green-50'
+      }`}>
+        <h3 className="text-xl font-bold mb-4 flex items-center gap-2">
+          <Lightbulb className="h-5 w-5" /> Difficulty Analysis
+        </h3>
+        <div className="flex items-start gap-4">
+          <div className={`p-3 rounded-full ${
+            difficultyInsight.type === 'easy' ? 'bg-blue-100' :
+            difficultyInsight.type === 'hard' ? 'bg-orange-100' :
+            'bg-green-100'
+          }`}>
+            <difficultyInsight.icon className={`h-6 w-6 ${difficultyInsight.color}`} />
+          </div>
+          <div>
+            <div className={`font-semibold ${difficultyInsight.color}`}>
+              {difficultyInsight.type === 'easy' ? 'May Be Too Easy' :
+               difficultyInsight.type === 'hard' ? 'May Be Challenging' :
+               'Just Right'}
+            </div>
+            <div className="text-gray-600 mt-1">{difficultyInsight.message}</div>
+          </div>
+        </div>
       </div>
 
       {/* Progress Overview */}
@@ -133,7 +286,7 @@ export function EnhancedAnalyticsTab({ userId, childName, childAge }: EnhancedAn
                   <div>
                     <div className="font-semibold">Math Session</div>
                     <div className="text-sm text-gray-600">
-                      {new Date(session.date).toLocaleDateString()} • {session.duration} seconds
+                      {new Date(session.date).toLocaleDateString()} • {Math.round(session.duration / 60)} min
                     </div>
                   </div>
                 </div>
@@ -154,30 +307,43 @@ export function EnhancedAnalyticsTab({ userId, childName, childAge }: EnhancedAn
       <div className="bg-gradient-to-r from-purple-50 to-pink-50 p-6 rounded-2xl">
         <h3 className="text-xl font-bold mb-4 text-purple-800">Recommendations for {childName}</h3>
         <div className="space-y-3">
-          {mathLevel < 5 ? (
+          {difficultyInsight.type === 'easy' ? (
             <>
               <RecommendationItem
-                title="Start with Addition Basics"
-                description="Perfect for building foundational math skills with visual aids"
-                action="Try Addition Mode"
+                title="Try Higher Difficulty"
+                description="Consider moving to the next level or trying more challenging modes"
+                action="Advance Level"
               />
               <RecommendationItem
-                title="Daily Math Practice"
-                description="Just 5-10 minutes daily can build confidence and skills"
-                action="Set Daily Goal"
+                title="Explore New Modes"
+                description="Subtraction, multiplication, or pattern recognition could provide fresh challenges"
+                action="Browse Modes"
+              />
+            </>
+          ) : difficultyInsight.type === 'hard' ? (
+            <>
+              <RecommendationItem
+                title="Practice Current Level"
+                description="More practice at the current level will build confidence"
+                action="Review Basics"
+              />
+              <RecommendationItem
+                title="Use Visual Aids"
+                description="Enable hints and visual objects to support learning"
+                action="Settings"
               />
             </>
           ) : (
             <>
               <RecommendationItem
-                title="Try New Math Modes"
-                description="Explore subtraction, shapes, and patterns for comprehensive learning"
-                action="Browse Modes"
+                title="Continue Current Path"
+                description="The current difficulty is working well - keep up the great work!"
+                action="Keep Going"
               />
               <RecommendationItem
-                title="Challenge Mode"
-                description="Test skills with timed challenges and earn extra stars"
-                action="Start Challenge"
+                title="Daily Practice"
+                description="Consistent 5-10 minute sessions maximize learning retention"
+                action="Set Goal"
               />
             </>
           )}
@@ -187,14 +353,26 @@ export function EnhancedAnalyticsTab({ userId, childName, childAge }: EnhancedAn
   );
 }
 
+// Helper to format mode IDs to readable names
+function formatModeName(modeId: string | null): string {
+  if (!modeId) return '';
+  return modeId
+    .replace(/_/g, ' ')
+    .replace(/-/g, ' ')
+    .split(' ')
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ');
+}
+
 interface StatCardProps {
   title: string;
   value: string | number;
   icon: string;
   color: 'blue' | 'green' | 'yellow' | 'purple';
+  subtitle?: string;
 }
 
-function StatCard({ title, value, icon, color }: StatCardProps) {
+function StatCard({ title, value, icon, color, subtitle }: StatCardProps) {
   const colorClasses = {
     blue: 'bg-blue-50 text-blue-600',
     green: 'bg-green-50 text-green-600',
@@ -207,6 +385,24 @@ function StatCard({ title, value, icon, color }: StatCardProps) {
       <div className="text-4xl mb-2">{icon}</div>
       <div className="text-3xl font-bold mb-1">{value}</div>
       <div className="text-sm opacity-75">{title}</div>
+      {subtitle && <div className="text-xs opacity-50 mt-1">{subtitle}</div>}
+    </div>
+  );
+}
+
+interface InsightCardProps {
+  label: string;
+  value: string | number;
+  subtitle: string;
+  highlight?: boolean;
+}
+
+function InsightCard({ label, value, subtitle, highlight }: InsightCardProps) {
+  return (
+    <div className={`p-4 rounded-xl ${highlight ? 'bg-green-50 border border-green-200' : 'bg-gray-50'}`}>
+      <div className={`text-2xl font-bold ${highlight ? 'text-green-600' : 'text-gray-800'}`}>{value}</div>
+      <div className="text-sm font-medium text-gray-700">{label}</div>
+      <div className="text-xs text-gray-500">{subtitle}</div>
     </div>
   );
 }
