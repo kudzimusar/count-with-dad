@@ -217,17 +217,14 @@ export function checkModeUnlock(
   modeId: string,
   userProgress: Record<string, number>,
   userAge: number
-): { unlocked: boolean; reason?: string } {
+): { unlocked: boolean; reason?: string; isConceptual?: boolean } {
   const mode = MATH_MODES.find(m => m.id === modeId);
   if (!mode) return { unlocked: false, reason: 'Mode not found' };
 
-  // Check age gate
-  if (userAge < mode.ageRange[0]) {
-    return {
-      unlocked: false,
-      reason: `Available from age ${mode.ageRange[0]}`
-    };
-  }
+  // AGE GATES REMOVED: All modes visible to all ages (3-8)
+  // Instead of hiding modes, we adjust difficulty via age variants
+  // Young children accessing advanced modes get conceptual content
+  const isConceptual = userAge < mode.ageRange[0];
 
   // No requirements = always unlocked
   if (!mode.unlockRequirements || mode.unlockRequirements.length === 0) {
@@ -269,7 +266,7 @@ export function checkModeUnlock(
     }
   }
 
-  return { unlocked: true };
+  return { unlocked: true, isConceptual };
 }
 
 export function getUnlockedModes(

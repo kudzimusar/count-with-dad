@@ -4,6 +4,7 @@ import { useSound } from '@/hooks/useSound';
 import { useSpeech } from '@/hooks/useSpeech';
 import { SuccessModal } from '@/components/modals/SuccessModal';
 import { createConfetti } from '@/utils/animations';
+import { getPuzzleAgeConfig } from '@/config/ageVariants';
 import { Lock } from 'lucide-react';
 
 interface PuzzleScreenProps {
@@ -11,6 +12,7 @@ interface PuzzleScreenProps {
   soundEnabled: boolean;
   voiceEnabled: boolean;
   childName: string;
+  childAge?: number;
   maxLevel: number;
   onLevelChange: (delta: number) => void;
   onPuzzleSolved: () => void;
@@ -21,6 +23,7 @@ export function PuzzleScreen({
   soundEnabled, 
   voiceEnabled,
   childName,
+  childAge = 5,
   maxLevel,
   onLevelChange, 
   onPuzzleSolved 
@@ -33,13 +36,18 @@ export function PuzzleScreen({
   
   const { playSound } = useSound();
   const { speak } = useSpeech();
+  
+  // Get age-based puzzle configuration
+  const ageConfig = getPuzzleAgeConfig(childAge);
+  const effectiveMaxLevel = Math.min(maxLevel, ageConfig.maxLevel);
 
   useEffect(() => {
     initPuzzle();
-  }, [level]);
+  }, [level, childAge]);
 
   const initPuzzle = () => {
-    const levelConfig: Record<number, { start: number; count: number }> = {
+    // Age-adjusted level configuration
+    const baseConfigs: Record<number, { start: number; count: number }> = {
       1: { start: 1, count: 5 },
       2: { start: 6, count: 5 },
       3: { start: 11, count: 6 },
@@ -52,8 +60,12 @@ export function PuzzleScreen({
       10: { start: 62, count: 10 },
     };
 
-    const config = levelConfig[level] || levelConfig[1];
-    const newSequence = Array.from({ length: config.count }, (_, i) => config.start + i);
+    const config = baseConfigs[level] || baseConfigs[1];
+    
+    // Adjust count based on age config's numbersToArrange
+    const adjustedCount = Math.min(config.count, ageConfig.numbersToArrange);
+    
+    const newSequence = Array.from({ length: adjustedCount }, (_, i) => config.start + i);
     const newShuffled = [...newSequence].sort(() => Math.random() - 0.5);
     
     setSequence(newSequence);
@@ -148,15 +160,20 @@ export function PuzzleScreen({
               <span className="font-bold text-xl w-8 text-center">{level}</span>
               <button
                 onClick={() => onLevelChange(1)}
-                disabled={level >= maxLevel}
+                disabled={level >= effectiveMaxLevel}
                 className="w-8 h-8 bg-purple-100 text-purple-600 rounded-lg font-bold hover:bg-purple-200 disabled:opacity-50 transition-colors flex items-center justify-center"
               >
-                {level >= maxLevel ? <Lock className="h-4 w-4" /> : '+'}
+                {level >= effectiveMaxLevel ? <Lock className="h-4 w-4" /> : '+'}
               </button>
             </div>
           </div>
           <div className="text-sm text-gray-500">
-            {maxLevel < 10 ? `Solve 3 more to unlock Level ${maxLevel + 1}!` : 'All levels unlocked!'}
+            {effectiveMaxLevel < 10 
+              ? `Solve 3 more to unlock Level ${effectiveMaxLevel + 1}!` 
+              : 'All levels unlocked!'}
+          </div>
+          <div className="text-xs text-muted-foreground">
+            Age {childAge} • {ageConfig.description}
           </div>
         </div>
         <p className="text-lg text-gray-600">Tap a number below, then tap where it goes!</p>
