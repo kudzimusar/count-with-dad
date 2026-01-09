@@ -9,7 +9,7 @@
  * Each mode shows to ALL ages but with appropriate difficulty and descriptions.
  */
 
-export interface AgeVariantConfig {
+export interface MathAgeVariant {
   displayName: string;
   description: string;
   learningOutcome: string;
@@ -19,6 +19,9 @@ export interface AgeVariantConfig {
   isConceptual: boolean;
   visualAidLevel: 'always' | 'optional' | 'minimal' | 'none';
 }
+
+// Alias for backward compatibility
+export type AgeVariantConfig = MathAgeVariant;
 
 export interface CountingAgeConfig {
   maxNumber: number;

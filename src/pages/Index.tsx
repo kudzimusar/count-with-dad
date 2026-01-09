@@ -332,8 +332,22 @@ const Index = () => {
   const [verificationErrorModalOpen, setVerificationErrorModalOpen] = useState(false);
   const [verificationError, setVerificationError] = useState<{ code?: string; email?: string } | null>(null);
   const [showScrollIndicator, setShowScrollIndicator] = useState(true);
+  
+  // Use age-based config for counting modes
+  const getMaxVisibleNumber = (age: number, mode: string) => {
+    // Import dynamically to avoid circular dependencies
+    const countingConfigs: Record<string, Record<number, number>> = {
+      'order': { 3: 20, 4: 30, 5: 50, 6: 70, 7: 100, 8: 100 },
+      'challenge': { 3: 10, 4: 20, 5: 30, 6: 50, 7: 70, 8: 100 },
+      'free': { 3: 20, 4: 30, 5: 50, 6: 70, 7: 100, 8: 100 }
+    };
+    const modeConfig = countingConfigs[mode] || countingConfigs['order'];
+    const clampedAge = Math.max(3, Math.min(8, age));
+    return modeConfig[clampedAge] || 20;
+  };
+  
   const [maxVisibleNumber, setMaxVisibleNumber] = useState(
-    state.childAge <= 4 ? 20 : 100
+    getMaxVisibleNumber(state.childAge, state.countingMode)
   );
   
   const { playSound } = useSound();
