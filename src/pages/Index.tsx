@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AppState, CountingMode, Screen, VoiceSettings, FeedbackData, SessionRecord } from '@/types';
 import { useLocalStorage } from '@/hooks/useLocalStorage';
@@ -77,7 +77,8 @@ const Index = () => {
   const [lastUserId, setLastUserId] = useLocalStorage<string | null>('lastUserId', null);
 
   // Merge saved state with initial state to handle missing properties from updates
-  const state: AppState = {
+  // useMemo prevents creating a new object on every render, stopping infinite loops
+  const state = useMemo<AppState>(() => ({
     ...initialState,
     ...rawState,
     voiceSettings: {
@@ -97,7 +98,7 @@ const Index = () => {
     childAge: Number(rawState.childAge) || 3,
     dailyGoal: Number(rawState.dailyGoal) || 20,
     timeLimit: Number(rawState.timeLimit) || 0,
-  };
+  }), [rawState]);
   
   const setState = (value: AppState | ((prev: AppState) => AppState)) => {
     const newState = typeof value === 'function' ? value(state) : value;
@@ -424,9 +425,12 @@ const Index = () => {
   const { speak } = useSpeech(state.voiceSettings);
   const { trackEvent } = useAnalytics();
 
-  // Session tracking state
-  const [sessionStartTime] = useState<number>(Date.now());
-  const [currentSessionScreen, setCurrentSessionScreen] = useState<Screen>(state.currentScreen);
+  // Session tracking using refs to avoid triggering re-renders
+  const sessionRef = useRef({
+    startTime: Date.now(),
+    screen: state.currentScreen,
+    saved: false
+  });
 
   // Show registration modal only if:
   // 1. Profile check is complete (to avoid race condition)
@@ -502,56 +506,70 @@ const Index = () => {
     });
   }, []);
 
-  // Save session when screen changes or app closes
+  // Save session when screen changes - using refs to avoid re-render loops
   useEffect(() => {
-    const saveCurrentSession = async () => {
-      const duration = Math.floor((Date.now() - sessionStartTime) / 1000);
+    // Only run when screen actually changes
+    if (sessionRef.current.screen !== state.currentScreen) {
+      const duration = Math.floor((Date.now() - sessionRef.current.startTime) / 1000);
       
-      // Only save sessions longer than 30 seconds and if progress was made
-      if (duration > 30) {
+      // Only save sessions longer than 30 seconds
+      if (duration > 30 && !sessionRef.current.saved) {
         const sessionRecord: SessionRecord = {
           date: new Date().toISOString(),
           duration,
-          screen: currentSessionScreen,
+          screen: sessionRef.current.screen,
           mode: state.countingMode || undefined,
           score: state.correctAnswersCount || 0,
         };
         
-        // Save to local state (localStorage)
-        setState(prev => ({
+        // Save to local state using functional update
+        setRawState(prev => ({
           ...prev,
-          sessionHistory: [...prev.sessionHistory, sessionRecord]
+          sessionHistory: [...(prev.sessionHistory || []), sessionRecord]
         }));
         
         // Save to database if logged in
         if (user) {
-          const result = await saveSession(sessionRecord);
-          if (result.error) {
-            console.error('Failed to save session:', result.error);
+          saveSession(sessionRecord);
+        }
+      }
+      
+      // Update ref for next screen change
+      sessionRef.current = {
+        startTime: Date.now(),
+        screen: state.currentScreen,
+        saved: false
+      };
+    }
+  }, [state.currentScreen]); // Minimal dependencies - only screen changes
+
+  // Handle beforeunload separately with synchronous localStorage
+  useEffect(() => {
+    const handleBeforeUnload = () => {
+      const duration = Math.floor((Date.now() - sessionRef.current.startTime) / 1000);
+      if (duration > 30 && !sessionRef.current.saved) {
+        sessionRef.current.saved = true;
+        // Use synchronous localStorage for beforeunload
+        try {
+          const currentState = localStorage.getItem('countingAppState');
+          if (currentState) {
+            const parsed = JSON.parse(currentState);
+            parsed.sessionHistory = [...(parsed.sessionHistory || []), {
+              date: new Date().toISOString(),
+              duration,
+              screen: sessionRef.current.screen,
+            }];
+            localStorage.setItem('countingAppState', JSON.stringify(parsed));
           }
+        } catch (e) {
+          console.error('Failed to save session on unload:', e);
         }
       }
     };
 
-    // Save on screen change
-    if (currentSessionScreen !== state.currentScreen) {
-      saveCurrentSession();
-      setCurrentSessionScreen(state.currentScreen);
-    }
-
-    // Save on page unload
-    const handleBeforeUnload = () => {
-      saveCurrentSession();
-    };
-
     window.addEventListener('beforeunload', handleBeforeUnload);
-    
-    return () => {
-      window.removeEventListener('beforeunload', handleBeforeUnload);
-      // Final save on cleanup
-      saveCurrentSession();
-    };
-  }, [state.currentScreen, state.countingMode, state.correctAnswersCount, user, currentSessionScreen, sessionStartTime, saveSession]);
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+  }, []); // No dependencies - only attach once
 
   // Scroll detection for indicator
   useEffect(() => {
