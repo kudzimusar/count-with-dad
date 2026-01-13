@@ -6,7 +6,7 @@ export interface YearlyProgress {
   age_year: number;
   modes_mastered: Record<string, { level: number; accuracy: number; stars: number }>;
   overall_mastery_percentage: number;
-  graduation_status: 'in_progress' | 'requested' | 'approved' | 'graduated';
+  graduation_status: 'in_progress' | 'pending_approval' | 'graduated';
   started_at: string;
 }
 
