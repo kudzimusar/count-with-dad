@@ -350,51 +350,51 @@ export function MathGameContainer({
         color="text-blue-600"
       />
 
-      {/* Header Card - Legacy style level selector */}
-      <div className="px-4 pt-4 pb-2">
-        <div className="max-w-4xl mx-auto bg-white p-4 rounded-2xl shadow-lg">
-          <div className="flex items-center justify-between">
-            <h2 className="text-xl font-bold text-blue-600">
+      {/* Header Card - Responsive level selector */}
+      <div className="px-2 sm:px-4 pt-2 sm:pt-4 pb-1 sm:pb-2 flex-shrink-0">
+        <div className="max-w-4xl mx-auto bg-white p-2 sm:p-4 rounded-xl sm:rounded-2xl shadow-lg">
+          <div className="flex items-center justify-between gap-2">
+            <h2 className="text-sm sm:text-lg md:text-xl font-bold text-primary truncate">
               {mode?.displayName || 'Math Challenge'}
             </h2>
-            <div className="flex items-center gap-3">
-              <span className="text-sm font-medium text-gray-600">Level:</span>
-              <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1 sm:gap-3 flex-shrink-0">
+              <span className="text-xs sm:text-sm font-medium text-muted-foreground hidden sm:inline">Level:</span>
+              <div className="flex items-center gap-1 sm:gap-2">
                 <button
                   onClick={() => handleLevelChange(-1)}
                   disabled={currentLevel <= 1}
-                  className="w-8 h-8 bg-blue-100 text-blue-600 rounded-lg font-bold text-lg hover:bg-blue-200 disabled:opacity-50 transition-colors"
+                  className="w-7 h-7 sm:w-8 sm:h-8 bg-primary/10 text-primary rounded-lg font-bold text-base sm:text-lg hover:bg-primary/20 disabled:opacity-50 transition-colors"
                 >
                   -
                 </button>
-                <span className="font-bold text-xl w-6 text-center">{currentLevel}</span>
+                <span className="font-bold text-lg sm:text-xl w-5 sm:w-6 text-center">{currentLevel}</span>
                 <button
                   onClick={() => handleLevelChange(1)}
                   disabled={currentLevel >= maxLevel}
-                  className="w-8 h-8 bg-blue-100 text-blue-600 rounded-lg font-bold text-lg hover:bg-blue-200 disabled:opacity-50 transition-colors flex items-center justify-center"
+                  className="w-7 h-7 sm:w-8 sm:h-8 bg-primary/10 text-primary rounded-lg font-bold text-base sm:text-lg hover:bg-primary/20 disabled:opacity-50 transition-colors flex items-center justify-center"
                 >
-                  {currentLevel >= maxLevel ? <Lock className="h-4 w-4" /> : '+'}
+                  {currentLevel >= maxLevel ? <Lock className="h-3 w-3 sm:h-4 sm:w-4" /> : '+'}
                 </button>
               </div>
             </div>
           </div>
-          <div className="mt-2 flex items-center gap-2">
-            <div className="flex-1 bg-gray-200 rounded-full h-2 overflow-hidden">
+          <div className="mt-1 sm:mt-2 flex items-center gap-2">
+            <div className="flex-1 bg-muted rounded-full h-1.5 sm:h-2 overflow-hidden">
               <div
-                className="bg-gradient-to-r from-green-400 to-blue-500 h-full transition-all duration-300"
+                className="bg-gradient-to-r from-green-400 to-primary h-full transition-all duration-300"
                 style={{ width: `${((currentProblemIndex) / problems.length) * 100}%` }}
               />
             </div>
-            <span className="text-sm text-gray-600">
+            <span className="text-xs sm:text-sm text-muted-foreground">
               {currentProblemIndex + 1}/{problems.length}
             </span>
           </div>
         </div>
       </div>
 
-      {/* Main content - Question and Visual (Legacy design) */}
-      <div className="flex-1 flex flex-col justify-center items-center px-4 overflow-hidden">
-        <div className="max-w-4xl w-full bg-blue-50 p-6 md:p-8 rounded-3xl shadow-lg">
+      {/* Main content - Question and Visual (Responsive design) */}
+      <div className="flex-1 flex flex-col justify-center items-center px-2 sm:px-4 overflow-hidden min-h-0">
+        <div className="max-w-4xl w-full bg-secondary/30 p-3 sm:p-6 md:p-8 rounded-2xl sm:rounded-3xl shadow-lg">
           <ProblemDisplay
             problem={currentProblem}
             showHint={showHint}
@@ -404,11 +404,11 @@ export function MathGameContainer({
         </div>
       </div>
 
-      {/* Answer area - Legacy styled buttons */}
-      <div className="flex-shrink-0 px-4 pb-4 pt-2">
+      {/* Answer area - Responsive styled buttons */}
+      <div className="flex-shrink-0 px-2 sm:px-4 pb-2 sm:pb-4 pt-1 sm:pt-2">
         <div className="max-w-2xl mx-auto">
           {currentProblem.choices ? (
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-2 gap-2 sm:gap-3 md:gap-4">
               {currentProblem.choices.map((option) => {
                 const isSelected = selectedAnswer === option;
                 const showCorrect = isSelected && isCorrect === true;
@@ -420,8 +420,8 @@ export function MathGameContainer({
                     onClick={() => handleAnswer(option)}
                     disabled={selectedAnswer !== null && isCorrect === true}
                     className={`
-                      py-6 md:py-8 rounded-2xl text-4xl md:text-5xl font-bold shadow-lg
-                      transition-all duration-200
+                      py-4 sm:py-6 md:py-8 rounded-xl sm:rounded-2xl text-2xl sm:text-4xl md:text-5xl font-bold shadow-lg
+                      transition-all duration-200 min-h-[56px] sm:min-h-[72px]
                       ${showCorrect 
                         ? 'bg-yellow-300 scale-105' 
                         : showWrong 

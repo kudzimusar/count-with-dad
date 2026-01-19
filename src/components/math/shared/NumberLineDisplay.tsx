@@ -12,39 +12,45 @@ export function NumberLineDisplay({
   jumps = []
 }: NumberLineDisplayProps) {
   const range = max - min;
-  const width = 400;
-  const height = 120;
-  const lineY = 80;
-  const padding = 40;
-  const usableWidth = width - padding * 2;
+  // Use a responsive base width that scales with viewBox
+  const baseWidth = 400;
+  const height = 100;
+  const lineY = 70;
+  const padding = 30;
+  const usableWidth = baseWidth - padding * 2;
 
   const getX = (value: number) => {
     return padding + ((value - min) / range) * usableWidth;
   };
 
-  // Generate tick marks
-  const ticks = Array.from({ length: range + 1 }, (_, i) => min + i);
+  // Generate tick marks - limit to reasonable density for mobile
+  const tickStep = range > 10 ? Math.ceil(range / 10) : 1;
+  const ticks = Array.from({ length: Math.floor(range / tickStep) + 1 }, (_, i) => min + i * tickStep);
 
   return (
-    <div className="flex justify-center items-center p-4 overflow-x-auto">
-      <svg width={width} height={height} viewBox={`0 0 ${width} ${height}`}>
+    <div className="flex justify-center items-center p-2 sm:p-4 w-full max-w-full overflow-x-auto">
+      <svg 
+        className="w-full max-w-[400px] h-auto min-w-[280px]"
+        viewBox={`0 0 ${baseWidth} ${height}`}
+        preserveAspectRatio="xMidYMid meet"
+      >
         {/* Main line */}
         <line
           x1={padding}
           y1={lineY}
-          x2={width - padding}
+          x2={baseWidth - padding}
           y2={lineY}
           stroke="hsl(var(--foreground))"
-          strokeWidth="3"
+          strokeWidth="2"
         />
 
         {/* Arrow heads */}
         <polygon
-          points={`${padding - 10},${lineY} ${padding},${lineY - 6} ${padding},${lineY + 6}`}
+          points={`${padding - 8},${lineY} ${padding},${lineY - 5} ${padding},${lineY + 5}`}
           fill="hsl(var(--foreground))"
         />
         <polygon
-          points={`${width - padding + 10},${lineY} ${width - padding},${lineY - 6} ${width - padding},${lineY + 6}`}
+          points={`${baseWidth - padding + 8},${lineY} ${baseWidth - padding},${lineY - 5} ${baseWidth - padding},${lineY + 5}`}
           fill="hsl(var(--foreground))"
         />
 
@@ -56,18 +62,18 @@ export function NumberLineDisplay({
             <g key={i}>
               <line
                 x1={x}
-                y1={lineY - 8}
+                y1={lineY - 6}
                 x2={x}
-                y2={lineY + 8}
+                y2={lineY + 6}
                 stroke="hsl(var(--foreground))"
                 strokeWidth="2"
               />
               <text
                 x={x}
-                y={lineY + 25}
+                y={lineY + 20}
                 textAnchor="middle"
                 className="fill-foreground font-semibold"
-                fontSize="14"
+                fontSize="12"
               >
                 {tick}
               </text>
@@ -75,7 +81,7 @@ export function NumberLineDisplay({
                 <circle
                   cx={x}
                   cy={lineY}
-                  r={8}
+                  r={6}
                   fill="hsl(var(--primary))"
                   className="animate-pulse"
                 />
@@ -89,12 +95,12 @@ export function NumberLineDisplay({
           const x1 = getX(jump.from);
           const x2 = getX(jump.to);
           const midX = (x1 + x2) / 2;
-          const arcY = lineY - 30;
+          const arcY = lineY - 25;
 
           return (
             <g key={i}>
               <path
-                d={`M ${x1} ${lineY - 10} Q ${midX} ${arcY} ${x2} ${lineY - 10}`}
+                d={`M ${x1} ${lineY - 8} Q ${midX} ${arcY} ${x2} ${lineY - 8}`}
                 fill="none"
                 stroke="hsl(var(--primary))"
                 strokeWidth="2"
@@ -103,10 +109,10 @@ export function NumberLineDisplay({
               {jump.label && (
                 <text
                   x={midX}
-                  y={arcY - 5}
+                  y={arcY - 4}
                   textAnchor="middle"
                   className="fill-primary font-bold"
-                  fontSize="12"
+                  fontSize="11"
                 >
                   {jump.label}
                 </text>

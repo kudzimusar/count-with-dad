@@ -105,10 +105,10 @@ export function NumberInput({
     );
   }
 
-  // 4-Choice Mode - 2x2 grid with legacy yellow highlight styling
+  // 4-Choice Mode - 2x2 grid with legacy yellow highlight styling - Responsive
   if (multipleChoice && multipleChoice.length === 4) {
     return (
-      <div className="grid grid-cols-2 gap-4 max-w-2xl mx-auto px-2">
+      <div className="grid grid-cols-2 gap-2 sm:gap-3 md:gap-4 max-w-2xl mx-auto px-1 sm:px-2">
         {multipleChoice.map((choice, idx) => {
           const isSelected = selectedChoice === choice;
           const isCorrect = feedback === 'correct' && choice === correctAnswer;
@@ -120,15 +120,15 @@ export function NumberInput({
               onClick={() => handleMultipleChoiceClick(choice)}
               disabled={feedback !== null}
               className={`
-                py-6 md:py-8 text-4xl md:text-5xl font-bold rounded-2xl shadow-lg 
-                transition-all duration-200
+                py-4 sm:py-6 md:py-8 text-2xl sm:text-4xl md:text-5xl font-bold rounded-xl sm:rounded-2xl shadow-lg 
+                transition-all duration-200 min-h-[56px] sm:min-h-[72px]
                 ${isCorrect
                   ? 'bg-yellow-300 scale-105'
                   : isWrong
                   ? 'bg-red-200 animate-shake'
                   : feedback !== null
                   ? 'opacity-50 bg-white'
-                  : 'bg-white hover:bg-yellow-100 hover:scale-105 active:scale-95 text-gray-900'}
+                  : 'bg-white hover:bg-yellow-100 hover:scale-105 active:scale-95 text-foreground'}
               `}
             >
               {choice}
@@ -175,11 +175,11 @@ export function NumberInput({
     );
   }
 
-  // Numeric Keypad Mode - Compact
+  // Numeric Keypad Mode - Compact and responsive
   return (
-    <div className="max-w-xs mx-auto">
+    <div className="max-w-[280px] sm:max-w-xs mx-auto px-2">
       {/* Display */}
-      <div className={`mb-3 p-4 rounded-2xl text-center text-4xl font-bold transition-colors ${
+      <div className={`mb-2 sm:mb-3 p-3 sm:p-4 rounded-xl sm:rounded-2xl text-center text-3xl sm:text-4xl font-bold transition-colors ${
         feedback === 'correct'
           ? 'bg-green-100 text-green-600'
           : feedback === 'wrong'
@@ -187,18 +187,18 @@ export function NumberInput({
           : 'bg-card text-foreground border-2 border-border'
       }`}>
         {value || '_'}
-        {feedback === 'correct' && <Check className="inline ml-3" size={32} />}
-        {feedback === 'wrong' && <X className="inline ml-3" size={32} />}
+        {feedback === 'correct' && <Check className="inline ml-2 sm:ml-3 w-6 h-6 sm:w-8 sm:h-8" />}
+        {feedback === 'wrong' && <X className="inline ml-2 sm:ml-3 w-6 h-6 sm:w-8 sm:h-8" />}
       </div>
 
-      {/* Keypad - Compact */}
-      <div className="grid grid-cols-3 gap-2 mb-2">
+      {/* Keypad - Compact and responsive */}
+      <div className="grid grid-cols-3 gap-1.5 sm:gap-2 mb-1.5 sm:mb-2">
         {[1, 2, 3, 4, 5, 6, 7, 8, 9].map(num => (
           <button
             key={num}
             onClick={() => handleNumberClick(num)}
             disabled={feedback !== null}
-            className="py-3 text-2xl font-bold bg-card hover:bg-primary/10 rounded-xl shadow transition-all hover:scale-105 active:scale-95 disabled:opacity-50 border border-border"
+            className="py-2.5 sm:py-3 text-xl sm:text-2xl font-bold bg-card hover:bg-primary/10 rounded-lg sm:rounded-xl shadow transition-all hover:scale-105 active:scale-95 disabled:opacity-50 border border-border min-h-[44px]"
           >
             {num}
           </button>
@@ -206,21 +206,21 @@ export function NumberInput({
         <button
           onClick={handleClear}
           disabled={feedback !== null}
-          className="py-3 text-lg font-bold bg-muted hover:bg-muted/80 rounded-xl shadow transition-all active:scale-95"
+          className="py-2.5 sm:py-3 text-sm sm:text-lg font-bold bg-muted hover:bg-muted/80 rounded-lg sm:rounded-xl shadow transition-all active:scale-95 min-h-[44px]"
         >
           Clear
         </button>
         <button
           onClick={() => handleNumberClick(0)}
           disabled={feedback !== null}
-          className="py-3 text-2xl font-bold bg-card hover:bg-primary/10 rounded-xl shadow transition-all hover:scale-105 active:scale-95 disabled:opacity-50 border border-border"
+          className="py-2.5 sm:py-3 text-xl sm:text-2xl font-bold bg-card hover:bg-primary/10 rounded-lg sm:rounded-xl shadow transition-all hover:scale-105 active:scale-95 disabled:opacity-50 border border-border min-h-[44px]"
         >
           0
         </button>
         <button
           onClick={handleSubmit}
           disabled={!value || feedback !== null}
-          className="py-3 text-lg font-bold bg-green-500 hover:bg-green-600 text-white rounded-xl shadow transition-all active:scale-95 disabled:opacity-50"
+          className="py-2.5 sm:py-3 text-base sm:text-lg font-bold bg-green-500 hover:bg-green-600 text-white rounded-lg sm:rounded-xl shadow transition-all active:scale-95 disabled:opacity-50 min-h-[44px]"
         >
           ✓
         </button>
