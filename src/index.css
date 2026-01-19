@@ -346,6 +346,45 @@ All colors MUST be HSL.
       min-height: 40px;
     }
   }
+
+  /* Very small screens (iPhone SE, etc) */
+  @media (max-width: 360px) {
+    .btn-child {
+      min-height: 52px;
+      min-width: 60px;
+      font-size: 1.1rem;
+    }
+
+    .number-bubble {
+      min-height: 52px;
+      min-width: 52px;
+    }
+  }
+
+  /* Safe area insets for notched phones */
+  .pb-safe {
+    padding-bottom: env(safe-area-inset-bottom, 0);
+  }
+
+  .pt-safe {
+    padding-top: env(safe-area-inset-top, 0);
+  }
+
+  /* Hide scrollbar but allow scrolling */
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* Touch optimization for game buttons */
+  .touch-target {
+    min-height: 44px;
+    min-width: 44px;
+  }
 }
 
 @layer base {

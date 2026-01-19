@@ -14,64 +14,67 @@ const SHAPE_COLORS: Record<string, string> = {
   pink: '#EC4899'
 };
 
-export function ShapeDisplay({ shape, color = 'blue', size = 140 }: ShapeDisplayProps) {
+export function ShapeDisplay({ shape, color = 'blue', size = 100 }: ShapeDisplayProps) {
   const fillColor = SHAPE_COLORS[color] || color;
+  // Use a fixed viewBox for consistent rendering, scale with CSS
+  const viewBoxSize = 100;
 
   const renderShape = () => {
+    const s = viewBoxSize; // Use viewBox size for calculations
     switch (shape.toLowerCase()) {
       case 'circle':
         return (
-          <circle cx={size / 2} cy={size / 2} r={size / 2 - 10} fill={fillColor} />
+          <circle cx={s / 2} cy={s / 2} r={s / 2 - 8} fill={fillColor} />
         );
       case 'square':
         return (
-          <rect x={10} y={10} width={size - 20} height={size - 20} fill={fillColor} />
+          <rect x={8} y={8} width={s - 16} height={s - 16} fill={fillColor} />
         );
       case 'triangle':
         return (
           <polygon
-            points={`${size / 2},10 ${size - 10},${size - 10} 10,${size - 10}`}
+            points={`${s / 2},8 ${s - 8},${s - 8} 8,${s - 8}`}
             fill={fillColor}
           />
         );
       case 'rectangle':
         return (
-          <rect x={10} y={40} width={size - 20} height={size - 80} fill={fillColor} />
+          <rect x={8} y={30} width={s - 16} height={s - 60} fill={fillColor} />
         );
       case 'oval':
         return (
-          <ellipse cx={size / 2} cy={size / 2} rx={size / 2 - 10} ry={size / 3} fill={fillColor} />
+          <ellipse cx={s / 2} cy={s / 2} rx={s / 2 - 8} ry={s / 3} fill={fillColor} />
         );
       case 'star':
-        const starPoints = generateStarPoints(size / 2, size / 2, 5, size / 2 - 10, size / 4);
+        const starPoints = generateStarPoints(s / 2, s / 2, 5, s / 2 - 8, s / 4);
         return <polygon points={starPoints} fill={fillColor} />;
       case 'pentagon':
-        const pentPoints = generatePolygonPoints(size / 2, size / 2, 5, size / 2 - 10);
+        const pentPoints = generatePolygonPoints(s / 2, s / 2, 5, s / 2 - 8);
         return <polygon points={pentPoints} fill={fillColor} />;
       case 'hexagon':
-        const hexPoints = generatePolygonPoints(size / 2, size / 2, 6, size / 2 - 10);
+        const hexPoints = generatePolygonPoints(s / 2, s / 2, 6, s / 2 - 8);
         return <polygon points={hexPoints} fill={fillColor} />;
       case 'diamond':
         return (
           <polygon
-            points={`${size / 2},10 ${size - 10},${size / 2} ${size / 2},${size - 10} 10,${size / 2}`}
+            points={`${s / 2},8 ${s - 8},${s / 2} ${s / 2},${s - 8} 8,${s / 2}`}
             fill={fillColor}
           />
         );
       case 'heart':
         return (
           <path
-            d={`M ${size / 2} ${size - 20}
-               C ${size / 2} ${size - 20}, 10 ${size / 2}, 10 ${size / 3}
-               C 10 15, ${size / 2 - 10} 10, ${size / 2} ${size / 3}
-               C ${size / 2 + 10} 10, ${size - 10} 15, ${size - 10} ${size / 3}
-               C ${size - 10} ${size / 2}, ${size / 2} ${size - 20}, ${size / 2} ${size - 20}`}
+            d={`M ${s / 2} ${s - 16}
+               C ${s / 2} ${s - 16}, 8 ${s / 2}, 8 ${s / 3}
+               C 8 12, ${s / 2 - 8} 8, ${s / 2} ${s / 3}
+               C ${s / 2 + 8} 8, ${s - 8} 12, ${s - 8} ${s / 3}
+               C ${s - 8} ${s / 2}, ${s / 2} ${s - 16}, ${s / 2} ${s - 16}`}
             fill={fillColor}
           />
         );
       default:
         return (
-          <circle cx={size / 2} cy={size / 2} r={size / 2 - 10} fill={fillColor} />
+          <circle cx={s / 2} cy={s / 2} r={s / 2 - 8} fill={fillColor} />
         );
     }
   };
@@ -79,10 +82,9 @@ export function ShapeDisplay({ shape, color = 'blue', size = 140 }: ShapeDisplay
   return (
     <div className="flex justify-center items-center">
       <svg
-        width={size}
-        height={size}
-        viewBox={`0 0 ${size} ${size}`}
-        className="animate-pulse"
+        className="w-[80px] h-[80px] sm:w-[100px] sm:h-[100px] md:w-[120px] md:h-[120px]"
+        viewBox={`0 0 ${viewBoxSize} ${viewBoxSize}`}
+        preserveAspectRatio="xMidYMid meet"
         style={{ animationDuration: '2s' }}
       >
         {renderShape()}
