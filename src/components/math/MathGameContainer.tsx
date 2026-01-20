@@ -5,7 +5,9 @@ import { NumberInput } from './shared/NumberInput';
 import { LevelCompleteModal } from '../modals/LevelCompleteModal';
 import { SuccessModal } from '../modals/SuccessModal';
 import { GameModeWrapper } from '../game/GameModeWrapper';
+import { GameCelebration } from '../game/GameCelebration';
 import { useSound } from '@/hooks/useSound';
+import { useGameSounds } from '@/hooks/useGameSounds';
 import { useSpeech } from '@/hooks/useSpeech';
 import { useSupabaseData } from '@/hooks/useSupabaseData';
 import { useAgeAnalytics } from '@/hooks/useAgeAnalytics';
@@ -15,6 +17,7 @@ import { Problem } from '@/types/math';
 import { MATH_MODES } from '@/utils/mathLevels';
 import { Lock } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
+import { getMascotType, MascotType } from '@/config/mascotCharacters';
 
 interface MathGameContainerProps {
   modeId: string;
@@ -59,8 +62,13 @@ export function MathGameContainer({
   const [currentLevel, setCurrentLevel] = useState(level);
   const [selectedAnswer, setSelectedAnswer] = useState<number | string | null>(null);
   const [isCorrect, setIsCorrect] = useState<boolean | null>(null);
+  
+  // Celebration state
+  const [showCelebration, setShowCelebration] = useState(false);
+  const [celebrationMascot, setCelebrationMascot] = useState<MascotType>('star');
 
   const { playSound } = useSound();
+  const { playCorrect, playWrong, playPop } = useGameSounds({ enabled: soundEnabled });
   const { speak } = useSpeech(voiceSettings);
   const { saveProgress, saveSession, trackEvent } = useSupabaseData(userId);
   const { trackAgeEngagement, trackModeUsage, trackDifficultyCheck } = useAgeAnalytics(userId);
@@ -147,7 +155,18 @@ export function MathGameContainer({
       setIsCorrect(true);
       setScore(newScore);
       correctStreak.current++;
+      
+      // Play celebration sounds
+      playCorrect();
       if (soundEnabled) playSound('correct');
+      
+      // Determine mascot type from current problem's visual aid
+      const visualObject = currentProblem.visualAid?.data?.groups?.[0]?.object || '⭐';
+      const mascot = getMascotType(visualObject);
+      setCelebrationMascot(mascot);
+      
+      // Trigger confetti celebration
+      setShowCelebration(true);
       
       // Build personalized success message
       const equation = currentProblem.question.replace('?', String(currentProblem.answer));
@@ -192,7 +211,11 @@ export function MathGameContainer({
       }, 300);
     } else {
       setIsCorrect(false);
+      
+      // Play wrong sound
+      playWrong();
       if (soundEnabled) playSound('wrong');
+      
       if (voiceEnabled) {
         const message = childName
           ? `Oops! Try again, ${childName}!`
@@ -220,6 +243,7 @@ export function MathGameContainer({
 
   const handleSuccessClose = () => {
     setShowSuccessModal(false);
+    setShowCelebration(false);
     setSelectedAnswer(null);
     setIsCorrect(null);
 
@@ -340,6 +364,15 @@ export function MathGameContainer({
       totalProblems={problems.length}
       currentProblem={currentProblemIndex}
     >
+      {/* 🎉 Full-screen Confetti Celebration */}
+      <GameCelebration
+        isActive={showCelebration}
+        duration={2500}
+        mascotType={celebrationMascot}
+        showMascot={true}
+        onComplete={() => setShowCelebration(false)}
+      />
+
       {/* Success Modal - Legacy style celebration */}
       <SuccessModal
         isOpen={showSuccessModal}

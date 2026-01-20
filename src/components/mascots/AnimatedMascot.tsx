@@ -13,6 +13,10 @@ interface AnimatedMascotProps {
   wiggle?: boolean;
   delay?: number;
   className?: string;
+  /** When true, plays a happy jump celebration animation */
+  isCelebrating?: boolean;
+  /** When true, plays a gentle shake/no animation for wrong answers */
+  isShaking?: boolean;
 }
 
 const MASCOT_COMPONENTS: Record<MascotType, React.FC<{ animated?: boolean; className?: string }>> = {
@@ -30,13 +34,24 @@ export const AnimatedMascot: React.FC<AnimatedMascotProps> = ({
   wiggle = false,
   delay = 0,
   className = '',
+  isCelebrating = false,
+  isShaking = false,
 }) => {
   const MascotComponent = MASCOT_COMPONENTS[type] || AppleMascot;
 
-  // Build animation classes
-  const animationClasses = animated
-    ? `${wiggle ? 'mascot-wiggle' : 'mascot-float'} mascot-enter`
-    : '';
+  // Build animation classes - celebration/shake override default animations
+  let animationClasses = '';
+  
+  if (isCelebrating) {
+    // Celebration mode - happy jump with sparkle
+    animationClasses = 'mascot-celebrate';
+  } else if (isShaking) {
+    // Wrong answer - gentle shake
+    animationClasses = 'mascot-shake';
+  } else if (animated) {
+    // Default animations
+    animationClasses = `${wiggle ? 'mascot-wiggle' : 'mascot-float'} mascot-enter`;
+  }
 
   return (
     <div
