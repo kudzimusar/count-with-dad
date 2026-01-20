@@ -2,6 +2,7 @@ import { useState, useCallback } from 'react';
 import { AnimatedMascot } from '@/components/mascots/AnimatedMascot';
 import { getMascotType } from '@/config/mascotCharacters';
 import { useGameSounds } from '@/hooks/useGameSounds';
+import { useHaptics } from '@/hooks/useHaptics';
 
 interface ObjectGroup {
   count: number;
@@ -29,10 +30,12 @@ export function VisualObjects({
   // Track which mascots are currently wiggling from taps
   const [tappedIndices, setTappedIndices] = useState<Set<string>>(new Set());
   const { playPop } = useGameSounds({ enabled: true });
+  const haptics = useHaptics();
 
-  // Handle mascot tap - trigger wiggle and pop sound
+  // Handle mascot tap - trigger wiggle, pop sound, and haptic feedback
   const handleMascotTap = useCallback((key: string) => {
     playPop();
+    haptics.trigger('light'); // Light tap vibration for mascot touch
     setTappedIndices(prev => new Set(prev).add(key));
     // Remove from tapped set after animation completes
     setTimeout(() => {
@@ -42,7 +45,7 @@ export function VisualObjects({
         return next;
       });
     }, 400);
-  }, [playPop]);
+  }, [playPop, haptics]);
 
   // Render comparison groups (side by side cards)
   if (groups && groups.length > 0) {

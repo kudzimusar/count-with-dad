@@ -1,15 +1,17 @@
 import { useCallback, useRef } from 'react';
+import { useHaptics } from './useHaptics';
 
 /**
  * Game Sound Effects Hook
  * 
  * Handles audio feedback for game events:
- * - playCorrect(): Happy chime for correct answers
- * - playWrong(): Gentle thud for wrong answers
- * - playPop(): Bubble sound for button clicks
+ * - playCorrect(): Happy chime for correct answers + success haptic
+ * - playWrong(): Gentle thud for wrong answers + error haptic
+ * - playPop(): Bubble sound for button clicks + medium haptic
+ * - playLevelComplete(): Victory sound + success haptic
  * 
  * Audio files should be placed in /public/sounds/ and referenced here.
- * Currently uses console.log placeholders - swap with real audio when available.
+ * Falls back to Web Audio API generated sounds when MP3s are unavailable.
  */
 
 interface UseGameSoundsOptions {
@@ -34,6 +36,7 @@ const SOUND_PATHS = {
 
 export function useGameSounds(options: UseGameSoundsOptions = {}): GameSounds {
   const { enabled = true, volume = 0.5 } = options;
+  const haptics = useHaptics();
   
   // Cache audio elements for performance
   const audioCache = useRef<Map<string, HTMLAudioElement>>(new Map());
@@ -158,10 +161,25 @@ export function useGameSounds(options: UseGameSoundsOptions = {}): GameSounds {
     }
   }, []);
 
-  const playCorrect = useCallback(() => playSound('correct'), [playSound]);
-  const playWrong = useCallback(() => playSound('wrong'), [playSound]);
-  const playPop = useCallback(() => playSound('pop'), [playSound]);
-  const playLevelComplete = useCallback(() => playSound('levelComplete'), [playSound]);
+  const playCorrect = useCallback(() => {
+    haptics.trigger('success');
+    playSound('correct');
+  }, [playSound, haptics]);
+  
+  const playWrong = useCallback(() => {
+    haptics.trigger('error');
+    playSound('wrong');
+  }, [playSound, haptics]);
+  
+  const playPop = useCallback(() => {
+    haptics.trigger('medium');
+    playSound('pop');
+  }, [playSound, haptics]);
+  
+  const playLevelComplete = useCallback(() => {
+    haptics.trigger('success');
+    playSound('levelComplete');
+  }, [playSound, haptics]);
 
   return {
     playCorrect,

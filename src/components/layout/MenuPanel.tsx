@@ -1,6 +1,8 @@
 import { Screen, CountingMode } from '@/types';
-import { UserCircle, Lock } from 'lucide-react';
+import { Lock, UserCircle } from 'lucide-react';
 import { ProgressTracker } from './ProgressTracker';
+import { AnimatedMascot } from '@/components/mascots/AnimatedMascot';
+import { MascotType } from '@/config/mascotCharacters';
 
 interface MenuPanelProps {
   currentScreen: Screen;
@@ -29,10 +31,11 @@ export function MenuPanel({
 }: MenuPanelProps) {
   const isPremium = subscriptionStatus === 'premium';
   
-  const screens: { screen: Screen; label: string; emoji: string; isPremium?: boolean }[] = [
-    { screen: 'counting', label: 'Counting', emoji: '🔢' },
-    { screen: 'puzzle', label: 'Puzzles', emoji: '🧩', isPremium: false },
-    { screen: 'math', label: 'Math', emoji: '➕', isPremium: false },
+  // Screen options with mascot types instead of emojis
+  const screens: { screen: Screen; label: string; mascot: MascotType; isPremium?: boolean }[] = [
+    { screen: 'counting', label: 'Counting', mascot: 'apple' },
+    { screen: 'puzzle', label: 'Puzzles', mascot: 'blueberry', isPremium: false },
+    { screen: 'math', label: 'Math', mascot: 'orange', isPremium: false },
   ];
 
   const modes: { mode: CountingMode; label: string; isPremium?: boolean }[] = [
@@ -63,7 +66,7 @@ export function MenuPanel({
       <div>
         <h3 className="text-lg font-bold mb-3 text-purple-600">Choose Activity</h3>
         <div className="grid grid-cols-3 gap-3">
-          {screens.map(({ screen, label, emoji, isPremium: screenIsPremium }) => {
+          {screens.map(({ screen, label, mascot, isPremium: screenIsPremium }) => {
             const isLocked = screenIsPremium && !isPremium;
             return (
               <button
@@ -80,7 +83,13 @@ export function MenuPanel({
                     <Lock className="h-4 w-4" />
                   </div>
                 )}
-                <div className="text-3xl mb-2">{emoji}</div>
+                <div className="flex justify-center mb-2">
+                  <AnimatedMascot 
+                    type={mascot} 
+                    animated={true} 
+                    className="w-10 h-10"
+                  />
+                </div>
                 <div className="text-sm">{label}</div>
               </button>
             );
