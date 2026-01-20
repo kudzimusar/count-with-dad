@@ -1,5 +1,7 @@
+import { useState, useCallback } from 'react';
 import { AnimatedMascot } from '@/components/mascots/AnimatedMascot';
 import { getMascotType } from '@/config/mascotCharacters';
+import { useGameSounds } from '@/hooks/useGameSounds';
 
 interface ObjectGroup {
   count: number;
@@ -24,6 +26,24 @@ export function VisualObjects({
   groups,
   showCombined = false
 }: VisualObjectsProps) {
+  // Track which mascots are currently wiggling from taps
+  const [tappedIndices, setTappedIndices] = useState<Set<string>>(new Set());
+  const { playPop } = useGameSounds({ enabled: true });
+
+  // Handle mascot tap - trigger wiggle and pop sound
+  const handleMascotTap = useCallback((key: string) => {
+    playPop();
+    setTappedIndices(prev => new Set(prev).add(key));
+    // Remove from tapped set after animation completes
+    setTimeout(() => {
+      setTappedIndices(prev => {
+        const next = new Set(prev);
+        next.delete(key);
+        return next;
+      });
+    }, 400);
+  }, [playPop]);
+
   // Render comparison groups (side by side cards)
   if (groups && groups.length > 0) {
     return (
@@ -56,19 +76,24 @@ export function VisualObjects({
                   className="grid gap-2 mb-3"
                   style={{ gridTemplateColumns: `repeat(${cols}, 1fr)` }}
                 >
-                  {Array.from({ length: displayCount }, (_, i) => (
-                    <div 
-                      key={i}
-                      className="w-10 h-10 md:w-14 md:h-14 flex items-center justify-center"
-                    >
-                      <AnimatedMascot
-                        type={mascotType}
-                        animated={animated}
-                        wiggle={groupIndex > 0 || displayCount > 1}
-                        delay={i * 0.1}
-                      />
-                    </div>
-                  ))}
+                  {Array.from({ length: displayCount }, (_, i) => {
+                    const key = `group-${groupIndex}-${i}`;
+                    const isTapped = tappedIndices.has(key);
+                    return (
+                      <div 
+                        key={i}
+                        className="w-10 h-10 md:w-14 md:h-14 flex items-center justify-center cursor-pointer active:scale-90 transition-transform"
+                        onClick={() => handleMascotTap(key)}
+                      >
+                        <AnimatedMascot
+                          type={mascotType}
+                          animated={animated}
+                          wiggle={isTapped || groupIndex > 0 || displayCount > 1}
+                          delay={i * 0.1}
+                        />
+                      </div>
+                    );
+                  })}
                 </div>
                 {group.count > maxDisplay && (
                   <span className="text-xs text-muted-foreground mb-1">+{group.count - maxDisplay} more</span>
@@ -101,19 +126,24 @@ export function VisualObjects({
           className="grid gap-2 justify-center"
           style={{ gridTemplateColumns: `repeat(${cols}, 1fr)` }}
         >
-          {Array.from({ length: displayCount }, (_, i) => (
-            <div 
-              key={i}
-              className="w-10 h-10 md:w-14 md:h-14 flex items-center justify-center"
-            >
-              <AnimatedMascot
-                type={mascotType}
-                animated={animated}
-                wiggle={displayCount > 1}
-                delay={i * 0.08}
-              />
-            </div>
-          ))}
+          {Array.from({ length: displayCount }, (_, i) => {
+            const key = `single-${i}`;
+            const isTapped = tappedIndices.has(key);
+            return (
+              <div 
+                key={i}
+                className="w-10 h-10 md:w-14 md:h-14 flex items-center justify-center cursor-pointer active:scale-90 transition-transform"
+                onClick={() => handleMascotTap(key)}
+              >
+                <AnimatedMascot
+                  type={mascotType}
+                  animated={animated}
+                  wiggle={isTapped || displayCount > 1}
+                  delay={i * 0.08}
+                />
+              </div>
+            );
+          })}
         </div>
         {count > maxDisplay && (
           <span className="text-sm text-muted-foreground">+{count - maxDisplay} more</span>

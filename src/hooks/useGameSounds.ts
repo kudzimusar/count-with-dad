@@ -68,65 +68,89 @@ export function useGameSounds(options: UseGameSoundsOptions = {}): GameSounds {
     }
   }, [enabled, volume]);
 
-  // Fallback beep using Web Audio API (works without audio files)
+  // Polyphonic fallback using Web Audio API - pleasant musical sounds
   const playFallbackBeep = useCallback((soundKey: keyof typeof SOUND_PATHS) => {
     try {
       const AudioContext = window.AudioContext || (window as any).webkitAudioContext;
       if (!AudioContext) return;
 
       const ctx = new AudioContext();
-      const oscillator = ctx.createOscillator();
-      const gainNode = ctx.createGain();
 
-      oscillator.connect(gainNode);
-      gainNode.connect(ctx.destination);
+      // Helper to play a note with envelope
+      const playNote = (freq: number, startTime: number, duration: number, vol: number, type: OscillatorType = 'sine') => {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.frequency.value = freq;
+        osc.type = type;
+        gain.gain.setValueAtTime(0, startTime);
+        gain.gain.linearRampToValueAtTime(vol, startTime + 0.02);
+        gain.gain.exponentialRampToValueAtTime(0.01, startTime + duration);
+        osc.start(startTime);
+        osc.stop(startTime + duration);
+      };
 
-      // Different tones for different sounds
       switch (soundKey) {
-        case 'correct':
-          oscillator.frequency.value = 880; // A5 - happy high note
-          oscillator.type = 'sine';
-          gainNode.gain.setValueAtTime(0.3, ctx.currentTime);
-          gainNode.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.3);
-          oscillator.start(ctx.currentTime);
-          oscillator.stop(ctx.currentTime + 0.3);
+        case 'correct': {
+          // Pleasant Major Triad (C-E-G) played simultaneously - chime sound
+          const now = ctx.currentTime;
+          playNote(523.25, now, 0.4, 0.15, 'sine');      // C5
+          playNote(659.25, now, 0.4, 0.12, 'sine');      // E5
+          playNote(783.99, now, 0.5, 0.10, 'sine');      // G5
+          playNote(1046.50, now + 0.05, 0.45, 0.08, 'sine'); // C6 (slight delay for shimmer)
           break;
+        }
           
-        case 'wrong':
-          oscillator.frequency.value = 220; // A3 - low gentle thud
-          oscillator.type = 'triangle';
-          gainNode.gain.setValueAtTime(0.2, ctx.currentTime);
-          gainNode.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.2);
-          oscillator.start(ctx.currentTime);
-          oscillator.stop(ctx.currentTime + 0.2);
+        case 'wrong': {
+          // Gentle low thud - soft triangle wave with quick decay
+          const now = ctx.currentTime;
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+          osc.connect(gain);
+          gain.connect(ctx.destination);
+          osc.frequency.value = 150; // Low frequency
+          osc.type = 'triangle';
+          gain.gain.setValueAtTime(0.2, now);
+          gain.gain.exponentialRampToValueAtTime(0.01, now + 0.15);
+          osc.start(now);
+          osc.stop(now + 0.15);
           break;
+        }
           
-        case 'pop':
-          oscillator.frequency.value = 600; // Pop sound
-          oscillator.type = 'sine';
-          gainNode.gain.setValueAtTime(0.15, ctx.currentTime);
-          gainNode.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.1);
-          oscillator.start(ctx.currentTime);
-          oscillator.stop(ctx.currentTime + 0.1);
+        case 'pop': {
+          // Quick bubble pop - high frequency blip
+          const now = ctx.currentTime;
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+          osc.connect(gain);
+          gain.connect(ctx.destination);
+          osc.frequency.setValueAtTime(800, now);
+          osc.frequency.exponentialRampToValueAtTime(400, now + 0.08);
+          osc.type = 'sine';
+          gain.gain.setValueAtTime(0.15, now);
+          gain.gain.exponentialRampToValueAtTime(0.01, now + 0.08);
+          osc.start(now);
+          osc.stop(now + 0.08);
           break;
+        }
           
-        case 'levelComplete':
-          // Play a happy ascending arpeggio
-          const notes = [523.25, 659.25, 783.99, 1046.5]; // C5, E5, G5, C6
+        case 'levelComplete': {
+          // Victory arpeggio - ascending major scale with final chord
+          const now = ctx.currentTime;
+          const notes = [523.25, 587.33, 659.25, 698.46, 783.99, 880.00, 987.77, 1046.50];
+          // Quick ascending run
           notes.forEach((freq, i) => {
-            const osc = ctx.createOscillator();
-            const gain = ctx.createGain();
-            osc.connect(gain);
-            gain.connect(ctx.destination);
-            osc.frequency.value = freq;
-            osc.type = 'sine';
-            const startTime = ctx.currentTime + (i * 0.15);
-            gain.gain.setValueAtTime(0.2, startTime);
-            gain.gain.exponentialRampToValueAtTime(0.01, startTime + 0.3);
-            osc.start(startTime);
-            osc.stop(startTime + 0.3);
+            playNote(freq, now + (i * 0.08), 0.2, 0.12, 'sine');
           });
+          // Final triumphant chord (C major with octave)
+          const chordTime = now + (notes.length * 0.08) + 0.1;
+          playNote(523.25, chordTime, 0.6, 0.15, 'sine');  // C5
+          playNote(659.25, chordTime, 0.6, 0.12, 'sine');  // E5
+          playNote(783.99, chordTime, 0.6, 0.12, 'sine');  // G5
+          playNote(1046.50, chordTime, 0.7, 0.10, 'sine'); // C6
           break;
+        }
       }
     } catch (err) {
       // Web Audio not available - silent fallback

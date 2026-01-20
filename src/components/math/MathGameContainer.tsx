@@ -205,10 +205,11 @@ export function MathGameContainer({
         correct: true,
       });
 
-      // Show success modal after brief delay to show yellow highlight
+      // Delay success modal until AFTER celebration finishes (3 seconds)
+      // This ensures child enjoys the confetti before being prompted to continue
       setTimeout(() => {
         setShowSuccessModal(true);
-      }, 300);
+      }, 2600);
     } else {
       setIsCorrect(false);
       
