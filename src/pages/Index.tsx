@@ -935,7 +935,7 @@ const Index = () => {
   // Auth is now optional for cloud sync only
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-yellow-100 via-pink-100 to-purple-100 overflow-y-auto pb-20">
+    <div className="min-h-screen playful-bg overflow-y-auto pb-20">
       <ParentGate
         isOpen={parentGateOpen}
         onClose={() => setParentGateOpen(false)}
@@ -961,6 +961,7 @@ const Index = () => {
             menuOpen={state.menuOpen}
             onMenuToggle={() => setState(prev => ({ ...prev, menuOpen: !prev.menuOpen }))}
             onParentZoneClick={() => setParentGateOpen(true)}
+            childName={state.childName}
           />
           
           {state.menuOpen && (
