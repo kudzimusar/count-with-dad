@@ -7,6 +7,19 @@ export const LEGACY_MODES = ['legacy-counting', 'legacy-puzzle', 'legacy-additio
 export type LegacyMode = typeof LEGACY_MODES[number];
 
 export const MATH_MODES: MathMode[] = [
+  // === EASIEST: Foundation modes for ages 3+ ===
+  {
+    id: 'addition-basic',
+    name: 'additionBasic',
+    displayName: 'Addition',
+    icon: '➕',
+    description: 'Add numbers within 10',
+    ageRange: [3, 8],
+    totalLevels: 20,
+    unlockRequirements: [],
+    category: 'operations',
+    skills: ['addition', 'number_sense']
+  },
   {
     id: 'number-sense',
     name: 'numberSense',
@@ -31,18 +44,7 @@ export const MATH_MODES: MathMode[] = [
     category: 'foundation',
     skills: ['shapes', 'patterns', 'spatial_reasoning']
   },
-  {
-    id: 'addition-basic',
-    name: 'additionBasic',
-    displayName: 'Addition',
-    icon: '➕',
-    description: 'Add numbers within 10',
-    ageRange: [3, 8],
-    totalLevels: 20,
-    unlockRequirements: [],
-    category: 'operations',
-    skills: ['addition', 'number_sense']
-  },
+  // === EASY: Ages 4+ ===
   {
     id: 'subtraction-basic',
     name: 'subtractionBasic',
@@ -68,6 +70,18 @@ export const MATH_MODES: MathMode[] = [
     skills: ['skip_counting', 'patterns', 'multiplication_readiness']
   },
   {
+    id: 'number-line',
+    name: 'numberLineMastery',
+    displayName: 'Number Line',
+    icon: '📊',
+    description: 'Use number lines for math operations',
+    ageRange: [4, 8],
+    totalLevels: 20,
+    unlockRequirements: [],
+    category: 'foundation',
+    skills: ['number_line', 'visual_math', 'counting']
+  },
+  {
     id: 'time',
     name: 'timeTelling',
     displayName: 'Time Basics',
@@ -78,6 +92,57 @@ export const MATH_MODES: MathMode[] = [
     unlockRequirements: [],
     category: 'applications',
     skills: ['time', 'number_sense', 'real_world_math']
+  },
+  {
+    id: 'measurement',
+    name: 'measurement',
+    displayName: 'Measurement',
+    icon: '📏',
+    description: 'Compare sizes and lengths',
+    ageRange: [4, 8],
+    totalLevels: 20,
+    unlockRequirements: [],
+    category: 'applications',
+    skills: ['measurement', 'comparison', 'estimation']
+  },
+  // === MEDIUM: Ages 5+ ===
+  {
+    id: 'place-value',
+    name: 'placeValue',
+    displayName: 'Place Value',
+    icon: '🧮',
+    description: 'Understand tens and ones',
+    ageRange: [5, 8],
+    totalLevels: 20,
+    unlockRequirements: [],
+    category: 'foundation',
+    skills: ['place_value', 'number_sense', 'base_ten']
+  },
+  {
+    id: 'money',
+    name: 'moneyValue',
+    displayName: 'Money & Value',
+    icon: '💰',
+    description: 'Count coins and make purchases',
+    ageRange: [5, 8],
+    totalLevels: 25,
+    unlockRequirements: [],
+    category: 'applications',
+    skills: ['money', 'addition', 'real_world_math']
+  },
+  {
+    id: 'word-problems',
+    name: 'wordProblems',
+    displayName: 'Word Problems',
+    icon: '📖',
+    description: 'Solve math in real-world stories',
+    ageRange: [5, 8],
+    totalLevels: 25,
+    unlockRequirements: [
+      { type: 'level_complete', modeId: 'addition-basic', level: 5 }
+    ],
+    category: 'applications',
+    skills: ['word_problems', 'critical_thinking', 'reading_comprehension']
   },
   {
     id: 'addition-advanced',
@@ -107,42 +172,7 @@ export const MATH_MODES: MathMode[] = [
     category: 'operations',
     skills: ['subtraction', 'place_value', 'borrowing']
   },
-  {
-    id: 'money',
-    name: 'moneyValue',
-    displayName: 'Money & Value',
-    icon: '💰',
-    description: 'Count coins and make purchases',
-    ageRange: [5, 8],
-    totalLevels: 25,
-    unlockRequirements: [],
-    category: 'applications',
-    skills: ['money', 'addition', 'real_world_math']
-  },
-  {
-    id: 'measurement',
-    name: 'measurement',
-    displayName: 'Measurement',
-    icon: '📏',
-    description: 'Compare sizes and lengths',
-    ageRange: [4, 8],
-    totalLevels: 20,
-    unlockRequirements: [],
-    category: 'applications',
-    skills: ['measurement', 'comparison', 'estimation']
-  },
-  {
-    id: 'place-value',
-    name: 'placeValue',
-    displayName: 'Place Value',
-    icon: '🧮',
-    description: 'Understand tens and ones',
-    ageRange: [5, 8],
-    totalLevels: 20,
-    unlockRequirements: [],
-    category: 'foundation',
-    skills: ['place_value', 'number_sense', 'base_ten']
-  },
+  // === ADVANCED: Ages 6+ ===
   {
     id: 'multiplication-basic',
     name: 'multiplicationBasic',
@@ -170,32 +200,6 @@ export const MATH_MODES: MathMode[] = [
     ],
     category: 'advanced',
     skills: ['division', 'sharing', 'grouping']
-  },
-  {
-    id: 'number-line',
-    name: 'numberLineMastery',
-    displayName: 'Number Line',
-    icon: '📊',
-    description: 'Use number lines for math operations',
-    ageRange: [4, 8],
-    totalLevels: 20,
-    unlockRequirements: [],
-    category: 'foundation',
-    skills: ['number_line', 'visual_math', 'counting']
-  },
-  {
-    id: 'word-problems',
-    name: 'wordProblems',
-    displayName: 'Word Problems',
-    icon: '📖',
-    description: 'Solve math in real-world stories',
-    ageRange: [5, 8],
-    totalLevels: 25,
-    unlockRequirements: [
-      { type: 'level_complete', modeId: 'addition-basic', level: 5 }
-    ],
-    category: 'applications',
-    skills: ['word_problems', 'critical_thinking', 'reading_comprehension']
   },
   {
     id: 'speed-math',
