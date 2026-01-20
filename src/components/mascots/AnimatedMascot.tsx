@@ -6,6 +6,12 @@ import { BlueberryMascot } from './characters/BlueberryMascot';
 import { StarMascot } from './characters/StarMascot';
 import { CookieMascot } from './characters/CookieMascot';
 import { OrangeMascot } from './characters/OrangeMascot';
+import { PandaMascot } from './characters/PandaMascot';
+import { BearMascot } from './characters/BearMascot';
+import { BunnyMascot } from './characters/BunnyMascot';
+import { FoxMascot } from './characters/FoxMascot';
+import { FrogMascot } from './characters/FrogMascot';
+import { TigerMascot } from './characters/TigerMascot';
 
 interface AnimatedMascotProps {
   type: MascotType;
@@ -26,6 +32,12 @@ const MASCOT_COMPONENTS: Record<MascotType, React.FC<{ animated?: boolean; class
   star: StarMascot,
   cookie: CookieMascot,
   orange: OrangeMascot,
+  panda: PandaMascot,
+  bear: BearMascot,
+  bunny: BunnyMascot,
+  fox: FoxMascot,
+  frog: FrogMascot,
+  tiger: TigerMascot,
 };
 
 export const AnimatedMascot: React.FC<AnimatedMascotProps> = ({

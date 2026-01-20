@@ -46,9 +46,49 @@ export const MASCOT_CHARACTERS = {
     leafColor: 'hsl(120, 50%, 40%)',
     stemColor: 'hsl(100, 30%, 35%)',
   },
+  // Animal avatars for child profiles
+  panda: {
+    name: 'Panda',
+    primaryColor: 'hsl(0, 0%, 96%)',
+    secondaryColor: 'hsl(0, 0%, 15%)',
+    highlightColor: 'hsl(0, 0%, 100%)',
+  },
+  bear: {
+    name: 'Bear',
+    primaryColor: 'hsl(25, 50%, 55%)',
+    secondaryColor: 'hsl(25, 45%, 45%)',
+    highlightColor: 'hsl(30, 40%, 70%)',
+  },
+  bunny: {
+    name: 'Bunny',
+    primaryColor: 'hsl(0, 0%, 98%)',
+    secondaryColor: 'hsl(350, 70%, 85%)',
+    highlightColor: 'hsl(0, 0%, 100%)',
+  },
+  fox: {
+    name: 'Fox',
+    primaryColor: 'hsl(25, 90%, 60%)',
+    secondaryColor: 'hsl(20, 85%, 52%)',
+    highlightColor: 'hsl(0, 0%, 100%)',
+  },
+  frog: {
+    name: 'Frog',
+    primaryColor: 'hsl(120, 55%, 55%)',
+    secondaryColor: 'hsl(125, 50%, 45%)',
+    highlightColor: 'hsl(80, 50%, 80%)',
+  },
+  tiger: {
+    name: 'Tiger',
+    primaryColor: 'hsl(35, 90%, 60%)',
+    secondaryColor: 'hsl(25, 70%, 25%)',
+    highlightColor: 'hsl(0, 0%, 100%)',
+  },
 } as const;
 
 export type MascotType = keyof typeof MASCOT_CHARACTERS;
+
+// Avatar mascot types (subset for child profile selection)
+export const AVATAR_MASCOT_TYPES: MascotType[] = ['panda', 'bear', 'bunny', 'fox', 'frog', 'tiger'];
 
 // Emoji to mascot type mapping for easy conversion
 // Covers all emojis used in mathProblems.ts and other config files
@@ -75,6 +115,14 @@ export const EMOJI_TO_MASCOT: Record<string, MascotType> = {
   
   // Treats
   '🍪': 'cookie',
+  
+  // Animals (for avatar display)
+  '🐼': 'panda',
+  '🐻': 'bear',
+  '🐰': 'bunny',
+  '🦊': 'fox',
+  '🐸': 'frog',
+  '🐯': 'tiger',
   
   // Fallback mappings for other common emojis
   '❌': 'star', // Used in subtraction as "take away" marker - star works as neutral

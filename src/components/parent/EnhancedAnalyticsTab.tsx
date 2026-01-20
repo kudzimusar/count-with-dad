@@ -3,6 +3,7 @@ import { useSupabaseData } from '@/hooks/useSupabaseData';
 import { useAgeAnalytics } from '@/hooks/useAgeAnalytics';
 import { AppState } from '@/types';
 import { TrendingUp, TrendingDown, Minus, AlertTriangle, CheckCircle, Lightbulb } from 'lucide-react';
+import { AnimatedMascot } from '@/components/mascots/AnimatedMascot';
 
 interface EnhancedAnalyticsTabProps {
   userId: string;
@@ -122,26 +123,26 @@ export function EnhancedAnalyticsTab({ userId, childName, childAge }: EnhancedAn
         <StatCard
           title="Math Level"
           value={mathLevel}
-          icon="📊"
+          mascotType="blueberry"
           color="blue"
         />
         <StatCard
           title="Problems Solved"
           value={weeklySummary?.totalProblemsSolved || totalMathSolved}
-          icon="✅"
+          mascotType="apple"
           color="green"
           subtitle="This week"
         />
         <StatCard
           title="Total Stars"
           value={totalStars}
-          icon="⭐"
+          mascotType="star"
           color="yellow"
         />
         <StatCard
           title="Learning Time"
           value={`${weeklySummary?.totalTimeMinutes || Math.floor(mathTimeSpent / 60)} min`}
-          icon="⏱️"
+          mascotType="cookie"
           color="purple"
           subtitle="This week"
         />
@@ -151,7 +152,10 @@ export function EnhancedAnalyticsTab({ userId, childName, childAge }: EnhancedAn
       {ageStats && (
         <div className="bg-white p-6 rounded-2xl shadow-lg">
           <h3 className="text-xl font-bold mb-4 flex items-center gap-2">
-            <span>📈</span> Age {childAge} Engagement Insights
+            <div className="w-6 h-6">
+              <AnimatedMascot type="orange" animated={false} />
+            </div>
+            Age {childAge} Engagement Insights
           </h3>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <InsightCard
@@ -282,7 +286,9 @@ export function EnhancedAnalyticsTab({ userId, childName, childAge }: EnhancedAn
             {mathSessions.slice(0, 5).map((session, index) => (
               <div key={index} className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
                 <div className="flex items-center gap-3">
-                  <span className="text-2xl">📊</span>
+                  <div className="w-8 h-8">
+                    <AnimatedMascot type="banana" animated={false} />
+                  </div>
                   <div>
                     <div className="font-semibold">Math Session</div>
                     <div className="text-sm text-gray-600">
@@ -367,12 +373,12 @@ function formatModeName(modeId: string | null): string {
 interface StatCardProps {
   title: string;
   value: string | number;
-  icon: string;
+  mascotType: 'apple' | 'banana' | 'blueberry' | 'star' | 'cookie' | 'orange';
   color: 'blue' | 'green' | 'yellow' | 'purple';
   subtitle?: string;
 }
 
-function StatCard({ title, value, icon, color, subtitle }: StatCardProps) {
+function StatCard({ title, value, mascotType, color, subtitle }: StatCardProps) {
   const colorClasses = {
     blue: 'bg-blue-50 text-blue-600',
     green: 'bg-green-50 text-green-600',
@@ -382,7 +388,9 @@ function StatCard({ title, value, icon, color, subtitle }: StatCardProps) {
 
   return (
     <div className={`${colorClasses[color]} p-6 rounded-2xl shadow-lg`}>
-      <div className="text-4xl mb-2">{icon}</div>
+      <div className="w-10 h-10 mb-2">
+        <AnimatedMascot type={mascotType} animated={true} />
+      </div>
       <div className="text-3xl font-bold mb-1">{value}</div>
       <div className="text-sm opacity-75">{title}</div>
       {subtitle && <div className="text-xs opacity-50 mt-1">{subtitle}</div>}

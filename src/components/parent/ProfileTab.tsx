@@ -3,14 +3,14 @@ import { AppState } from '@/types';
 import { User, Target, Calendar, Mail, Users } from 'lucide-react';
 import { useSupabaseAuth } from '@/hooks/useSupabaseAuth';
 import { useSupabaseData } from '@/hooks/useSupabaseData';
+import { AnimatedMascot } from '@/components/mascots/AnimatedMascot';
+import { AVATAR_MASCOT_TYPES, MascotType } from '@/config/mascotCharacters';
 
 interface ProfileTabProps {
   state: AppState;
   onUpdateChildProfile: (name: string, age: number, avatar: string, gender?: string) => void;
   onUpdateDailyGoal: (goal: number) => void;
 }
-
-const avatars = ['👦', '👧', '🧒', '👶', '🐻', '🐶', '🐱', '🦁', '🐼', '🐨', '🦊', '🐯', '🐰', '🐸'];
 
 export function ProfileTab({ state, onUpdateChildProfile, onUpdateDailyGoal }: ProfileTabProps) {
   const [editName, setEditName] = useState(state.childName);
@@ -48,6 +48,10 @@ export function ProfileTab({ state, onUpdateChildProfile, onUpdateDailyGoal }: P
   const accountAge = state.registeredAt 
     ? Math.floor((Date.now() - new Date(state.registeredAt).getTime()) / (1000 * 60 * 60 * 24))
     : 0;
+
+  // Check if current avatar is a valid mascot type
+  const isValidMascotAvatar = AVATAR_MASCOT_TYPES.includes(editAvatar as MascotType);
+  const selectedAvatarType = isValidMascotAvatar ? (editAvatar as MascotType) : null;
 
   return (
     <div className="space-y-6">
@@ -93,18 +97,24 @@ export function ProfileTab({ state, onUpdateChildProfile, onUpdateDailyGoal }: P
 
           <div>
             <label className="block text-sm font-bold mb-2">Avatar</label>
-            <div className="grid grid-cols-7 gap-2">
-              {avatars.map((avatar) => (
+            <div className="grid grid-cols-3 sm:grid-cols-6 gap-3">
+              {AVATAR_MASCOT_TYPES.map((avatarType) => (
                 <button
-                  key={avatar}
-                  onClick={() => setEditAvatar(avatar)}
-                  className={`text-3xl p-3 rounded-lg transition-all ${
-                    editAvatar === avatar
-                      ? 'bg-primary/20 ring-2 ring-primary scale-110'
-                      : 'bg-muted hover:bg-muted/70'
+                  key={avatarType}
+                  onClick={() => setEditAvatar(avatarType)}
+                  className={`p-3 rounded-xl transition-all ${
+                    selectedAvatarType === avatarType
+                      ? 'bg-primary/20 ring-2 ring-primary ring-offset-2 scale-110'
+                      : 'bg-muted hover:bg-muted/70 hover:scale-105'
                   }`}
                 >
-                  {avatar}
+                  <div className="w-12 h-12 mx-auto">
+                    <AnimatedMascot
+                      type={avatarType}
+                      animated={selectedAvatarType === avatarType}
+                      wiggle={selectedAvatarType === avatarType}
+                    />
+                  </div>
                 </button>
               ))}
             </div>
