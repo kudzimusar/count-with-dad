@@ -1,3 +1,6 @@
+import { AnimatedMascot } from '@/components/mascots/AnimatedMascot';
+import { getMascotType } from '@/config/mascotCharacters';
+
 interface ObjectGroup {
   count: number;
   object: string;
@@ -26,32 +29,55 @@ export function VisualObjects({
     return (
       <div className="flex flex-col items-center gap-3">
         <div className="flex justify-center items-stretch gap-4">
-          {groups.map((group, groupIndex) => (
-            <div key={groupIndex} className="comparison-card">
-              {group.label && (
-                <span className="text-xs font-semibold text-muted-foreground mb-1">
-                  {group.label}
-                </span>
-              )}
-              {/* Objects in tight grid */}
-              <div className="grid grid-cols-3 gap-1 mb-2">
-                {Array.from({ length: Math.min(group.count, 9) }, (_, i) => (
-                  <span
-                    key={i}
-                    className={`text-2xl ${animated ? 'animate-bounce-gentle' : ''}`}
-                    style={{ animationDelay: `${(groupIndex * 3 + i) * 0.1}s` }}
-                  >
-                    {group.object}
+          {groups.map((group, groupIndex) => {
+            const mascotType = getMascotType(group.object);
+            const maxDisplay = 9;
+            const displayCount = Math.min(group.count, maxDisplay);
+            
+            // Determine grid columns based on count
+            const cols = displayCount <= 2 ? displayCount : displayCount <= 4 ? 2 : 3;
+            
+            return (
+              <div 
+                key={groupIndex} 
+                className="comparison-card rounded-3xl shadow-lg hover:shadow-xl transition-all duration-300"
+                style={{ 
+                  borderRadius: '24px',
+                  boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.08), 0 10px 20px -5px rgba(0, 0, 0, 0.04)'
+                }}
+              >
+                {group.label && (
+                  <span className="text-xs font-semibold text-muted-foreground mb-2">
+                    {group.label}
                   </span>
-                ))}
+                )}
+                {/* Mascots in responsive grid */}
+                <div 
+                  className="grid gap-2 mb-3"
+                  style={{ gridTemplateColumns: `repeat(${cols}, 1fr)` }}
+                >
+                  {Array.from({ length: displayCount }, (_, i) => (
+                    <div 
+                      key={i}
+                      className="w-10 h-10 md:w-14 md:h-14 flex items-center justify-center"
+                    >
+                      <AnimatedMascot
+                        type={mascotType}
+                        animated={animated}
+                        wiggle={groupIndex > 0 || displayCount > 1}
+                        delay={i * 0.1}
+                      />
+                    </div>
+                  ))}
+                </div>
+                {group.count > maxDisplay && (
+                  <span className="text-xs text-muted-foreground mb-1">+{group.count - maxDisplay} more</span>
+                )}
+                {/* Large number below */}
+                <span className="text-3xl md:text-4xl font-bold text-primary">{group.count}</span>
               </div>
-              {group.count > 9 && (
-                <span className="text-xs text-muted-foreground mb-1">+{group.count - 9} more</span>
-              )}
-              {/* Large number below */}
-              <span className="text-3xl font-bold text-primary">{group.count}</span>
-            </div>
-          ))}
+            );
+          })}
         </div>
         {showCombined && (
           <div className="text-lg font-bold text-primary">
@@ -62,8 +88,9 @@ export function VisualObjects({
     );
   }
 
-  // Render single group - Compact grid
+  // Render single group - Compact grid with mascots
   if (count !== undefined) {
+    const mascotType = getMascotType(object);
     const maxDisplay = 12;
     const displayCount = Math.min(count, maxDisplay);
     const cols = displayCount <= 4 ? displayCount : displayCount <= 6 ? 3 : 4;
@@ -71,17 +98,21 @@ export function VisualObjects({
     return (
       <div className="flex flex-col items-center gap-2">
         <div 
-          className="grid gap-1 justify-center"
-          style={{ gridTemplateColumns: `repeat(${cols}, minmax(0, 1fr))` }}
+          className="grid gap-2 justify-center"
+          style={{ gridTemplateColumns: `repeat(${cols}, 1fr)` }}
         >
           {Array.from({ length: displayCount }, (_, i) => (
-            <span
+            <div 
               key={i}
-              className={`text-2xl md:text-3xl ${animated ? 'animate-bounce-gentle' : ''}`}
-              style={{ animationDelay: `${i * 0.08}s` }}
+              className="w-10 h-10 md:w-14 md:h-14 flex items-center justify-center"
             >
-              {object}
-            </span>
+              <AnimatedMascot
+                type={mascotType}
+                animated={animated}
+                wiggle={displayCount > 1}
+                delay={i * 0.08}
+              />
+            </div>
           ))}
         </div>
         {count > maxDisplay && (
