@@ -317,6 +317,103 @@ All colors MUST be HSL.
     animation: bounceGentle 1.5s ease-in-out infinite;
   }
 
+  /* ============================================
+     MASCOT ANIMATION SYSTEM - Kawaii Characters
+     ============================================ */
+
+  /* Breathing/floating animation - gentle up-and-down */
+  @keyframes mascotFloat {
+    0%, 100% { 
+      transform: translateY(0) scale(1); 
+    }
+    50% { 
+      transform: translateY(-6px) scale(1.02); 
+    }
+  }
+
+  /* Eye blink animation */
+  @keyframes mascotBlink {
+    0%, 90%, 100% { 
+      transform: scaleY(1); 
+    }
+    95% { 
+      transform: scaleY(0.1); 
+    }
+  }
+
+  /* Wiggle animation for multiple items */
+  @keyframes mascotWiggle {
+    0%, 100% { 
+      transform: rotate(0deg) translateY(0); 
+    }
+    25% { 
+      transform: rotate(-3deg) translateY(-2px); 
+    }
+    75% { 
+      transform: rotate(3deg) translateY(-2px); 
+    }
+  }
+
+  /* Bounce-in entrance animation */
+  @keyframes mascotEnter {
+    0% { 
+      transform: scale(0) rotate(-10deg); 
+      opacity: 0; 
+    }
+    60% { 
+      transform: scale(1.15) rotate(3deg); 
+    }
+    80% { 
+      transform: scale(0.95) rotate(-1deg); 
+    }
+    100% { 
+      transform: scale(1) rotate(0deg); 
+      opacity: 1; 
+    }
+  }
+
+  /* Mascot animation classes */
+  .mascot-float { 
+    animation: mascotFloat 3s ease-in-out infinite; 
+  }
+  
+  .mascot-blink { 
+    animation: mascotBlink 4s ease-in-out infinite; 
+    transform-origin: center center;
+  }
+  
+  .mascot-wiggle { 
+    animation: mascotWiggle 2s ease-in-out infinite; 
+  }
+  
+  .mascot-enter { 
+    animation: mascotEnter 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; 
+  }
+
+  /* Combined float + enter for initial appearance */
+  .mascot-float.mascot-enter {
+    animation: 
+      mascotEnter 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards,
+      mascotFloat 3s ease-in-out 0.6s infinite;
+  }
+
+  /* Combined wiggle + enter for grouped items */
+  .mascot-wiggle.mascot-enter {
+    animation: 
+      mascotEnter 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards,
+      mascotWiggle 2s ease-in-out 0.6s infinite;
+  }
+
+  /* Hover effect for interactive mascots */
+  .mascot-interactive:hover {
+    transform: scale(1.1) rotate(5deg);
+    transition: transform 0.2s ease;
+  }
+
+  .mascot-interactive:active {
+    transform: scale(0.95);
+  }
+
   /* Answer button grid - responsive */
   .answer-grid {
     display: grid;
