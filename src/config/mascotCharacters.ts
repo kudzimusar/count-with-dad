@@ -51,20 +51,42 @@ export const MASCOT_CHARACTERS = {
 export type MascotType = keyof typeof MASCOT_CHARACTERS;
 
 // Emoji to mascot type mapping for easy conversion
+// Covers all emojis used in mathProblems.ts and other config files
 export const EMOJI_TO_MASCOT: Record<string, MascotType> = {
+  // Fruits
   '🍎': 'apple',
   '🍏': 'apple',
   '🍌': 'banana',
   '🫐': 'blueberry',
+  '🍊': 'orange',
+  '🟠': 'orange',
+  
+  // Shapes/circles - map to blueberry (round)
   '🔵': 'blueberry',
+  '🟦': 'blueberry',
+  '⚫': 'blueberry',
+  '🟣': 'blueberry',
+  
+  // Stars and sparkles
   '⭐': 'star',
   '🌟': 'star',
   '✨': 'star',
+  '💫': 'star',
+  
+  // Treats
   '🍪': 'cookie',
-  '🍊': 'orange',
-  '🟠': 'orange',
+  
+  // Fallback mappings for other common emojis
+  '❌': 'star', // Used in subtraction as "take away" marker - star works as neutral
+  '✅': 'star',
+  '🔴': 'apple',
+  '🟡': 'banana',
+  '🟢': 'apple',
 };
 
+// Default fallback mascot type
+export const DEFAULT_MASCOT: MascotType = 'star';
+
 export function getMascotType(emoji: string): MascotType {
-  return EMOJI_TO_MASCOT[emoji] || 'apple';
+  return EMOJI_TO_MASCOT[emoji] || DEFAULT_MASCOT;
 }
