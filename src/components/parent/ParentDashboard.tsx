@@ -158,6 +158,7 @@ export function ParentDashboard({
                 onExportProgress={exportProgress}
                 graduationStatus={graduationStatus}
                 graduationLoading={graduationLoading}
+                onNavigateToTab={(tab) => setActiveTab(tab as 'profile' | 'progress' | 'analytics' | 'settings' | 'subscription' | 'resources' | 'account')}
                 onApproveGraduation={async () => {
                   if (graduationStatus?.request) {
                     const result = await approveGraduation(graduationStatus.request);

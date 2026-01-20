@@ -1,10 +1,20 @@
 import { AppState } from '@/types';
-import { Download, TrendingUp, Calendar, Award, Target, Clock, Activity } from 'lucide-react';
+import { Download, Clock, Settings, CreditCard } from 'lucide-react';
 import { useMemo, useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { AgeAdvancementApproval } from './AgeAdvancementApproval';
 import { PreviousAgeMastery, GraduationRecord } from '@/components/progress/PreviousAgeMastery';
 import { GraduationStatus } from '@/hooks/useGraduationRequests';
+import { AnimatedMascot } from '@/components/mascots/AnimatedMascot';
+import { AVATAR_MASCOT_TYPES, MascotType } from '@/config/mascotCharacters';
+import { 
+  BentoCard, 
+  StatWidget, 
+  WeeklyTracker, 
+  SkillMasteryBar, 
+  JourneyProgress,
+  QuickActionPill 
+} from './widgets';
 
 interface ProgressTabProps {
   state: AppState;
@@ -14,6 +24,7 @@ interface ProgressTabProps {
   graduationLoading?: boolean;
   onApproveGraduation?: () => Promise<void>;
   onDeferGraduation?: () => Promise<void>;
+  onNavigateToTab?: (tab: string) => void;
 }
 
 export function ProgressTab({ 
@@ -23,7 +34,8 @@ export function ProgressTab({
   graduationStatus,
   graduationLoading,
   onApproveGraduation,
-  onDeferGraduation
+  onDeferGraduation,
+  onNavigateToTab
 }: ProgressTabProps) {
   const [graduationHistory, setGraduationHistory] = useState<GraduationRecord[]>([]);
 
@@ -50,50 +62,58 @@ export function ProgressTab({
     
     fetchGraduationHistory();
   }, [userId]);
-  const getTodayStats = () => {
-    const today = new Date().toISOString().split('T')[0];
-    const todaySessions = state.sessionHistory.filter(s => s.date.startsWith(today));
-    const totalTime = todaySessions.reduce((sum, s) => sum + s.duration, 0);
-    const totalScore = todaySessions.reduce((sum, s) => sum + s.score, 0);
-    return { sessions: todaySessions.length, time: Math.round(totalTime / 60), score: totalScore };
-  };
 
   const getWeeklyStats = () => {
     const weekAgo = new Date();
     weekAgo.setDate(weekAgo.getDate() - 7);
     const weeklySessions = state.sessionHistory.filter(s => new Date(s.date) >= weekAgo);
     const totalTime = weeklySessions.reduce((sum, s) => sum + s.duration, 0);
-    const avgDuration = weeklySessions.length > 0 ? Math.round(totalTime / weeklySessions.length / 60) : 0;
     return {
       sessions: weeklySessions.length,
       totalTime: Math.round(totalTime / 60),
-      avgDuration,
-      daysActive: new Set(weeklySessions.map(s => s.date.split('T')[0])).size
     };
   };
 
   const getLearningInsights = () => {
-    const total = state.puzzlesSolved + state.mathSolved + state.correctAnswersCount;
-    const countingProgress = Math.min(100, (state.highestCount / 100) * 100);
-    const puzzleProgress = Math.min(100, (state.puzzlesSolved / 50) * 100);
-    const mathProgress = Math.min(100, (state.mathSolved / 50) * 100);
+    const countingProgress = Math.min(100, Math.round((state.highestCount / 100) * 100));
+    const puzzleProgress = Math.min(100, Math.round((state.puzzlesSolved / 50) * 100));
+    const mathProgress = Math.min(100, Math.round((state.mathSolved / 50) * 100));
+    const overallProgress = Math.round((countingProgress + puzzleProgress + mathProgress) / 3);
     
     return {
-      totalActivities: total,
       countingProgress,
       puzzleProgress,
       mathProgress,
-      overallProgress: Math.round((countingProgress + puzzleProgress + mathProgress) / 3)
+      overallProgress,
     };
   };
 
-  const todayStats = getTodayStats();
+  // Calculate weekly activity (last 7 days)
+  const weeklyActivity = useMemo(() => {
+    const today = new Date();
+    const activeDays: boolean[] = [];
+    
+    for (let i = 6; i >= 0; i--) {
+      const date = new Date(today);
+      date.setDate(date.getDate() - i);
+      const dateStr = date.toISOString().split('T')[0];
+      const hasSession = state.sessionHistory.some(s => s.date.startsWith(dateStr));
+      activeDays.push(hasSession);
+    }
+    
+    return activeDays;
+  }, [state.sessionHistory]);
+
   const weeklyStats = getWeeklyStats();
   const insights = getLearningInsights();
 
-  const dailyGoalProgress = useMemo(() => {
-    return Math.min(100, (state.highestCount / state.dailyGoal) * 100);
-  }, [state.highestCount, state.dailyGoal]);
+  // Get child avatar mascot type
+  const avatarMascotType: MascotType = AVATAR_MASCOT_TYPES.includes(state.childAvatar as MascotType) 
+    ? (state.childAvatar as MascotType) 
+    : 'panda';
+
+  // Calculate problems solved total
+  const totalProblems = state.puzzlesSolved + state.mathSolved + state.correctAnswersCount;
 
   return (
     <div className="space-y-6">
@@ -117,168 +137,129 @@ export function ProgressTab({
         />
       )}
 
-      {/* Overview Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div className="bg-gradient-to-br from-purple-500/10 to-purple-500/5 p-6 rounded-xl border border-purple-500/20">
-          <div className="flex items-center gap-3 mb-2">
-            <div className="p-2 bg-purple-500/10 rounded-lg">
-              <TrendingUp className="h-5 w-5 text-purple-600" />
-            </div>
-            <h4 className="font-bold text-muted-foreground">Overall</h4>
+      {/* Hero Profile Block - Full Width */}
+      <BentoCard variant="hero" fullWidth className="overflow-hidden">
+        <div className="flex flex-col md:flex-row gap-6 items-center md:items-start">
+          {/* Left: Large Avatar */}
+          <div className="w-28 h-28 flex-shrink-0">
+            <AnimatedMascot type={avatarMascotType} animated />
           </div>
-          <div className="text-3xl font-bold text-purple-600">{insights.overallProgress}%</div>
-          <p className="text-sm text-muted-foreground mt-1">Total Progress</p>
+          
+          {/* Right: Journey Progress & Quick Actions */}
+          <div className="flex-1 w-full">
+            <div className="flex items-center gap-2 mb-2">
+              <h2 className="text-2xl font-bold text-foreground">
+                {state.childName || 'Little Learner'}
+              </h2>
+              <span className="px-2 py-0.5 bg-primary/20 text-primary text-sm font-medium rounded-full">
+                Age {state.childAge}
+              </span>
+            </div>
+            
+            <JourneyProgress 
+              currentLevel={state.mathLevel}
+              progressToNext={insights.overallProgress}
+              totalStars={state.stars}
+            />
+            
+            {/* Quick Action Pills */}
+            <div className="flex flex-wrap gap-2 mt-4">
+              <QuickActionPill 
+                label="Edit Profile" 
+                icon={Settings}
+                onClick={() => onNavigateToTab?.('profile')}
+              />
+              <QuickActionPill 
+                label="Subscription" 
+                icon={CreditCard}
+                variant="outline"
+                onClick={() => onNavigateToTab?.('subscription')}
+              />
+            </div>
+          </div>
         </div>
+      </BentoCard>
 
-        <div className="bg-gradient-to-br from-blue-500/10 to-blue-500/5 p-6 rounded-xl border border-blue-500/20">
-          <div className="flex items-center gap-3 mb-2">
-            <div className="p-2 bg-blue-500/10 rounded-lg">
-              <Activity className="h-5 w-5 text-blue-600" />
-            </div>
-            <h4 className="font-bold text-muted-foreground">This Week</h4>
-          </div>
-          <div className="text-3xl font-bold text-blue-600">{weeklyStats.sessions}</div>
-          <p className="text-sm text-muted-foreground mt-1">Sessions Completed</p>
-        </div>
-
-        <div className="bg-gradient-to-br from-green-500/10 to-green-500/5 p-6 rounded-xl border border-green-500/20">
-          <div className="flex items-center gap-3 mb-2">
-            <div className="p-2 bg-green-500/10 rounded-lg">
-              <Award className="h-5 w-5 text-green-600" />
-            </div>
-            <h4 className="font-bold text-muted-foreground">Stars</h4>
-          </div>
-          <div className="text-3xl font-bold text-green-600">{state.stars}</div>
-          <p className="text-sm text-muted-foreground mt-1">Total Earned</p>
-        </div>
+      {/* Stats Grid - 2x2 on mobile, 4 columns on desktop */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <StatWidget
+          value={totalProblems}
+          label="Problems Solved"
+          mascotType="apple"
+        />
+        <StatWidget
+          value={state.stars}
+          label="Total Stars"
+          mascotType="star"
+        />
+        <StatWidget
+          value={`Level ${state.mathLevel}`}
+          label="Current Level"
+          mascotType="blueberry"
+        />
+        <StatWidget
+          value={`${weeklyStats.totalTime}m`}
+          label="This Week"
+          icon={Clock}
+          iconColor="text-purple-600"
+        />
       </div>
 
-      {/* Today's Progress */}
-      <div className="bg-gradient-to-br from-primary/10 to-primary/5 p-6 rounded-xl border-2 border-primary/20">
-        <h3 className="text-xl font-bold mb-4 flex items-center gap-2">
-          <Calendar className="h-5 w-5 text-primary" />
-          Today's Activity
-        </h3>
-        <div className="grid grid-cols-3 gap-4">
-          <div className="bg-background p-4 rounded-lg shadow-sm">
-            <div className="text-sm text-muted-foreground mb-1">Sessions</div>
-            <div className="text-2xl font-bold text-primary">{todayStats.sessions}</div>
-          </div>
-          <div className="bg-background p-4 rounded-lg shadow-sm">
-            <div className="text-sm text-muted-foreground mb-1">Minutes</div>
-            <div className="text-2xl font-bold text-blue-600">{todayStats.time}</div>
-          </div>
-          <div className="bg-background p-4 rounded-lg shadow-sm">
-            <div className="text-sm text-muted-foreground mb-1">Points</div>
-            <div className="text-2xl font-bold text-green-600">{todayStats.score}</div>
-          </div>
-        </div>
-      </div>
+      {/* Weekly Consistency Block */}
+      <WeeklyTracker activeDays={weeklyActivity} />
 
-      {/* Learning Progress */}
-      <div className="bg-muted/50 p-6 rounded-xl">
-        <h3 className="text-xl font-bold mb-4 flex items-center gap-2">
-          <Target className="h-5 w-5 text-primary" />
-          Learning Areas
+      {/* Skill Mastery Block */}
+      <BentoCard>
+        <h3 className="text-xl font-bold mb-6 flex items-center gap-2">
+          <span className="text-2xl">🎯</span>
+          Skill Breakdown
         </h3>
         
-        <div className="space-y-4">
-          {/* Counting */}
-          <div className="bg-background p-4 rounded-lg shadow-sm">
-            <div className="flex justify-between items-center mb-2">
-              <div className="flex items-center gap-2">
-                <span className="text-2xl">🔢</span>
-                <span className="font-bold">Counting</span>
-              </div>
-              <span className="text-lg font-bold text-purple-600">{state.highestCount}/100</span>
-            </div>
-            <div className="w-full bg-muted rounded-full h-2.5">
-              <div 
-                className="bg-purple-500 h-2.5 rounded-full transition-all duration-500"
-                style={{ width: `${insights.countingProgress}%` }}
-              />
-            </div>
-          </div>
-
-          {/* Puzzles */}
-          <div className="bg-background p-4 rounded-lg shadow-sm">
-            <div className="flex justify-between items-center mb-2">
-              <div className="flex items-center gap-2">
-                <span className="text-2xl">🧩</span>
-                <span className="font-bold">Puzzles</span>
-              </div>
-              <span className="text-lg font-bold text-blue-600">{state.puzzlesSolved} solved</span>
-            </div>
-            <div className="w-full bg-muted rounded-full h-2.5">
-              <div 
-                className="bg-blue-500 h-2.5 rounded-full transition-all duration-500"
-                style={{ width: `${insights.puzzleProgress}%` }}
-              />
-            </div>
-          </div>
-
-          {/* Math */}
-          <div className="bg-background p-4 rounded-lg shadow-sm">
-            <div className="flex justify-between items-center mb-2">
-              <div className="flex items-center gap-2">
-                <span className="text-2xl">➕</span>
-                <span className="font-bold">Math</span>
-              </div>
-              <span className="text-lg font-bold text-green-600">{state.mathSolved} solved</span>
-            </div>
-            <div className="w-full bg-muted rounded-full h-2.5">
-              <div 
-                className="bg-green-500 h-2.5 rounded-full transition-all duration-500"
-                style={{ width: `${insights.mathProgress}%` }}
-              />
-            </div>
-          </div>
+        <div className="space-y-6">
+          <SkillMasteryBar
+            name="Number Sense"
+            percentage={insights.countingProgress}
+            mascotType="orange"
+          />
+          <SkillMasteryBar
+            name="Addition & Math"
+            percentage={insights.mathProgress}
+            mascotType="banana"
+          />
+          <SkillMasteryBar
+            name="Puzzles & Patterns"
+            percentage={insights.puzzleProgress}
+            mascotType="blueberry"
+          />
         </div>
-      </div>
-
-      {/* Daily Goal */}
-      <div className="bg-muted/50 p-6 rounded-xl">
-        <h3 className="text-xl font-bold mb-4 flex items-center gap-2">
-          <Target className="h-5 w-5 text-primary" />
-          Daily Goal: {state.dailyGoal} Numbers
-        </h3>
-        <div className="bg-background p-6 rounded-lg shadow-sm">
-          <div className="flex justify-between items-center mb-3">
-            <span className="text-lg font-medium">Progress Today</span>
-            <span className="text-2xl font-bold text-primary">{Math.round(dailyGoalProgress)}%</span>
-          </div>
-          <div className="w-full bg-muted rounded-full h-3 mb-2">
-            <div 
-              className="bg-gradient-to-r from-green-500 to-green-600 h-3 rounded-full transition-all duration-500"
-              style={{ width: `${dailyGoalProgress}%` }}
-            />
-          </div>
-          <p className="text-sm text-muted-foreground">
-            {state.highestCount >= state.dailyGoal 
-              ? "🎉 Daily goal achieved! Fantastic work!" 
-              : `${state.dailyGoal - state.highestCount} more numbers to reach today's goal`}
-          </p>
-        </div>
-      </div>
+      </BentoCard>
 
       {/* Recent Sessions */}
-      <div className="bg-muted/50 p-6 rounded-xl">
+      <BentoCard>
         <h3 className="text-xl font-bold mb-4 flex items-center gap-2">
           <Clock className="h-5 w-5 text-primary" />
           Recent Sessions
         </h3>
         {state.sessionHistory.length === 0 ? (
-          <div className="text-center py-12 bg-background rounded-lg">
+          <div className="text-center py-12 bg-muted/50 rounded-2xl">
+            <div className="w-16 h-16 mx-auto mb-4 opacity-50">
+              <AnimatedMascot type="star" />
+            </div>
             <p className="text-muted-foreground text-lg">No sessions yet</p>
             <p className="text-sm text-muted-foreground mt-2">Activity will appear here</p>
           </div>
         ) : (
           <div className="space-y-2 max-h-80 overflow-y-auto">
             {state.sessionHistory.slice(-10).reverse().map((session, idx) => (
-              <div key={idx} className="bg-background p-4 rounded-lg shadow-sm flex justify-between items-center hover:shadow-md transition-shadow">
+              <div 
+                key={idx} 
+                className="bg-muted/50 p-4 rounded-2xl flex justify-between items-center hover:bg-muted/70 transition-colors"
+              >
                 <div className="flex items-center gap-3">
-                  <div className="text-2xl">
-                    {session.screen === 'counting' ? '🔢' : session.screen === 'puzzle' ? '🧩' : '➕'}
+                  <div className="w-10 h-10">
+                    <AnimatedMascot 
+                      type={session.screen === 'counting' ? 'orange' : session.screen === 'puzzle' ? 'blueberry' : 'apple'} 
+                    />
                   </div>
                   <div>
                     <div className="font-bold capitalize">
@@ -297,12 +278,12 @@ export function ProgressTab({
             ))}
           </div>
         )}
-      </div>
+      </BentoCard>
 
       {/* Export Button */}
       <button
         onClick={onExportProgress}
-        className="w-full bg-primary text-primary-foreground py-4 rounded-xl font-bold hover:bg-primary/90 transition-colors flex items-center justify-center gap-2 shadow-lg hover:shadow-xl"
+        className="w-full bg-primary text-primary-foreground py-4 rounded-3xl font-bold hover:bg-primary/90 transition-all duration-300 flex items-center justify-center gap-2 shadow-lg hover:shadow-xl hover:-translate-y-0.5"
       >
         <Download className="h-5 w-5" />
         Export Detailed Progress Report
