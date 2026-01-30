@@ -4,6 +4,8 @@ import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { Slider } from '@/components/ui/slider';
 import { useLocalStorage } from '@/hooks/useLocalStorage';
+import { BentoCard } from './widgets';
+import { AnimatedMascot } from '@/components/mascots/AnimatedMascot';
 
 interface SettingsTabProps {
   state: AppState;
@@ -23,22 +25,24 @@ export function SettingsTab({
   return (
     <div className="space-y-6">
       {/* Audio & Voice Section */}
-      <div className="bg-gradient-to-br from-primary/10 to-primary/5 p-6 rounded-xl border-2 border-primary/20">
-        <h3 className="text-xl font-bold mb-4 flex items-center gap-2">
-          <Volume2 className="h-5 w-5 text-primary" />
-          Audio & Voice
+      <BentoCard variant="hero">
+        <h3 className="text-xl font-bold mb-4 flex items-center gap-3">
+          <div className="w-8 h-8">
+            <AnimatedMascot type="orange" animated />
+          </div>
+          <span>Audio & Voice</span>
         </h3>
         
-        <div className="space-y-6">
-          {/* Sound & Voice Toggles */}
-          <div className="space-y-4">
-            <div className="flex items-center justify-between bg-background p-4 rounded-lg">
+        <div className="space-y-4">
+          {/* Sound & Voice Toggles - Grid on larger screens */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="flex items-center justify-between bg-background p-4 rounded-2xl border border-border/40">
               <div className="space-y-0.5">
                 <Label htmlFor="sound-effects" className="text-base font-medium">
                   Sound Effects
                 </Label>
                 <p className="text-sm text-muted-foreground">
-                  Play sounds for correct/incorrect answers
+                  Play sounds for answers
                 </p>
               </div>
               <Switch
@@ -48,13 +52,13 @@ export function SettingsTab({
               />
             </div>
 
-            <div className="flex items-center justify-between bg-background p-4 rounded-lg">
+            <div className="flex items-center justify-between bg-background p-4 rounded-2xl border border-border/40">
               <div className="space-y-0.5">
                 <Label htmlFor="voice-guidance" className="text-base font-medium">
                   Voice Guidance
                 </Label>
                 <p className="text-sm text-muted-foreground">
-                  Spoken instructions and feedback
+                  Spoken feedback
                 </p>
               </div>
               <Switch
@@ -66,7 +70,7 @@ export function SettingsTab({
           </div>
 
           {/* Voice Speed */}
-          <div className="bg-background p-4 rounded-lg space-y-3">
+          <div className="bg-background p-4 rounded-2xl border border-border/40 space-y-3">
             <Label htmlFor="voice-speed" className="text-base font-medium">
               Voice Speed
             </Label>
@@ -83,13 +87,13 @@ export function SettingsTab({
             />
             <div className="flex justify-between text-sm text-muted-foreground">
               <span>Slower</span>
-              <span className="font-bold">{state.voiceSettings.rate.toFixed(1)}x</span>
+              <span className="font-bold text-foreground">{state.voiceSettings.rate.toFixed(1)}x</span>
               <span>Faster</span>
             </div>
           </div>
 
           {/* Voice Pitch */}
-          <div className="bg-background p-4 rounded-lg space-y-3">
+          <div className="bg-background p-4 rounded-2xl border border-border/40 space-y-3">
             <Label htmlFor="voice-pitch" className="text-base font-medium">
               Voice Pitch
             </Label>
@@ -106,21 +110,23 @@ export function SettingsTab({
             />
             <div className="flex justify-between text-sm text-muted-foreground">
               <span>Lower</span>
-              <span className="font-bold">{state.voiceSettings.pitch.toFixed(1)}</span>
+              <span className="font-bold text-foreground">{state.voiceSettings.pitch.toFixed(1)}</span>
               <span>Higher</span>
             </div>
           </div>
         </div>
-      </div>
+      </BentoCard>
 
       {/* Time & Goals Section */}
-      <div className="bg-muted/50 p-6 rounded-xl">
-        <h3 className="text-xl font-bold mb-4 flex items-center gap-2">
-          <Clock className="h-5 w-5 text-primary" />
-          Time Limits
+      <BentoCard>
+        <h3 className="text-xl font-bold mb-4 flex items-center gap-3">
+          <div className="w-8 h-8">
+            <AnimatedMascot type="cookie" animated />
+          </div>
+          <span>Time Limits</span>
         </h3>
         
-        <div className="bg-background p-4 rounded-lg space-y-3">
+        <div className="bg-background p-4 rounded-2xl border border-border/40 space-y-3">
           <Label htmlFor="time-limit" className="text-base font-medium">
             Session Time Limit (minutes)
           </Label>
@@ -131,7 +137,7 @@ export function SettingsTab({
             onChange={(e) => onUpdateTimeLimit(parseInt(e.target.value) || 0)}
             min="0"
             max="120"
-            className="w-full px-4 py-3 border-2 border-input rounded-lg focus:border-primary outline-none bg-background transition-colors text-lg font-bold"
+            className="w-full px-4 py-3 border-2 border-input rounded-xl focus:border-primary outline-none bg-background transition-colors text-lg font-bold"
           />
           <p className="text-sm text-muted-foreground">
             Set to 0 for unlimited play time. Recommended: 15-30 minutes.
@@ -143,9 +149,9 @@ export function SettingsTab({
               <button
                 key={minutes}
                 onClick={() => onUpdateTimeLimit(minutes)}
-                className={`py-2 rounded-lg font-bold transition-colors ${
+                className={`py-2 rounded-xl font-bold transition-all ${
                   state.timeLimit === minutes
-                    ? 'bg-primary text-primary-foreground'
+                    ? 'bg-primary text-primary-foreground shadow-md'
                     : 'bg-muted hover:bg-muted/70'
                 }`}
               >
@@ -154,27 +160,31 @@ export function SettingsTab({
             ))}
           </div>
         </div>
-      </div>
+      </BentoCard>
 
       {/* Child Safety & Distraction Prevention Section */}
-      <div className="bg-gradient-to-br from-green-500/10 to-green-500/5 p-6 rounded-xl border-2 border-green-500/20">
-        <h3 className="text-xl font-bold mb-4 flex items-center gap-2">
-          <Baby className="h-5 w-5 text-green-600" />
-          Child Safety & Distraction Prevention
+      <BentoCard variant="gradient" gradientFrom="from-green-500/10" gradientTo="to-emerald-500/5">
+        <h3 className="text-xl font-bold mb-4 flex items-center gap-3">
+          <div className="w-8 h-8">
+            <AnimatedMascot type="bear" animated />
+          </div>
+          <span>Child Safety</span>
         </h3>
         
         <SafetySettingsPanel />
-      </div>
+      </BentoCard>
 
       {/* Privacy & Safety Section */}
-      <div className="bg-muted/50 p-6 rounded-xl">
-        <h3 className="text-xl font-bold mb-4 flex items-center gap-2">
-          <Shield className="h-5 w-5 text-primary" />
-          Privacy & Data
+      <BentoCard>
+        <h3 className="text-xl font-bold mb-4 flex items-center gap-3">
+          <div className="w-8 h-8">
+            <AnimatedMascot type="blueberry" animated />
+          </div>
+          <span>Privacy & Data</span>
         </h3>
         
         <div className="space-y-3">
-          <div className="bg-background p-4 rounded-lg">
+          <div className="bg-background p-4 rounded-2xl border border-border/40">
             <div className="font-medium mb-1">Parent Access Code</div>
             <p className="text-sm text-muted-foreground mb-2">
               Current code: 1234 (default)
@@ -184,14 +194,14 @@ export function SettingsTab({
             </button>
           </div>
 
-          <div className="bg-background p-4 rounded-lg">
+          <div className="bg-background p-4 rounded-2xl border border-border/40">
             <div className="font-medium mb-1">Data Privacy</div>
             <p className="text-sm text-muted-foreground">
               All data is stored securely and never shared with third parties.
             </p>
           </div>
         </div>
-      </div>
+      </BentoCard>
     </div>
   );
 }
@@ -210,8 +220,8 @@ function SafetySettingsPanel() {
   };
 
   return (
-    <div className="space-y-4">
-      <div className="flex items-center justify-between bg-background p-4 rounded-lg">
+    <div className="space-y-3">
+      <div className="flex items-center justify-between bg-background p-4 rounded-2xl border border-border/40">
         <div className="space-y-0.5">
           <Label htmlFor="disable-zoom" className="text-base font-medium">
             Disable Zooming/Pinching
@@ -227,7 +237,7 @@ function SafetySettingsPanel() {
         />
       </div>
 
-      <div className="flex items-center justify-between bg-background p-4 rounded-lg">
+      <div className="flex items-center justify-between bg-background p-4 rounded-2xl border border-border/40">
         <div className="space-y-0.5">
           <Label htmlFor="disable-copy" className="text-base font-medium">
             Disable Text Copying
@@ -243,7 +253,7 @@ function SafetySettingsPanel() {
         />
       </div>
 
-      <div className="flex items-center justify-between bg-background p-4 rounded-lg">
+      <div className="flex items-center justify-between bg-background p-4 rounded-2xl border border-border/40">
         <div className="space-y-0.5">
           <Label htmlFor="confirm-exit" className="text-base font-medium">
             Exit Confirmation
@@ -259,7 +269,7 @@ function SafetySettingsPanel() {
         />
       </div>
 
-      <div className="flex items-center justify-between bg-background p-4 rounded-lg">
+      <div className="flex items-center justify-between bg-background p-4 rounded-2xl border border-border/40">
         <div className="space-y-0.5">
           <Label htmlFor="orientation-lock" className="text-base font-medium">
             Lock Portrait Orientation
@@ -275,7 +285,7 @@ function SafetySettingsPanel() {
         />
       </div>
 
-      <p className="text-xs text-muted-foreground bg-background/50 p-3 rounded-lg">
+      <p className="text-xs text-muted-foreground bg-muted/50 p-3 rounded-xl">
         These settings help minimize distractions and keep children focused on learning.
         Text selection is always enabled in this Parent Dashboard.
       </p>

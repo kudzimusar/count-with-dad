@@ -1,5 +1,7 @@
-import { FileText, HelpCircle, Mail, Book } from 'lucide-react';
+import { FileText, HelpCircle, Book, MessageCircle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { BentoCard } from './widgets';
+import { AnimatedMascot } from '@/components/mascots/AnimatedMascot';
 
 interface ResourcesTabProps {
   onOpenFeedback: () => void;
@@ -11,47 +13,64 @@ export function ResourcesTab({ onOpenFeedback }: ResourcesTabProps) {
   return (
     <div className="space-y-6">
       {/* Quick Help */}
-      <div className="bg-gradient-to-br from-primary/10 to-primary/5 p-6 rounded-xl border-2 border-primary/20">
-        <h3 className="text-xl font-bold mb-4 flex items-center gap-2">
-          <HelpCircle className="h-5 w-5 text-primary" />
-          Quick Help
+      <BentoCard variant="hero">
+        <h3 className="text-xl font-bold mb-4 flex items-center gap-3">
+          <div className="w-8 h-8">
+            <AnimatedMascot type="apple" animated />
+          </div>
+          <span>Quick Help</span>
         </h3>
         
         <div className="space-y-3">
-          <div className="bg-background p-4 rounded-lg">
-            <h4 className="font-bold mb-2">How does counting work?</h4>
+          <div className="bg-background p-4 rounded-2xl border border-border/40">
+            <h4 className="font-bold mb-2 flex items-center gap-2">
+              <HelpCircle className="h-4 w-4 text-primary" />
+              How does counting work?
+            </h4>
             <p className="text-sm text-muted-foreground">
               Choose "Count in Order" to practice 1-100 sequentially, or try "Number Challenge" to find specific numbers.
             </p>
           </div>
           
-          <div className="bg-background p-4 rounded-lg">
-            <h4 className="font-bold mb-2">What are stars for?</h4>
+          <div className="bg-background p-4 rounded-2xl border border-border/40">
+            <h4 className="font-bold mb-2 flex items-center gap-2">
+              <div className="w-4 h-4">
+                <AnimatedMascot type="star" />
+              </div>
+              What are stars for?
+            </h4>
             <p className="text-sm text-muted-foreground">
               Stars are rewards for completing activities. Collect them to track progress and celebrate achievements!
             </p>
           </div>
           
-          <div className="bg-background p-4 rounded-lg">
-            <h4 className="font-bold mb-2">Setting daily goals</h4>
+          <div className="bg-background p-4 rounded-2xl border border-border/40">
+            <h4 className="font-bold mb-2 flex items-center gap-2">
+              <div className="w-4 h-4">
+                <AnimatedMascot type="cookie" />
+              </div>
+              Setting daily goals
+            </h4>
             <p className="text-sm text-muted-foreground">
               Set realistic daily counting goals in the Profile tab to encourage consistent practice.
             </p>
           </div>
         </div>
-      </div>
+      </BentoCard>
 
       {/* App Information */}
-      <div className="bg-muted/50 p-6 rounded-xl">
-        <h3 className="text-xl font-bold mb-4 flex items-center gap-2">
-          <FileText className="h-5 w-5 text-primary" />
-          App Information
+      <BentoCard>
+        <h3 className="text-xl font-bold mb-4 flex items-center gap-3">
+          <div className="w-8 h-8">
+            <AnimatedMascot type="blueberry" animated />
+          </div>
+          <span>App Information</span>
         </h3>
         
         <div className="space-y-3">
           <button
             onClick={() => navigate('/about')}
-            className="w-full bg-background p-4 rounded-lg shadow-sm hover:shadow-md transition-shadow flex items-center justify-between group"
+            className="w-full bg-background p-4 rounded-2xl border border-border/40 hover:border-primary/40 hover:shadow-md transition-all flex items-center justify-between group"
           >
             <div className="text-left flex items-center gap-3">
               <Book className="h-5 w-5 text-primary" />
@@ -65,7 +84,7 @@ export function ResourcesTab({ onOpenFeedback }: ResourcesTabProps) {
 
           <button
             onClick={() => navigate('/privacy-policy')}
-            className="w-full bg-background p-4 rounded-lg shadow-sm hover:shadow-md transition-shadow flex items-center justify-between group"
+            className="w-full bg-background p-4 rounded-2xl border border-border/40 hover:border-primary/40 hover:shadow-md transition-all flex items-center justify-between group"
           >
             <div className="text-left flex items-center gap-3">
               <FileText className="h-5 w-5 text-primary" />
@@ -79,7 +98,7 @@ export function ResourcesTab({ onOpenFeedback }: ResourcesTabProps) {
 
           <button
             onClick={() => navigate('/terms-of-service')}
-            className="w-full bg-background p-4 rounded-lg shadow-sm hover:shadow-md transition-shadow flex items-center justify-between group"
+            className="w-full bg-background p-4 rounded-2xl border border-border/40 hover:border-primary/40 hover:shadow-md transition-all flex items-center justify-between group"
           >
             <div className="text-left flex items-center gap-3">
               <FileText className="h-5 w-5 text-primary" />
@@ -91,19 +110,21 @@ export function ResourcesTab({ onOpenFeedback }: ResourcesTabProps) {
             <div className="text-primary group-hover:translate-x-1 transition-transform">→</div>
           </button>
         </div>
-      </div>
+      </BentoCard>
 
       {/* Support */}
-      <div className="bg-muted/50 p-6 rounded-xl">
-        <h3 className="text-xl font-bold mb-4 flex items-center gap-2">
-          <Mail className="h-5 w-5 text-primary" />
-          Get Support
+      <BentoCard>
+        <h3 className="text-xl font-bold mb-4 flex items-center gap-3">
+          <div className="w-8 h-8">
+            <AnimatedMascot type="orange" animated />
+          </div>
+          <span>Get Support</span>
         </h3>
         
         <div className="space-y-3">
           <button
             onClick={() => navigate('/support')}
-            className="w-full bg-background p-4 rounded-lg shadow-sm hover:shadow-md transition-shadow flex items-center justify-between group"
+            className="w-full bg-background p-4 rounded-2xl border border-border/40 hover:border-primary/40 hover:shadow-md transition-all flex items-center justify-between group"
           >
             <div className="text-left flex items-center gap-3">
               <HelpCircle className="h-5 w-5 text-primary" />
@@ -117,10 +138,12 @@ export function ResourcesTab({ onOpenFeedback }: ResourcesTabProps) {
 
           <button
             onClick={onOpenFeedback}
-            className="w-full bg-primary text-primary-foreground p-4 rounded-lg shadow-md hover:shadow-lg transition-all flex items-center justify-between group"
+            className="w-full bg-primary text-primary-foreground p-4 rounded-2xl shadow-md hover:shadow-lg hover:scale-[1.02] transition-all flex items-center justify-between group"
           >
             <div className="text-left flex items-center gap-3">
-              <span className="text-2xl">💬</span>
+              <div className="w-8 h-8">
+                <AnimatedMascot type="banana" animated wiggle />
+              </div>
               <div>
                 <div className="font-bold text-lg">Share Feedback</div>
                 <div className="text-sm text-primary-foreground/80">Help us improve</div>
@@ -129,7 +152,7 @@ export function ResourcesTab({ onOpenFeedback }: ResourcesTabProps) {
             <div className="text-primary-foreground group-hover:translate-x-1 transition-transform text-xl">→</div>
           </button>
         </div>
-      </div>
+      </BentoCard>
     </div>
   );
 }

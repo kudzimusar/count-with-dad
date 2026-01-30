@@ -1,7 +1,9 @@
 import { useState } from 'react';
 import { useSupabaseAuth } from '@/hooks/useSupabaseAuth';
-import { User, LogIn, LogOut, Mail, Lock, Loader2 } from 'lucide-react';
+import { User, LogIn, LogOut, Mail, Lock, Loader2, Check } from 'lucide-react';
 import { toast } from 'sonner';
+import { BentoCard } from './widgets';
+import { AnimatedMascot } from '@/components/mascots/AnimatedMascot';
 
 export function AccountTab() {
   const { user, loading, signUp, signIn, signOut } = useSupabaseAuth();
@@ -57,7 +59,7 @@ export function AccountTab() {
   if (loading) {
     return (
       <div className="flex items-center justify-center p-12">
-        <Loader2 className="h-8 w-8 animate-spin text-purple-600" />
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
       </div>
     );
   }
@@ -66,50 +68,61 @@ export function AccountTab() {
   if (user) {
     return (
       <div className="space-y-6">
-        <div className="bg-gradient-to-br from-green-50 to-emerald-50 border-2 border-green-300 rounded-xl p-6">
-          <div className="flex items-center gap-3 mb-4">
-            <div className="w-12 h-12 bg-green-500 rounded-full flex items-center justify-center">
-              <User className="h-6 w-6 text-white" />
+        <BentoCard variant="gradient" gradientFrom="from-green-500/10" gradientTo="to-emerald-500/5" className="border-2 border-green-300/40">
+          <div className="flex items-center gap-4 mb-4">
+            <div className="w-16 h-16">
+              <AnimatedMascot type="panda" animated wiggle />
             </div>
             <div>
-              <h3 className="text-xl font-bold text-green-900">Signed In</h3>
-              <p className="text-sm text-green-700">{user.email}</p>
+              <h3 className="text-xl font-bold text-foreground">Welcome Back!</h3>
+              <p className="text-sm text-muted-foreground">{user.email}</p>
             </div>
           </div>
           
-          <div className="bg-white/80 rounded-lg p-4 mb-4">
-            <h4 className="font-bold text-gray-900 mb-2">Account Benefits:</h4>
-            <ul className="space-y-2 text-sm text-gray-700">
-              <li className="flex items-center gap-2">
-                <span className="text-green-500">✓</span>
-                Progress saved across all devices
+          <div className="bg-background rounded-2xl p-4 mb-4 border border-border/40">
+            <h4 className="font-bold text-foreground mb-3">Account Benefits:</h4>
+            <ul className="space-y-3">
+              <li className="flex items-center gap-3">
+                <div className="w-6 h-6 flex-shrink-0">
+                  <AnimatedMascot type="blueberry" />
+                </div>
+                <span className="text-sm">Progress saved across all devices</span>
               </li>
-              <li className="flex items-center gap-2">
-                <span className="text-green-500">✓</span>
-                Manage subscriptions securely
+              <li className="flex items-center gap-3">
+                <div className="w-6 h-6 flex-shrink-0">
+                  <AnimatedMascot type="bear" />
+                </div>
+                <span className="text-sm">Manage subscriptions securely</span>
               </li>
-              <li className="flex items-center gap-2">
-                <span className="text-green-500">✓</span>
-                Access detailed analytics and reports
+              <li className="flex items-center gap-3">
+                <div className="w-6 h-6 flex-shrink-0">
+                  <AnimatedMascot type="star" />
+                </div>
+                <span className="text-sm">Access detailed analytics and reports</span>
               </li>
             </ul>
           </div>
 
           <button
             onClick={handleSignOut}
-            className="w-full bg-red-500 hover:bg-red-600 text-white py-3 rounded-xl font-bold transition-colors flex items-center justify-center gap-2"
+            className="w-full bg-destructive hover:bg-destructive/90 text-destructive-foreground py-3 rounded-2xl font-bold transition-colors flex items-center justify-center gap-2"
           >
             <LogOut className="h-5 w-5" />
             Sign Out
           </button>
-        </div>
+        </BentoCard>
 
-        <div className="bg-blue-50 border-2 border-blue-200 rounded-xl p-4">
-          <p className="text-sm text-blue-800">
-            <strong>Note:</strong> Your child's progress is automatically saved to your account. 
-            You can access it from any device by signing in.
+        <BentoCard variant="gradient" gradientFrom="from-blue-500/10" gradientTo="to-cyan-500/5" className="border-2 border-blue-300/30">
+          <p className="text-sm text-muted-foreground flex items-start gap-2">
+            <div className="w-5 h-5 flex-shrink-0 mt-0.5">
+              <AnimatedMascot type="blueberry" />
+            </div>
+            <span>
+              <strong>Auto-Save Enabled:</strong> Your child's progress is automatically saved to your account. 
+              You can access it from any device by signing in.
+            </span>
           </p>
-        </div>
+        </BentoCard>
       </div>
     );
   }
@@ -117,65 +130,71 @@ export function AccountTab() {
   // User is not signed in - show auth form
   return (
     <div className="space-y-6">
-      <div className="bg-purple-50 border-2 border-purple-200 rounded-xl p-6">
-        <div className="flex items-center gap-3 mb-4">
-          <div className="w-12 h-12 bg-purple-500 rounded-full flex items-center justify-center">
-            <LogIn className="h-6 w-6 text-white" />
+      <BentoCard variant="hero">
+        <div className="flex items-center gap-4 mb-4">
+          <div className="w-16 h-16">
+            <AnimatedMascot type="bunny" animated wiggle />
           </div>
           <div>
-            <h3 className="text-xl font-bold text-purple-900">Create an Account</h3>
-            <p className="text-sm text-purple-700">Optional - Play as guest or sign in</p>
+            <h3 className="text-xl font-bold text-foreground">Create an Account</h3>
+            <p className="text-sm text-muted-foreground">Optional - Play as guest or sign in</p>
           </div>
         </div>
 
-        <div className="bg-white rounded-lg p-4 mb-4">
-          <h4 className="font-bold text-gray-900 mb-3">Why create an account?</h4>
-          <ul className="space-y-2 text-sm text-gray-700">
-            <li className="flex items-start gap-2">
-              <span className="text-purple-500 mt-0.5">💾</span>
-              <span><strong>Save Progress:</strong> Access your child's learning progress from any device</span>
+        <div className="bg-background rounded-2xl p-4 mb-4 border border-border/40">
+          <h4 className="font-bold text-foreground mb-3">Why create an account?</h4>
+          <ul className="space-y-3">
+            <li className="flex items-start gap-3">
+              <div className="w-6 h-6 flex-shrink-0">
+                <AnimatedMascot type="blueberry" />
+              </div>
+              <span className="text-sm"><strong>Save Progress:</strong> Access your child's learning progress from any device</span>
             </li>
-            <li className="flex items-start gap-2">
-              <span className="text-purple-500 mt-0.5">🔒</span>
-              <span><strong>Secure Sync:</strong> Your data is encrypted and safely stored in the cloud</span>
+            <li className="flex items-start gap-3">
+              <div className="w-6 h-6 flex-shrink-0">
+                <AnimatedMascot type="bear" />
+              </div>
+              <span className="text-sm"><strong>Secure Sync:</strong> Your data is encrypted and safely stored in the cloud</span>
             </li>
-            <li className="flex items-start gap-2">
-              <span className="text-purple-500 mt-0.5">⭐</span>
-              <span><strong>Premium Access:</strong> Manage subscriptions and unlock all features</span>
+            <li className="flex items-start gap-3">
+              <div className="w-6 h-6 flex-shrink-0">
+                <AnimatedMascot type="star" />
+              </div>
+              <span className="text-sm"><strong>Premium Access:</strong> Manage subscriptions and unlock all features</span>
             </li>
           </ul>
         </div>
 
         <form onSubmit={handleAuth} className="space-y-4">
           <div>
-            <label className="block text-sm font-bold text-gray-700 mb-2">
+            <label className="block text-sm font-bold text-foreground mb-2">
               Email Address
             </label>
             <div className="relative">
-              <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+              <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
               <input
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="parent@example.com"
-                className="w-full pl-10 pr-4 py-3 border-2 border-gray-300 rounded-xl focus:border-purple-500 focus:outline-none"
+                className="w-full pl-10 pr-4 py-3 border-2 border-input rounded-xl focus:border-primary focus:outline-none bg-background"
                 required
               />
             </div>
           </div>
 
           <div>
-            <label className="block text-sm font-bold text-gray-700 mb-2">
+            <label className="block text-sm font-bold text-foreground mb-2">
               Password
             </label>
             <div className="relative">
-              <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+              <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
               <input
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="••••••••"
-                className="w-full pl-10 pr-4 py-3 border-2 border-gray-300 rounded-xl focus:border-purple-500 focus:outline-none"
+                className="w-full pl-10 pr-4 py-3 border-2 border-input rounded-xl focus:border-primary focus:outline-none bg-background"
                 required
                 minLength={6}
               />
@@ -185,7 +204,7 @@ export function AccountTab() {
           <button
             type="submit"
             disabled={isSubmitting}
-            className="w-full bg-purple-600 hover:bg-purple-700 text-white py-3 rounded-xl font-bold transition-colors flex items-center justify-center gap-2 disabled:opacity-50"
+            className="w-full bg-primary hover:bg-primary/90 text-primary-foreground py-3 rounded-xl font-bold transition-colors flex items-center justify-center gap-2 disabled:opacity-50"
           >
             {isSubmitting ? (
               <Loader2 className="h-5 w-5 animate-spin" />
@@ -200,19 +219,24 @@ export function AccountTab() {
           <button
             type="button"
             onClick={() => setIsSignUp(!isSignUp)}
-            className="w-full text-purple-600 hover:text-purple-700 py-2 text-sm font-medium"
+            className="w-full text-primary hover:text-primary/80 py-2 text-sm font-medium"
           >
             {isSignUp ? 'Already have an account? Sign in' : "Don't have an account? Sign up"}
           </button>
         </form>
-      </div>
+      </BentoCard>
 
-      <div className="bg-green-50 border-2 border-green-200 rounded-xl p-4">
-        <p className="text-sm text-green-800">
-          <strong>Playing as Guest:</strong> You can continue playing without an account. 
-          Progress will be saved locally on this device only.
+      <BentoCard variant="gradient" gradientFrom="from-green-500/10" gradientTo="to-emerald-500/5" className="border-2 border-green-300/30">
+        <p className="text-sm text-muted-foreground flex items-start gap-2">
+          <div className="w-5 h-5 flex-shrink-0 mt-0.5">
+            <AnimatedMascot type="frog" />
+          </div>
+          <span>
+            <strong>Playing as Guest:</strong> You can continue playing without an account. 
+            Progress will be saved locally on this device only.
+          </span>
         </p>
-      </div>
+      </BentoCard>
     </div>
   );
 }
