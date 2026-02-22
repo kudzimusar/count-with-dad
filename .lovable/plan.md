@@ -1,98 +1,78 @@
 
+# Fix: Addition Difficulty Progression and Auto-Level Advancement
 
-# Fix: Registration Modal Keeps Reappearing
+## Problem 1: Too Many Zero-Addition Problems
 
-## Root Cause
+The addition problem generator uses `randomInt(0, ...)` for both operands. This means operands frequently start at 0, producing questions like `0 + 1 = ?` across all levels, even up to Level 10.
 
-The registration modal reappears because of a logic conflict between the profile existence check and the onboarding completion flag. Specifically:
-
-1. When a user signs in, state resets to defaults (`hasCompletedOnboarding: false`, `childName: ''`)
-2. The Supabase `handle_new_user` trigger auto-creates a profile row with empty `child_name` on signup
-3. The modal check at line 454 (`if (user && !state.childName)`) forces the modal open even when the user has already completed onboarding, because `childName` from the auto-created profile is empty
-4. There is also a race condition: if the profile was saved with data but the cloud load returns the trigger-created empty row (or fails due to timing), the modal shows again
-
-## Fix Strategy
-
-### Fix 1: Update the registration modal display logic in `Index.tsx`
-
-The current check at line 448 requires BOTH `childName` AND `hasCompletedOnboarding` to suppress the modal. This is too strict. The fix:
-
-- **Primary gate**: Trust `hasCompletedOnboarding` as the sole flag for whether the modal should show
-- **Secondary gate**: Only use `childName` as a fallback check for legacy users who may not have the flag set
-- Add a check that verifies if the profile exists in Supabase (has a `child_name` value) before deciding to show the modal
-
-**Before (broken):**
+**Root cause** in `src/utils/mathProblems.ts` line 151:
 ```
-if (user && state.childName && state.hasCompletedOnboarding) {
-  setRegistrationModalOpen(false);  // requires BOTH conditions
-}
-if (user && !state.childName) {
-  setRegistrationModalOpen(true);  // overrides hasCompletedOnboarding!
-}
+const num1 = randomInt(0, Math.floor(config.operandMax / 2));
+const num2 = randomInt(0, Math.min(config.maxSum - num1, config.operandMax));
 ```
 
-**After (fixed):**
-```
-// If onboarding is complete, never show the modal
-if (state.hasCompletedOnboarding) {
-  setRegistrationModalOpen(false);
-  return;
-}
-// For signed-in users without onboarding, check if profile exists in cloud
-if (user && !state.hasCompletedOnboarding && !state.childName) {
-  setRegistrationModalOpen(true);
-  return;
-}
-```
+**Fix**: Change the minimum operand to 1 for all levels, ensuring every problem involves actual addition. For higher levels, increase the minimum further to ensure distinct difficulty:
 
-### Fix 2: Persist `hasCompletedOnboarding` to Supabase (not just localStorage)
+- Levels 1-3: Both operands start at 1 (e.g., 1+1, 2+3)
+- Levels 4-6: First operand starts at 2 (e.g., 2+4, 3+5)
+- Levels 7-10: First operand starts at 3 (e.g., 3+6, 5+8)
+- Levels 11+: First operand starts at 5 (e.g., 5+7, 8+12)
 
-Currently, `hasCompletedOnboarding` lives only in localStorage. When localStorage is cleared on sign-out/sign-in, it is lost. The fix:
+## Problem 2: Levels Feel the Same
 
-- When loading profile from Supabase, check if `child_name` is non-empty as a proxy for onboarding completion
-- Set `hasCompletedOnboarding: true` whenever the loaded profile has a valid `child_name` (not just when `profileResult.data` exists)
+The `getAdditionConfig` in `ageBasedDifficulty.ts` only defines 5 tiers per age. Levels 6-20 use a simple 15% multiplier on Level 5's config, but since the operand minimum is always 0, the range expansion is barely noticeable.
 
-**In the data loading effect (around line 286):**
-```
-if (profileResult.data) {
-  const hasValidProfile = !!profileResult.data.child_name;
-  setState(prev => ({
-    ...prev,
-    childName: profileResult.data.child_name || '',
-    childAge: profileResult.data.child_age || prev.childAge,
-    childAvatar: profileResult.data.child_avatar || prev.childAvatar,
-    hasCompletedOnboarding: hasValidProfile,  // Only true if child_name exists
-  }));
-}
-```
+**Fix**: Ensure each level bracket produces noticeably different questions by using level-scaled minimums and introducing variety (doubles, near-doubles, making-10 strategies at higher levels).
 
-### Fix 3: Fix the guest-to-user merge path
+## Problem 3: No Auto-Level Advancement
 
-In the merge logic (line 273), the current code:
-```
-hasCompletedOnboarding: guestState.hasCompletedOnboarding || !!profileResult.data
-```
+When a user passes a level and clicks "Next Level" in the `LevelCompleteModal`, the flow is:
+1. `onNext` calls `handleComplete` in `MathGameContainer`
+2. `handleComplete` calls `onComplete(result)` which goes to `MathScreen.handleGameComplete`
+3. `handleGameComplete` records progress but does NOT update `currentLevel`
+4. `MathGameContainer` closes the modal but stays on the same level
 
-This sets `true` even if the profile was auto-created by the trigger with empty data. Fix:
-```
-hasCompletedOnboarding: guestState.hasCompletedOnboarding || !!profileResult.data?.child_name
-```
+**Fix**: In `MathGameContainer`, when the user passes a level and clicks "Next Level", auto-advance `currentLevel` by 1 before calling `onComplete`. This triggers the `useEffect` that regenerates problems for the new level, and the UI header updates to show the new level number.
+
+---
 
 ## Files to Modify
 
-1. **`src/pages/Index.tsx`** - Three targeted changes:
-   - Registration modal display logic (lines 441-469)
-   - Cloud data loading - profile check (lines 286-297)
-   - Guest merge - onboarding flag (line 273)
+### 1. `src/utils/mathProblems.ts` (lines 146-204)
 
-## What This Fixes
+Update `generateAdditionBasicProblems` to:
+- Set minimum operand based on level (never 0)
+- Add problem variety at higher levels (doubles, near-doubles)
+- Ensure visible difficulty progression between level ranges
 
-- Users who have already registered will no longer see the registration modal on every login
-- The `hasCompletedOnboarding` flag is correctly derived from actual profile data (non-empty `child_name`), not just the existence of a database row
-- Guest-to-user migration correctly detects whether a real profile exists
+```
+Level 1-2:  1+1 to 2+3 range (sums up to 5)
+Level 3-4:  2+2 to 3+4 range (sums up to 8)
+Level 5-6:  2+3 to 5+7 range (sums up to 12)
+Level 7-8:  3+4 to 7+8 range (sums up to 15)
+Level 9-10: 4+5 to 8+10 range (sums up to 18)
+Level 11+:  Missing addend problems introduced
+```
 
-## What Stays the Same
+### 2. `src/components/math/MathGameContainer.tsx` (handleComplete function)
 
-- All Supabase hooks, data fetching, and save logic remain unchanged
-- The registration modal UI and flow remain unchanged
-- The `handle_new_user` trigger continues to work as before
+Add auto-level advancement:
+- When `passed` is true, increment `currentLevel` by 1 (capped at `maxLevel`)
+- This triggers the existing `useEffect` to regenerate problems at the new level
+- The level indicator in the header updates automatically
+
+### 3. `src/utils/ageBasedDifficulty.ts` (getAdditionConfig, lines 78-147)
+
+Expand the 5-tier config to 10 tiers per age so levels 1-10 each have distinct parameters. The current system only defines levels 1-5, making levels 6-10 feel interpolated and samey.
+
+---
+
+## Expected Outcome
+
+- Level 1 starts with simple problems like 1+1, 1+2, 2+1
+- Each level introduces noticeably harder numbers
+- By Level 5, children see problems like 4+5, 3+6
+- By Level 10, problems reach 8+9, 7+8 (for age 5)
+- Zero is never an operand (no more "0 + 1 = ?")
+- Completing a level automatically advances to the next level
+- The level number updates on screen so the child sees their progress
