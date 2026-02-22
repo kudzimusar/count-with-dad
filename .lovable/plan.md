@@ -1,170 +1,98 @@
 
 
-# Phase 4: Parent Zone Visual Consistency Overhaul
+# Fix: Registration Modal Keeps Reappearing
 
-## Current Status Summary
+## Root Cause
 
-You've completed excellent work on:
-- **Game Area**: Celebration system, touchable mascots, haptic feedback, confetti
-- **Global Theme**: Kawaii aesthetic, Nunito font, playful backgrounds, greeter mascot
-- **Custom Avatars**: 6 animal mascots (Panda, Bear, Bunny, Fox, Frog, Tiger)
-- **ProgressTab**: Fully redesigned with Bento Grid layout and widget library
+The registration modal reappears because of a logic conflict between the profile existence check and the onboarding completion flag. Specifically:
 
-## The Problem
+1. When a user signs in, state resets to defaults (`hasCompletedOnboarding: false`, `childName: ''`)
+2. The Supabase `handle_new_user` trigger auto-creates a profile row with empty `child_name` on signup
+3. The modal check at line 454 (`if (user && !state.childName)`) forces the modal open even when the user has already completed onboarding, because `childName` from the auto-created profile is empty
+4. There is also a race condition: if the profile was saved with data but the cloud load returns the trigger-created empty row (or fails due to timing), the modal shows again
 
-The remaining Parent Zone tabs break visual consistency:
+## Fix Strategy
 
-| Tab | Issues Found |
-|-----|-------------|
-| **SettingsTab** | Uses legacy `bg-gradient-to-br` containers instead of `BentoCard` |
-| **ProfileTab** | Account Info and Daily Goal sections use old `bg-muted/50` style |
-| **SubscriptionTab** | System emojis (`🧪`, `⏳`, `⭐`, `ℹ️`) clash with mascot system |
-| **ResourcesTab** | Uses `💬` emoji, legacy container styles |
-| **AccountTab** | System emojis (`💾`, `🔒`, `⭐`), old-style colored borders |
+### Fix 1: Update the registration modal display logic in `Index.tsx`
 
----
+The current check at line 448 requires BOTH `childName` AND `hasCompletedOnboarding` to suppress the modal. This is too strict. The fix:
 
-## Implementation Plan
+- **Primary gate**: Trust `hasCompletedOnboarding` as the sole flag for whether the modal should show
+- **Secondary gate**: Only use `childName` as a fallback check for legacy users who may not have the flag set
+- Add a check that verifies if the profile exists in Supabase (has a `child_name` value) before deciding to show the modal
 
-### Step 1: Polish SettingsTab with Bento Grid
-
-**Changes:**
-- Replace gradient containers with `BentoCard` components
-- Group settings into themed cards (Audio, Time, Safety, Privacy)
-- Add small mascots as section icons
-- Keep all toggle/slider functionality intact
-
-**Visual Structure:**
+**Before (broken):**
 ```
-┌─────────────────────────────────────────────────────────────┐
-│  🍊 Audio & Voice                                           │
-│  ┌──────────────┐ ┌──────────────┐                         │
-│  │ Sound Effects│ │Voice Guidance│                         │
-│  │    [ON/OFF]  │ │   [ON/OFF]   │                         │
-│  └──────────────┘ └──────────────┘                         │
-│  Voice Speed: ████████░░ 1.0x                              │
-│  Voice Pitch: ██████░░░░ 1.2                               │
-└─────────────────────────────────────────────────────────────┘
-
-┌─────────────────────────────────────────────────────────────┐
-│  🍎 Time Limits           │  🐻 Child Safety               │
-│  Session: [15m] [30m] [∞] │  • Disable Zoom: ON            │
-│                           │  • Exit Confirmation: ON        │
-└───────────────────────────┴─────────────────────────────────┘
+if (user && state.childName && state.hasCompletedOnboarding) {
+  setRegistrationModalOpen(false);  // requires BOTH conditions
+}
+if (user && !state.childName) {
+  setRegistrationModalOpen(true);  // overrides hasCompletedOnboarding!
+}
 ```
 
-**Mascot Mapping:**
-- Audio: `OrangeMascot` (playful, sound)
-- Time: `CookieMascot` (gentle, routine)
-- Safety: `BearMascot` (protective, cozy)
-- Privacy: `BlueberryMascot` (calm, secure)
-
----
-
-### Step 2: Polish ProfileTab with Enhanced Hero Block
-
-**Changes:**
-- Add "Current Avatar" hero display at top (large mascot + name)
-- Convert Account Info section to `BentoCard` with stats as `StatWidget`
-- Replace Daily Goal section with visual progress widget
-- Keep existing avatar selection grid (already uses mascots)
-
-**Visual Structure:**
+**After (fixed):**
 ```
-┌─────────────────────────────────────────────────────────────┐
-│  [Large Avatar]  │  Welcome back, Lucas!                    │
-│     🐼           │  Age 5 • Playing for 23 days            │
-│                  │  [Edit Name] [Change Avatar]            │
-└─────────────────────────────────────────────────────────────┘
-
-┌──────────────┐ ┌──────────────┐ ┌──────────────────────────┐
-│ 📅 Member    │ │ ⭐ Days      │ │ 🎯 Daily Goal: 10       │
-│ Since        │ │ Active       │ │ ████████░░ 80%          │
-│ Jan 15, 2026 │ │    23        │ │ Quick Set: [5][10][20]  │
-└──────────────┘ └──────────────┘ └──────────────────────────┘
+// If onboarding is complete, never show the modal
+if (state.hasCompletedOnboarding) {
+  setRegistrationModalOpen(false);
+  return;
+}
+// For signed-in users without onboarding, check if profile exists in cloud
+if (user && !state.hasCompletedOnboarding && !state.childName) {
+  setRegistrationModalOpen(true);
+  return;
+}
 ```
 
----
+### Fix 2: Persist `hasCompletedOnboarding` to Supabase (not just localStorage)
 
-### Step 3: Transform SubscriptionTab
+Currently, `hasCompletedOnboarding` lives only in localStorage. When localStorage is cleared on sign-out/sign-in, it is lost. The fix:
 
-**Changes:**
-- Replace `🧪` emojis with `CookieMascot` or Lucide `FlaskConical` icon
-- Replace `⏳` with Lucide `Timer` icon
-- Replace `⭐` badge with `StarMascot`
-- Replace `ℹ️` with `BlueberryMascot`
-- Convert feature comparison to modern card layout
+- When loading profile from Supabase, check if `child_name` is non-empty as a proxy for onboarding completion
+- Set `hasCompletedOnboarding: true` whenever the loaded profile has a valid `child_name` (not just when `profileResult.data` exists)
 
-**Emoji → Component Mapping:**
-| Current | Replacement |
-|---------|-------------|
-| `🧪` Test Mode | `<FlaskConical />` (Lucide) + `CookieMascot` |
-| `⏳` Days remaining | `<Timer />` (Lucide) |
-| `⭐` Premium | `<StarMascot size="sm" />` |
-| `ℹ️` Info | `<BlueberryMascot size="sm" />` |
-| `⚠️` Warning | `<AlertTriangle />` (Lucide) |
+**In the data loading effect (around line 286):**
+```
+if (profileResult.data) {
+  const hasValidProfile = !!profileResult.data.child_name;
+  setState(prev => ({
+    ...prev,
+    childName: profileResult.data.child_name || '',
+    childAge: profileResult.data.child_age || prev.childAge,
+    childAvatar: profileResult.data.child_avatar || prev.childAvatar,
+    hasCompletedOnboarding: hasValidProfile,  // Only true if child_name exists
+  }));
+}
+```
 
----
+### Fix 3: Fix the guest-to-user merge path
 
-### Step 4: Transform ResourcesTab
+In the merge logic (line 273), the current code:
+```
+hasCompletedOnboarding: guestState.hasCompletedOnboarding || !!profileResult.data
+```
 
-**Changes:**
-- Replace `💬` feedback emoji with `AnimatedMascot` (e.g., `BananaMascot`)
-- Convert Quick Help section to FAQ-style `BentoCard` blocks
-- Add mascot icons to navigation links
-
----
-
-### Step 5: Transform AccountTab
-
-**Changes:**
-- Replace benefit list emojis (`💾`, `🔒`, `⭐`) with mascots
-- Use `BentoCard` for signed-in and signed-out states
-- Add celebratory mascot when user signs in
-
-**Emoji → Component Mapping:**
-| Current | Replacement |
-|---------|-------------|
-| `💾` Save Progress | `<BlueberryMascot size="xs" />` |
-| `🔒` Secure Sync | `<BearMascot size="xs" />` |
-| `⭐` Premium Access | `<StarMascot size="xs" />` |
-
----
+This sets `true` even if the profile was auto-created by the trigger with empty data. Fix:
+```
+hasCompletedOnboarding: guestState.hasCompletedOnboarding || !!profileResult.data?.child_name
+```
 
 ## Files to Modify
 
-1. `src/components/parent/SettingsTab.tsx` - Bento Grid layout
-2. `src/components/parent/ProfileTab.tsx` - Hero block + stats widgets
-3. `src/components/parent/SubscriptionTab.tsx` - Replace emojis
-4. `src/components/parent/ResourcesTab.tsx` - Replace emojis
-5. `src/components/parent/AccountTab.tsx` - Replace emojis
+1. **`src/pages/Index.tsx`** - Three targeted changes:
+   - Registration modal display logic (lines 441-469)
+   - Cloud data loading - profile check (lines 286-297)
+   - Guest merge - onboarding flag (line 273)
 
-## Technical Approach
+## What This Fixes
 
-- **No data changes**: All Supabase hooks remain untouched
-- **Component reuse**: Leverage existing `BentoCard`, `StatWidget`, `AnimatedMascot`
-- **Responsive design**: Maintain mobile-first grid stacking
-- **Accessibility**: Keep all form labels and ARIA attributes
+- Users who have already registered will no longer see the registration modal on every login
+- The `hasCompletedOnboarding` flag is correctly derived from actual profile data (non-empty `child_name`), not just the existence of a database row
+- Guest-to-user migration correctly detects whether a real profile exists
 
----
+## What Stays the Same
 
-## Expected Outcome
-
-After this phase, the entire Parent Zone will have:
-- Consistent Bento Grid layouts across all tabs
-- Zero system emojis (all replaced with mascots or Lucide icons)
-- Unified visual language matching the child-facing game
-- Premium, playful aesthetic throughout
-
----
-
-## Future Phases (After This)
-
-Once Parent Zone is polished, the next phases could include:
-
-1. **Onboarding Flow**: Mascot-guided first-time user experience
-2. **Achievement System**: Badges and streak celebrations
-3. **Multi-Child Support**: Profile switching with different mascot avatars
-4. **Dark Mode**: Theme toggle with mascot-aware color palettes
-5. **Push Notifications**: Learning reminders with mascot characters
-
+- All Supabase hooks, data fetching, and save logic remain unchanged
+- The registration modal UI and flow remain unchanged
+- The `handle_new_user` trigger continues to work as before
