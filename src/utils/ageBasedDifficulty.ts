@@ -83,66 +83,96 @@ export function getAdditionConfig(age: number, level: number): {
 } {
   const configs: Record<number, Record<number, { maxSum: number; operandMax: number; showVisuals: boolean; includeMissingAddend: boolean }>> = {
     3: {
-      1: { maxSum: 3, operandMax: 2, showVisuals: true, includeMissingAddend: false },
-      2: { maxSum: 4, operandMax: 2, showVisuals: true, includeMissingAddend: false },
-      3: { maxSum: 5, operandMax: 3, showVisuals: true, includeMissingAddend: false },
-      4: { maxSum: 5, operandMax: 3, showVisuals: true, includeMissingAddend: false },
-      5: { maxSum: 6, operandMax: 4, showVisuals: true, includeMissingAddend: false },
+      1:  { maxSum: 3,  operandMax: 2,  showVisuals: true,  includeMissingAddend: false },
+      2:  { maxSum: 4,  operandMax: 2,  showVisuals: true,  includeMissingAddend: false },
+      3:  { maxSum: 5,  operandMax: 3,  showVisuals: true,  includeMissingAddend: false },
+      4:  { maxSum: 5,  operandMax: 3,  showVisuals: true,  includeMissingAddend: false },
+      5:  { maxSum: 6,  operandMax: 4,  showVisuals: true,  includeMissingAddend: false },
+      6:  { maxSum: 7,  operandMax: 4,  showVisuals: true,  includeMissingAddend: false },
+      7:  { maxSum: 8,  operandMax: 5,  showVisuals: true,  includeMissingAddend: false },
+      8:  { maxSum: 8,  operandMax: 5,  showVisuals: true,  includeMissingAddend: false },
+      9:  { maxSum: 9,  operandMax: 5,  showVisuals: true,  includeMissingAddend: false },
+      10: { maxSum: 10, operandMax: 6,  showVisuals: true,  includeMissingAddend: false },
     },
     4: {
-      1: { maxSum: 5, operandMax: 3, showVisuals: true, includeMissingAddend: false },
-      2: { maxSum: 6, operandMax: 4, showVisuals: true, includeMissingAddend: false },
-      3: { maxSum: 7, operandMax: 4, showVisuals: true, includeMissingAddend: false },
-      4: { maxSum: 8, operandMax: 5, showVisuals: true, includeMissingAddend: false },
-      5: { maxSum: 10, operandMax: 5, showVisuals: true, includeMissingAddend: false },
+      1:  { maxSum: 5,  operandMax: 3,  showVisuals: true,  includeMissingAddend: false },
+      2:  { maxSum: 6,  operandMax: 4,  showVisuals: true,  includeMissingAddend: false },
+      3:  { maxSum: 7,  operandMax: 4,  showVisuals: true,  includeMissingAddend: false },
+      4:  { maxSum: 8,  operandMax: 5,  showVisuals: true,  includeMissingAddend: false },
+      5:  { maxSum: 10, operandMax: 5,  showVisuals: true,  includeMissingAddend: false },
+      6:  { maxSum: 10, operandMax: 6,  showVisuals: true,  includeMissingAddend: false },
+      7:  { maxSum: 12, operandMax: 7,  showVisuals: true,  includeMissingAddend: false },
+      8:  { maxSum: 12, operandMax: 7,  showVisuals: false, includeMissingAddend: false },
+      9:  { maxSum: 14, operandMax: 8,  showVisuals: false, includeMissingAddend: false },
+      10: { maxSum: 15, operandMax: 8,  showVisuals: false, includeMissingAddend: false },
     },
     5: {
-      1: { maxSum: 6, operandMax: 4, showVisuals: true, includeMissingAddend: false },
-      2: { maxSum: 8, operandMax: 5, showVisuals: true, includeMissingAddend: false },
-      3: { maxSum: 10, operandMax: 6, showVisuals: true, includeMissingAddend: false },
-      4: { maxSum: 10, operandMax: 6, showVisuals: false, includeMissingAddend: false },
-      5: { maxSum: 12, operandMax: 7, showVisuals: false, includeMissingAddend: false },
+      1:  { maxSum: 6,  operandMax: 4,  showVisuals: true,  includeMissingAddend: false },
+      2:  { maxSum: 8,  operandMax: 5,  showVisuals: true,  includeMissingAddend: false },
+      3:  { maxSum: 10, operandMax: 6,  showVisuals: true,  includeMissingAddend: false },
+      4:  { maxSum: 10, operandMax: 6,  showVisuals: false, includeMissingAddend: false },
+      5:  { maxSum: 12, operandMax: 7,  showVisuals: false, includeMissingAddend: false },
+      6:  { maxSum: 14, operandMax: 8,  showVisuals: false, includeMissingAddend: false },
+      7:  { maxSum: 15, operandMax: 9,  showVisuals: false, includeMissingAddend: false },
+      8:  { maxSum: 16, operandMax: 9,  showVisuals: false, includeMissingAddend: false },
+      9:  { maxSum: 18, operandMax: 10, showVisuals: false, includeMissingAddend: false },
+      10: { maxSum: 20, operandMax: 10, showVisuals: false, includeMissingAddend: false },
     },
     6: {
-      1: { maxSum: 10, operandMax: 6, showVisuals: true, includeMissingAddend: false },
-      2: { maxSum: 12, operandMax: 7, showVisuals: false, includeMissingAddend: false },
-      3: { maxSum: 15, operandMax: 8, showVisuals: false, includeMissingAddend: false },
-      4: { maxSum: 18, operandMax: 10, showVisuals: false, includeMissingAddend: true },
-      5: { maxSum: 20, operandMax: 10, showVisuals: false, includeMissingAddend: true },
+      1:  { maxSum: 10, operandMax: 6,  showVisuals: true,  includeMissingAddend: false },
+      2:  { maxSum: 12, operandMax: 7,  showVisuals: false, includeMissingAddend: false },
+      3:  { maxSum: 15, operandMax: 8,  showVisuals: false, includeMissingAddend: false },
+      4:  { maxSum: 15, operandMax: 9,  showVisuals: false, includeMissingAddend: false },
+      5:  { maxSum: 18, operandMax: 10, showVisuals: false, includeMissingAddend: false },
+      6:  { maxSum: 18, operandMax: 10, showVisuals: false, includeMissingAddend: true },
+      7:  { maxSum: 20, operandMax: 12, showVisuals: false, includeMissingAddend: true },
+      8:  { maxSum: 20, operandMax: 12, showVisuals: false, includeMissingAddend: true },
+      9:  { maxSum: 25, operandMax: 14, showVisuals: false, includeMissingAddend: true },
+      10: { maxSum: 25, operandMax: 15, showVisuals: false, includeMissingAddend: true },
     },
     7: {
-      1: { maxSum: 15, operandMax: 8, showVisuals: false, includeMissingAddend: false },
-      2: { maxSum: 18, operandMax: 10, showVisuals: false, includeMissingAddend: false },
-      3: { maxSum: 20, operandMax: 12, showVisuals: false, includeMissingAddend: true },
-      4: { maxSum: 25, operandMax: 15, showVisuals: false, includeMissingAddend: true },
-      5: { maxSum: 30, operandMax: 15, showVisuals: false, includeMissingAddend: true },
+      1:  { maxSum: 15, operandMax: 8,  showVisuals: false, includeMissingAddend: false },
+      2:  { maxSum: 18, operandMax: 10, showVisuals: false, includeMissingAddend: false },
+      3:  { maxSum: 20, operandMax: 12, showVisuals: false, includeMissingAddend: false },
+      4:  { maxSum: 20, operandMax: 12, showVisuals: false, includeMissingAddend: true },
+      5:  { maxSum: 25, operandMax: 14, showVisuals: false, includeMissingAddend: true },
+      6:  { maxSum: 25, operandMax: 15, showVisuals: false, includeMissingAddend: true },
+      7:  { maxSum: 30, operandMax: 16, showVisuals: false, includeMissingAddend: true },
+      8:  { maxSum: 30, operandMax: 18, showVisuals: false, includeMissingAddend: true },
+      9:  { maxSum: 35, operandMax: 18, showVisuals: false, includeMissingAddend: true },
+      10: { maxSum: 40, operandMax: 20, showVisuals: false, includeMissingAddend: true },
     },
     8: {
-      1: { maxSum: 20, operandMax: 12, showVisuals: false, includeMissingAddend: false },
-      2: { maxSum: 25, operandMax: 15, showVisuals: false, includeMissingAddend: true },
-      3: { maxSum: 30, operandMax: 18, showVisuals: false, includeMissingAddend: true },
-      4: { maxSum: 40, operandMax: 20, showVisuals: false, includeMissingAddend: true },
-      5: { maxSum: 50, operandMax: 25, showVisuals: false, includeMissingAddend: true },
+      1:  { maxSum: 20, operandMax: 12, showVisuals: false, includeMissingAddend: false },
+      2:  { maxSum: 25, operandMax: 15, showVisuals: false, includeMissingAddend: false },
+      3:  { maxSum: 30, operandMax: 18, showVisuals: false, includeMissingAddend: true },
+      4:  { maxSum: 30, operandMax: 18, showVisuals: false, includeMissingAddend: true },
+      5:  { maxSum: 35, operandMax: 20, showVisuals: false, includeMissingAddend: true },
+      6:  { maxSum: 40, operandMax: 22, showVisuals: false, includeMissingAddend: true },
+      7:  { maxSum: 40, operandMax: 22, showVisuals: false, includeMissingAddend: true },
+      8:  { maxSum: 45, operandMax: 25, showVisuals: false, includeMissingAddend: true },
+      9:  { maxSum: 50, operandMax: 25, showVisuals: false, includeMissingAddend: true },
+      10: { maxSum: 50, operandMax: 30, showVisuals: false, includeMissingAddend: true },
     },
   };
 
   const clampedAge = Math.min(Math.max(age, 3), 8);
   const ageConfig = configs[clampedAge];
   
-  // Interpolate for levels beyond 5
-  if (level <= 5) {
+  // Use exact config for levels 1-10
+  if (level <= 10) {
     return ageConfig[level] || ageConfig[1];
   }
   
-  // For levels 6-20, scale up from level 5
-  const base = ageConfig[5];
-  const levelMultiplier = 1 + ((level - 5) * 0.15); // 15% increase per level beyond 5
+  // For levels 11-20, scale up from level 10
+  const base = ageConfig[10];
+  const levelMultiplier = 1 + ((level - 10) * 0.12);
   
   return {
     maxSum: Math.round(base.maxSum * levelMultiplier),
     operandMax: Math.round(base.operandMax * levelMultiplier),
     showVisuals: false,
-    includeMissingAddend: level > 8 || clampedAge >= 6,
+    includeMissingAddend: true,
   };
 }
 

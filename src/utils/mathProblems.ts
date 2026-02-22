@@ -147,17 +147,18 @@ export function generateAdditionBasicProblems(level: number, count: number, age:
   const problems: Problem[] = [];
   const config = getAdditionConfig(age, level);
 
-  for (let i = 0; i < count; i++) {
-    const num1 = randomInt(0, Math.floor(config.operandMax / 2));
-    const num2 = randomInt(0, Math.min(config.maxSum - num1, config.operandMax));
-    const sum = num1 + num2;
+  // Level-based minimum operands to ensure progression (never zero)
+  const minOperand1 = level <= 3 ? 1 : level <= 6 ? 2 : level <= 10 ? 3 : 5;
+  const minOperand2 = level <= 3 ? 1 : level <= 6 ? 1 : level <= 10 ? 2 : 3;
 
+  for (let i = 0; i < count; i++) {
     // Should we include missing addend problems?
     const doMissingAddend = config.includeMissingAddend && Math.random() < 0.3;
 
     if (doMissingAddend) {
-      const knownAddend = randomInt(1, Math.floor(config.operandMax / 2));
-      const missingAddend = randomInt(1, Math.min(config.maxSum - knownAddend, config.operandMax / 2));
+      const knownAddend = randomInt(minOperand1, Math.max(minOperand1, Math.floor(config.operandMax / 2)));
+      const maxMissing = Math.max(1, Math.min(config.maxSum - knownAddend, Math.floor(config.operandMax / 2)));
+      const missingAddend = randomInt(minOperand2, Math.max(minOperand2, maxMissing));
       const total = knownAddend + missingAddend;
 
       problems.push({
@@ -172,6 +173,13 @@ export function generateAdditionBasicProblems(level: number, count: number, age:
         concept: 'missing_addend'
       });
     } else {
+      // Generate operands with level-appropriate minimums
+      const maxOp1 = Math.max(minOperand1, Math.floor(config.operandMax / 2));
+      const num1 = randomInt(minOperand1, maxOp1);
+      const maxOp2 = Math.max(minOperand2, Math.min(config.maxSum - num1, config.operandMax));
+      const num2 = randomInt(minOperand2, Math.max(minOperand2, maxOp2));
+      const sum = num1 + num2;
+
       // Standard addition with optional visuals
       const problem: Problem = {
         id: `add-${level}-${i}`,
@@ -181,7 +189,7 @@ export function generateAdditionBasicProblems(level: number, count: number, age:
         answer: sum,
         choices: generateChoices(sum, 4),
         hint: `Think: ${num1} and ${num2} more`,
-        difficulty: level <= 5 ? 'easy' : level <= 10 ? 'medium' : 'hard',
+        difficulty: level <= 3 ? 'easy' : level <= 7 ? 'medium' : 'hard',
         concept: 'addition_basic'
       };
 
