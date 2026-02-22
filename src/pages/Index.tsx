@@ -270,7 +270,7 @@ const Index = () => {
                 childName: profileResult.data?.child_name || guestState.childName,
                 childAge: profileResult.data?.child_age || guestState.childAge,
                 childAvatar: profileResult.data?.child_avatar || guestState.childAvatar,
-                hasCompletedOnboarding: guestState.hasCompletedOnboarding || !!profileResult.data,
+                hasCompletedOnboarding: guestState.hasCompletedOnboarding || !!profileResult.data?.child_name,
               }));
               
               toast.success('Your guest progress has been saved to your account!');
@@ -284,16 +284,17 @@ const Index = () => {
           } else {
             // No merge needed - use cloud data
             if (profileResult.data) {
+              const hasValidProfile = !!profileResult.data.child_name && profileResult.data.child_name !== 'New User';
               setState(prev => ({
                 ...prev,
-                childName: profileResult.data.child_name,
-                childAge: profileResult.data.child_age,
-                childAvatar: profileResult.data.child_avatar,
+                childName: hasValidProfile ? profileResult.data.child_name : prev.childName,
+                childAge: profileResult.data.child_age || prev.childAge,
+                childAvatar: profileResult.data.child_avatar || prev.childAvatar,
                 childGender: profileResult.data.child_gender as 'boy' | 'girl' | 'other' | 'prefer-not-to-say' | undefined,
                 parentEmail: profileResult.data.parent_email || undefined,
                 parentRelationship: profileResult.data.parent_relationship || undefined,
                 registeredAt: profileResult.data.registered_at || undefined,
-                hasCompletedOnboarding: true,
+                hasCompletedOnboarding: hasValidProfile,
               }));
             }
 
@@ -444,14 +445,14 @@ const Index = () => {
       return;
     }
 
-    // If user is signed in and has a profile (childName exists), don't show modal
-    if (user && state.childName && state.hasCompletedOnboarding) {
+    // If onboarding is complete, never show the modal
+    if (state.hasCompletedOnboarding) {
       setRegistrationModalOpen(false);
       return;
     }
 
-    // If user is signed in but no profile exists yet, show modal (don't allow close)
-    if (user && !state.childName) {
+    // If user is signed in but hasn't completed onboarding and has no valid profile, show modal
+    if (user && !state.hasCompletedOnboarding && !state.childName) {
       setRegistrationModalOpen(true);
       return;
     }
