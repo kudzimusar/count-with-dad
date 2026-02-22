@@ -317,7 +317,6 @@ export function MathGameContainer({
 
     // Check graduation eligibility after successful level completion
     if (passed && stars >= 2) {
-      // Build a simplified mode progress for eligibility check
       const modeProgress: Record<string, { level: number; accuracy: number }> = {
         [modeId]: { level: currentLevel, accuracy: accuracy * 100 }
       };
@@ -325,7 +324,6 @@ export function MathGameContainer({
       const eligibility = checkEligibility(childAge, modeProgress);
       
       if (eligibility.isEligible && !eligibility.isRequested) {
-        // Child is eligible for graduation - request it
         await requestGraduation(childAge, modeProgress);
         
         toast({
@@ -333,6 +331,11 @@ export function MathGameContainer({
           description: `${childName || 'You'} completed all Age ${childAge} goals! Ask a parent to approve graduation to Age ${childAge + 1}!`,
         });
       }
+    }
+
+    // Auto-advance to next level when passed
+    if (passed && currentLevel < maxLevel) {
+      setCurrentLevel(currentLevel + 1);
     }
 
     onComplete({
