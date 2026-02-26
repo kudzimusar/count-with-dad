@@ -100,22 +100,22 @@ export function MathGameContainer({
     problemStartTimeRef.current = Date.now();
   }, [modeId, currentLevel, childAge]);
 
-  // Auto-speak the question when a new problem appears
+  // Auto-speak the question ONLY when a new problem appears and no answer is selected
   useEffect(() => {
-    if (currentProblem && voiceEnabled) {
+    if (currentProblem && voiceEnabled && selectedAnswer === null && !showSuccessModal && !showCelebration) {
       const spokenQuestion = currentProblem.question
-        .replace(/\+/g, 'plus')
-        .replace(/-/g, 'minus')
-        .replace(/×/g, 'times')
-        .replace(/÷/g, 'divided by')
-        .replace(/=/g, 'equals')
-        .replace(/\?/g, 'what?');
+        .replace(/\+/g, ' plus ')
+        .replace(/-/g, ' minus ')
+        .replace(/×/g, ' times ')
+        .replace(/÷/g, ' divided by ')
+        .replace(/=/g, ' equals ')
+        .replace(/\?/g, ' what?');
       
       setTimeout(() => {
         speak(spokenQuestion);
-      }, 300);
+      }, 500);
     }
-  }, [currentProblemIndex, voiceEnabled]);
+  }, [currentProblemIndex]);
 
   // Track time spent
   useEffect(() => {
@@ -168,25 +168,18 @@ export function MathGameContainer({
       // Trigger confetti celebration
       setShowCelebration(true);
       
-      // Build personalized success message
-      const equation = currentProblem.question.replace('?', String(currentProblem.answer));
-      const message = childName
-        ? `Correct! ${equation}. Good job ${childName}!`
-        : `Correct! ${equation}. Good job!`;
+      // Build personalized success message with proper spacing
+      const equation = currentProblem.question.replace(/\s*\?\s*/, ` ${String(currentProblem.answer)}`).trim();
+      const name = childName || 'buddy';
+      const message = `Correct! ${equation}. Good job ${name}!`;
       setSuccessMessage(message);
       
-      // Voice feedback with personalized praise
+      // Voice feedback with personalized praise — only praise, don't re-read the question
       if (voiceEnabled) {
-        const spokenEquation = equation
-          .replace(/\+/g, 'plus')
-          .replace(/-/g, 'minus')
-          .replace(/×/g, 'times')
-          .replace(/÷/g, 'divided by')
-          .replace(/=/g, 'equals');
-        const voiceMessage = childName
-          ? `${spokenEquation}, Good job ${childName}!`
-          : `${spokenEquation}, Good job!`;
-        speak(voiceMessage);
+        const praise = `Correct! Good job ${name}!`;
+        setTimeout(() => {
+          speak(praise);
+        }, 400);
       }
 
       // Save to backend
