@@ -795,43 +795,220 @@ export function generateNumberLineProblems(level: number, count: number, age: nu
 }
 
 // ============= SHAPES =============
-export function generateShapeProblems(level: number, count: number, age: number = 5): Problem[] {
-  const basicShapes = ['circle', 'square', 'triangle'];
-  const mediumShapes = ['circle', 'square', 'triangle', 'rectangle', 'oval'];
-  const advancedShapes = ['circle', 'square', 'triangle', 'rectangle', 'oval', 'star', 'pentagon', 'hexagon', 'diamond'];
-  const colors = ['red', 'blue', 'green', 'yellow', 'purple', 'orange'];
 
-  // Shape selection based on age and level
-  let shapes: string[];
-  if (age <= 4 || level <= 3) {
-    shapes = basicShapes;
-  } else if (age <= 6 || level <= 8) {
-    shapes = mediumShapes;
-  } else {
-    shapes = advancedShapes;
+// Shape properties database
+const SHAPE_PROPERTIES: Record<string, { sides: number; corners: number; curved: boolean; description: string }> = {
+  circle:    { sides: 0, corners: 0, curved: true,  description: 'A round shape with no sides or corners' },
+  oval:      { sides: 0, corners: 0, curved: true,  description: 'A stretched circle shape' },
+  triangle:  { sides: 3, corners: 3, curved: false, description: 'A shape with 3 sides and 3 corners' },
+  square:    { sides: 4, corners: 4, curved: false, description: 'A shape with 4 equal sides' },
+  rectangle: { sides: 4, corners: 4, curved: false, description: 'A shape with 4 sides, longer on two sides' },
+  diamond:   { sides: 4, corners: 4, curved: false, description: 'A tilted square shape' },
+  pentagon:  { sides: 5, corners: 5, curved: false, description: 'A shape with 5 sides' },
+  hexagon:   { sides: 6, corners: 6, curved: false, description: 'A shape with 6 sides' },
+  star:      { sides: 10, corners: 5, curved: false, description: 'A shape with 5 points' },
+  heart:     { sides: 0, corners: 1, curved: true,  description: 'A love heart shape' },
+};
+
+// Level-based shape pools — each level introduces new shapes
+function getShapesForLevel(level: number, age: number): string[] {
+  if (age <= 3) {
+    // Very young: gradual intro
+    if (level <= 2) return ['circle', 'square'];
+    if (level <= 4) return ['circle', 'square', 'triangle'];
+    if (level <= 6) return ['circle', 'square', 'triangle', 'rectangle'];
+    if (level <= 8) return ['circle', 'square', 'triangle', 'rectangle', 'oval'];
+    return ['circle', 'square', 'triangle', 'rectangle', 'oval', 'heart'];
   }
+  if (age <= 4) {
+    if (level <= 1) return ['circle', 'square', 'triangle'];
+    if (level <= 3) return ['circle', 'square', 'triangle', 'rectangle'];
+    if (level <= 5) return ['circle', 'square', 'triangle', 'rectangle', 'oval'];
+    if (level <= 7) return ['circle', 'square', 'triangle', 'rectangle', 'oval', 'diamond'];
+    if (level <= 9) return ['circle', 'square', 'triangle', 'rectangle', 'oval', 'diamond', 'heart'];
+    return ['circle', 'square', 'triangle', 'rectangle', 'oval', 'diamond', 'heart', 'star'];
+  }
+  // Age 5+
+  if (level <= 1) return ['circle', 'square', 'triangle', 'rectangle'];
+  if (level <= 2) return ['circle', 'square', 'triangle', 'rectangle', 'oval'];
+  if (level <= 3) return ['circle', 'square', 'triangle', 'rectangle', 'oval', 'diamond'];
+  if (level <= 5) return ['circle', 'square', 'triangle', 'rectangle', 'oval', 'diamond', 'star'];
+  if (level <= 7) return ['circle', 'square', 'triangle', 'rectangle', 'oval', 'diamond', 'star', 'pentagon'];
+  if (level <= 9) return ['circle', 'square', 'triangle', 'rectangle', 'oval', 'diamond', 'star', 'pentagon', 'hexagon'];
+  return ['circle', 'square', 'triangle', 'rectangle', 'oval', 'diamond', 'star', 'pentagon', 'hexagon', 'heart'];
+}
+
+// Question types by difficulty tier
+type ShapeQuestionType = 'identify' | 'sides' | 'corners' | 'color_shape' | 'properties' | 'odd_one_out';
+
+function getQuestionTypesForLevel(level: number): ShapeQuestionType[] {
+  if (level <= 2) return ['identify'];
+  if (level <= 4) return ['identify', 'sides'];
+  if (level <= 6) return ['identify', 'sides', 'corners', 'color_shape'];
+  if (level <= 8) return ['identify', 'sides', 'corners', 'color_shape', 'properties'];
+  return ['identify', 'sides', 'corners', 'color_shape', 'properties', 'odd_one_out'];
+}
+
+export function generateShapeProblems(level: number, count: number, age: number = 5): Problem[] {
+  const shapes = getShapesForLevel(level, age);
+  const questionTypes = getQuestionTypesForLevel(level);
+  const colors = ['red', 'blue', 'green', 'yellow', 'purple', 'orange', 'pink'];
 
   return Array(count).fill(0).map((_, i) => {
+    const qType = questionTypes[i % questionTypes.length];
     const shape = shapes[randomInt(0, shapes.length - 1)];
     const color = colors[randomInt(0, colors.length - 1)];
-    const wrongChoices = shapes.filter(s => s !== shape);
-    const choices = shuffleArray([shape, ...wrongChoices.slice(0, 3)]).slice(0, 4);
+    const props = SHAPE_PROPERTIES[shape];
 
-    return {
-      id: `shape-${level}-${i}`,
-      type: 'visual' as ProblemType,
-      operation: 'comparison' as Operation,
-      question: 'What shape is this?',
-      visualAid: {
-        type: 'shape' as const,
-        data: { shape, color }
-      },
-      answer: shape,
-      choices,
-      hint: 'Look at the number of sides and corners',
-      difficulty: shapes.length <= 3 ? 'easy' : shapes.length <= 5 ? 'medium' : 'hard',
-      concept: 'shape_recognition'
-    };
+    switch (qType) {
+      case 'sides': {
+        const correctSides = props.sides;
+        const question = `How many sides does this shape have?`;
+        // Generate plausible wrong answers
+        const possibleAnswers = new Set<number>([correctSides]);
+        for (const s of shapes) {
+          possibleAnswers.add(SHAPE_PROPERTIES[s].sides);
+        }
+        // Ensure we have 4 choices
+        while (possibleAnswers.size < 4) {
+          possibleAnswers.add(randomInt(0, 8));
+        }
+        const choicesArr = Array.from(possibleAnswers);
+        const choices = shuffleArray(choicesArr).slice(0, 4);
+        if (!choices.includes(correctSides)) {
+          choices[0] = correctSides;
+        }
+        return {
+          id: `shape-${level}-${i}`,
+          type: 'visual' as ProblemType,
+          operation: 'comparison' as Operation,
+          question,
+          visualAid: { type: 'shape' as const, data: { shape, color } },
+          answer: correctSides,
+          choices: shuffleArray(choices),
+          hint: `Count each straight edge of the shape`,
+          difficulty: level <= 4 ? 'easy' : level <= 7 ? 'medium' : 'hard',
+          concept: 'shape_sides'
+        } as Problem;
+      }
+
+      case 'corners': {
+        const correctCorners = props.corners;
+        const question = `How many corners does this shape have?`;
+        const possibleAnswers = new Set<number>([correctCorners]);
+        for (const s of shapes) {
+          possibleAnswers.add(SHAPE_PROPERTIES[s].corners);
+        }
+        while (possibleAnswers.size < 4) {
+          possibleAnswers.add(randomInt(0, 8));
+        }
+        const choicesArr = Array.from(possibleAnswers);
+        const choices = shuffleArray(choicesArr).slice(0, 4);
+        if (!choices.includes(correctCorners)) {
+          choices[0] = correctCorners;
+        }
+        return {
+          id: `shape-${level}-${i}`,
+          type: 'visual' as ProblemType,
+          operation: 'comparison' as Operation,
+          question,
+          visualAid: { type: 'shape' as const, data: { shape, color } },
+          answer: correctCorners,
+          choices: shuffleArray(choices),
+          hint: `Corners are where two sides meet`,
+          difficulty: level <= 5 ? 'medium' : 'hard',
+          concept: 'shape_corners'
+        } as Problem;
+      }
+
+      case 'color_shape': {
+        const question = `What color is this ${shape}?`;
+        const wrongColors = colors.filter(c => c !== color);
+        const choices = shuffleArray([color, ...wrongColors.slice(0, 3)]);
+        return {
+          id: `shape-${level}-${i}`,
+          type: 'visual' as ProblemType,
+          operation: 'comparison' as Operation,
+          question,
+          visualAid: { type: 'shape' as const, data: { shape, color } },
+          answer: color,
+          choices,
+          hint: `Look at the color of the shape carefully`,
+          difficulty: 'medium',
+          concept: 'shape_color'
+        } as Problem;
+      }
+
+      case 'properties': {
+        const isCurved = props.curved;
+        const question = `Is this shape curved or straight-sided?`;
+        return {
+          id: `shape-${level}-${i}`,
+          type: 'visual' as ProblemType,
+          operation: 'comparison' as Operation,
+          question,
+          visualAid: { type: 'shape' as const, data: { shape, color } },
+          answer: isCurved ? 'curved' : 'straight',
+          choices: shuffleArray(['curved', 'straight', 'both', 'neither']),
+          hint: props.description,
+          difficulty: 'hard',
+          concept: 'shape_properties'
+        } as Problem;
+      }
+
+      case 'odd_one_out': {
+        // Pick a shape, then ask which is different category (curved vs straight)
+        const curvedShapes = shapes.filter(s => SHAPE_PROPERTIES[s].curved);
+        const straightShapes = shapes.filter(s => !SHAPE_PROPERTIES[s].curved);
+        
+        if (curvedShapes.length > 0 && straightShapes.length > 0) {
+          const useCurvedAsOdd = randomInt(0, 1) === 0;
+          const oddShape = useCurvedAsOdd
+            ? curvedShapes[randomInt(0, curvedShapes.length - 1)]
+            : straightShapes[randomInt(0, straightShapes.length - 1)];
+          const normalPool = useCurvedAsOdd ? straightShapes : curvedShapes;
+          const otherChoices = shuffleArray(normalPool).slice(0, 3);
+          
+          // Pad if not enough choices
+          while (otherChoices.length < 3) {
+            otherChoices.push(normalPool[0] || shapes[0]);
+          }
+
+          const allChoices = shuffleArray([oddShape, ...otherChoices]);
+          return {
+            id: `shape-${level}-${i}`,
+            type: 'visual' as ProblemType,
+            operation: 'comparison' as Operation,
+            question: `Which shape is different from the others?`,
+            answer: oddShape,
+            choices: allChoices,
+            hint: `Think about which shapes are curved and which have straight sides`,
+            difficulty: 'hard',
+            concept: 'shape_classification'
+          } as Problem;
+        }
+        // Fallback to identify
+        // falls through to default
+      }
+
+      case 'identify':
+      default: {
+        const wrongChoices = shapes.filter(s => s !== shape);
+        const choices = shuffleArray([shape, ...shuffleArray(wrongChoices).slice(0, 3)]);
+        return {
+          id: `shape-${level}-${i}`,
+          type: 'visual' as ProblemType,
+          operation: 'comparison' as Operation,
+          question: 'What shape is this?',
+          visualAid: { type: 'shape' as const, data: { shape, color } },
+          answer: shape,
+          choices,
+          hint: props.description,
+          difficulty: shapes.length <= 4 ? 'easy' : shapes.length <= 6 ? 'medium' : 'hard',
+          concept: 'shape_recognition'
+        } as Problem;
+      }
+    }
   });
 }
 
